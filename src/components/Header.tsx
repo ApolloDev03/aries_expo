@@ -14,11 +14,11 @@ export default function Header() {
   return (
     <header className="flex justify-between items-center px-6 py-4 bg-white shadow">
       {/* LEFT SIDE LOGO */}
-      <div className="flex items-center gap-4">
-        <Link to="/admin">
-          <img src={ariesLogo} className="h-12 cursor-pointer" />
-        </Link>
+      <Link to="/admin">
+        <img src={ariesLogo} className="h-12 cursor-pointer" />
+      </Link>
 
+      <div className="flex items-center gap-4">
         {/* TOP NAV MENU */}
         <nav className="flex gap-6 text-sm font-semibold">
           <Link className="hover:text-orange-600" to="/admin">
@@ -41,15 +41,15 @@ export default function Header() {
             User Master
           </Link>
         </nav>
-      </div>
 
-      {/* LOGOUT BUTTON */}
-      <button
-        className="bg-[#005B9D] text-white px-4 py-2 rounded"
-        onClick={handleLogout}
-      >
-        Logout
-      </button>
+        {/* LOGOUT BUTTON */}
+        <button
+          className="bg-[#005B9D] text-white px-4 py-2 rounded"
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
+      </div>
     </header>
   );
 }

@@ -4,7 +4,6 @@ import AdminLayout from "./layout/AdminLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import CityList from "./pages/city/CityList";
-import CityForm from "./pages/city/CityForm";
 import IndustryList from "./pages/Industry/IndustryList";
 import IndustryForm from "./pages/Industry/ IndustryForm";
 import ExpoList from "./pages/Expo/ExpoList";
@@ -33,8 +32,6 @@ export default function App() {
 
           {/* CITY ROUTES */}
           <Route path="city" element={<CityList />} />
-          <Route path="city/add" element={<CityForm />} />
-          <Route path="city/edit/:id" element={<CityForm />} />
 
           {/* INDUSTRY ROUTES */}
           <Route path="industry" element={<IndustryList />} />
