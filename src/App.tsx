@@ -10,6 +10,7 @@ import ExpoList from "./pages/Expo/ExpoList";
 import ExpoForm from "./pages/Expo/ ExpoForm";
 import UserList from "./pages/Users/UserList";
 import UserForm from "./pages/Users/UserForm";
+import Logout from "./pages/Logout";
 
 
 
@@ -18,7 +19,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-
+        <Route path="/logout" element={<Logout />} />
         <Route
           path="/admin"
           element={
@@ -46,7 +47,10 @@ export default function App() {
           {/* USERS ROUTES */}
           <Route path="users" element={<UserList />} />
           <Route path="users/add" element={<UserForm />} />
-          <Route path="users/edit/:id" element={<UserForm />} />
+          <Route path="users/edit/:id" element={<UserForm />} />;
+
+          
+
         </Route>
       </Routes>
     </BrowserRouter>
