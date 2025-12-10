@@ -6,8 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import CityList from "./pages/city/CityList";
 import IndustryList from "./pages/Industry/IndustryList";
 import IndustryForm from "./pages/Industry/ IndustryForm";
-import ExpoList from "./pages/Expo/ExpoList";
-import ExpoForm from "./pages/Expo/ ExpoForm";
+
 import UserList from "./pages/Users/UserList";
 import UserForm from "./pages/Users/UserForm";
 import Logout from "./pages/Logout";
@@ -39,11 +38,6 @@ export default function App() {
           <Route path="industry" element={<IndustryList />} />
           <Route path="industry/add" element={<IndustryForm />} />
           <Route path="industry/edit/:id" element={<IndustryForm />} />
-
-          {/* EXPO ROUTES */}
-          <Route path="expo" element={<ExpoList />} />
-          <Route path="expo/add" element={<ExpoForm />} />
-          <Route path="expo/edit/:id" element={<ExpoForm />} />
 
           {/* USERS ROUTES */}
           <Route path="users" element={<UserList />} />

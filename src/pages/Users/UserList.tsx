@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useNavigate } from "react-router-dom";
 
 
 interface ExpoData {
@@ -34,6 +35,14 @@ export default function SearchableTablePage() {
   const [expoType, setExpoType] = useState("");
   const [city, setCity] = useState("");
   const [filteredData, setFilteredData] = useState<ExpoData[]>(dummyData);
+  const navigate = useNavigate();
+
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<ExpoData | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<ExpoData | null>(null);
+
+
 
   // Pagination
   const itemsPerPage = 10;
@@ -50,18 +59,39 @@ export default function SearchableTablePage() {
     setPage(1);
   };
 
+  const handleUpdate = (updatedUser: ExpoData) => {
+    const updatedList = filteredData.map((item) =>
+      item.id === updatedUser.id ? updatedUser : item
+    );
+
+    setFilteredData(updatedList);
+  };
+
+  const handleDelete = () => {
+    if (userToDelete) {
+      const updatedList = filteredData.filter(
+        (item) => item.id !== userToDelete.id
+      );
+      setFilteredData(updatedList);
+    }
+    setIsDeleteOpen(false);
+  };
+
+
+
   return (
     <div className="p-6 max-w-6xl mx-auto font-inter">
 
       {/* Header Row with Add Button */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold tracking-wide text-gray-800">
-          Expo Search
+          Visitor Data
         </h2>
         <button
           className="flex items-center gap-2 bg-[#005B9D] 
-                     text-white px-6 py-2 rounded-full shadow-lg hover:shadow-xl 
+                     text-white px-6 py-2 rounded-lg shadow-lg hover:shadow-xl 
                      transition-all active:scale-95"
+          onClick={() => navigate("/admin/users/add")}
         >
           <Plus size={18} />
           Add New
@@ -149,6 +179,11 @@ export default function SearchableTablePage() {
                     <button
                       className="p-2   text-blue-600  
                   transition active:scale-95"
+                      onClick={() => {
+                        setSelectedUser(item); // store the clicked row data
+                        setIsEditOpen(true);   // open modal
+                      }}
+
                     >
                       <EditIcon fontSize="small" />
                     </button>
@@ -157,6 +192,10 @@ export default function SearchableTablePage() {
                     <button
                       className="p-2  text-red-600 
                   transition active:scale-95"
+                      onClick={() => {
+                        setUserToDelete(item);   // store user to delete
+                        setIsDeleteOpen(true);   // open delete modal
+                      }}
                     >
                       <DeleteIcon fontSize="small" />
                     </button>
@@ -215,6 +254,156 @@ export default function SearchableTablePage() {
           Next
         </button>
       </div>
+
+      {isEditOpen && selectedUser && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl p-6">
+
+            <h2 className="text-xl font-semibold mb-4">Edit Visitor</h2>
+
+            {/* Form Fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+              {/* Name */}
+              <div>
+                <label className="text-sm font-semibold">Name</label>
+                <input
+                  type="text"
+                  value={selectedUser.name}
+                  onChange={(e) =>
+                    setSelectedUser({ ...selectedUser, name: e.target.value })
+                  }
+                  className="w-full border rounded-lg p-2 mt-1"
+                />
+              </div>
+
+              {/* City */}
+              <div>
+                <label className="text-sm font-semibold">City</label>
+                <input
+                  type="text"
+                  value={selectedUser.city}
+                  onChange={(e) =>
+                    setSelectedUser({ ...selectedUser, city: e.target.value })
+                  }
+                  className="w-full border rounded-lg p-2 mt-1"
+                />
+              </div>
+
+              {/* Expo */}
+              <div>
+                <label className="text-sm font-semibold">Expo</label>
+                <input
+                  type="text"
+                  value={selectedUser.expoType}
+                  onChange={(e) =>
+                    setSelectedUser({ ...selectedUser, expoType: e.target.value })
+                  }
+                  className="w-full border rounded-lg p-2 mt-1"
+                />
+              </div>
+
+              {/* Year */}
+              <div>
+                <label className="text-sm font-semibold">Year</label>
+                <input
+                  type="number"
+                  value={selectedUser.year}
+                  onChange={(e) =>
+                    setSelectedUser({ ...selectedUser, year: Number(e.target.value) })
+                  }
+                  className="w-full border rounded-lg p-2 mt-1"
+                />
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label className="text-sm font-semibold">Phone Number</label>
+                <input
+                  type="text"
+                  value={selectedUser.phone}
+                  onChange={(e) =>
+                    setSelectedUser({ ...selectedUser, phone: e.target.value })
+                  }
+                  className="w-full border rounded-lg p-2 mt-1"
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="text-sm font-semibold">Email</label>
+                <input
+                  type="email"
+                  value={selectedUser.email}
+                  onChange={(e) =>
+                    setSelectedUser({ ...selectedUser, email: e.target.value })
+                  }
+                  className="w-full border rounded-lg p-2 mt-1"
+                />
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex justify-end gap-4 mt-6">
+              <button
+                onClick={() => setIsEditOpen(false)}
+                className="px-5 py-2 rounded-full border border-gray-400 text-gray-700 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  handleUpdate(selectedUser);
+                  setIsEditOpen(false);
+                }}
+                className="px-5 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Update
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isDeleteOpen && userToDelete && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-md rounded-xl shadow-2xl p-6">
+
+            <h2 className="text-xl font-bold text-red-600 mb-4">
+              Delete Record
+            </h2>
+
+            <p className="text-gray-700 mb-6">
+              Are you sure you want to delete the record?
+            </p>
+
+            <div className="flex justify-end gap-4">
+              {/* Cancel */}
+              <button
+                onClick={() => setIsDeleteOpen(false)}
+                className="px-5 py-2 rounded-full border border-gray-400 
+                     text-gray-700 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+
+              {/* Confirm Delete */}
+              <button
+                onClick={handleDelete}
+                className="px-5 py-2 rounded-full bg-red-600 text-white 
+                     hover:bg-red-700 active:scale-95"
+              >
+                Delete
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+
+
     </div>
   );
 }
