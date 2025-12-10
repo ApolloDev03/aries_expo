@@ -11,6 +11,7 @@ import ExpoForm from "./pages/Expo/ ExpoForm";
 import UserList from "./pages/Users/UserList";
 import UserForm from "./pages/Users/UserForm";
 import Logout from "./pages/Logout";
+import DummyAdminPage from "./pages/Form/Formlist";
 
 
 
@@ -49,7 +50,7 @@ export default function App() {
           <Route path="users/add" element={<UserForm />} />
           <Route path="users/edit/:id" element={<UserForm />} />;
 
-          
+          <Route path="form2" element={<DummyAdminPage />} />
 
         </Route>
       </Routes>
