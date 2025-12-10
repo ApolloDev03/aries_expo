@@ -29,6 +29,9 @@ export default function Header() {
             City Master
           </Link>
 
+          <Link className="hover:text-orange-600" to="/admin/form2">
+            Form 2
+          </Link>
           <Link className="hover:text-orange-600" to="/admin/industry">
             Industry Master
           </Link>
