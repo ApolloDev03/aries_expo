@@ -9,12 +9,11 @@ interface Industry {
   id: number;
   name: string;
 }
- 
+
 interface EditIndustry {
   id: number | null;
   name: string;
 }
-
 
 export default function IndustryMaster() {
   const [name, setName] = useState("");
@@ -29,7 +28,11 @@ export default function IndustryMaster() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  const [loading, setLoading] = useState(false);
+  // 🔄 loaders
+  const [isListing, setIsListing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // ---------- Helper: Auth Header ----------
   const getAuthHeaders = () => {
@@ -44,7 +47,7 @@ export default function IndustryMaster() {
   // ---------- Fetch List ----------
   const fetchIndustries = async () => {
     try {
-      setLoading(true);
+      setIsListing(true);
       const res = await axios.post(
         `${apiUrl}/IndustryList`,
         {},
@@ -52,7 +55,6 @@ export default function IndustryMaster() {
       );
 
       if (res.data?.success) {
-        // API returns { id, name, created_at, updated_at }
         setIndustries(res.data.data || []);
       } else {
         toast.error(res.data?.message || "Failed to fetch industries");
@@ -61,7 +63,7 @@ export default function IndustryMaster() {
       console.error(error);
       toast.error("Error fetching industries");
     } finally {
-      setLoading(false);
+      setIsListing(false);
     }
   };
 
@@ -77,6 +79,8 @@ export default function IndustryMaster() {
     }
 
     try {
+      setIsSaving(true);
+
       const res = await axios.post(
         `${apiUrl}/IndustryAdd`,
         { name: name.trim() },
@@ -85,7 +89,6 @@ export default function IndustryMaster() {
 
       if (res.data?.success) {
         toast.success(res.data.message || "Industry added");
-        // You can either push new or refetch list
         setIndustries((prev) => [...prev, res.data.data]);
         setName("");
       } else {
@@ -94,6 +97,8 @@ export default function IndustryMaster() {
     } catch (error: any) {
       console.error(error);
       toast.error("Error adding industry");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -109,6 +114,8 @@ export default function IndustryMaster() {
     }
 
     try {
+      setIsUpdating(true);
+
       const res = await axios.post(
         `${apiUrl}/IndustryUpdate`,
         {
@@ -134,12 +141,16 @@ export default function IndustryMaster() {
     } catch (error: any) {
       console.error(error);
       toast.error("Error updating industry");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   // ---------- Delete Industry ----------
   const handleDelete = async (id: number) => {
     try {
+      setIsDeleting(true);
+
       const res = await axios.post(
         `${apiUrl}/IndustryDelete`,
         { industry_id: String(id) },
@@ -155,6 +166,9 @@ export default function IndustryMaster() {
     } catch (error: any) {
       console.error(error);
       toast.error("Error deleting industry");
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteOpen(false);
     }
   };
 
@@ -186,16 +200,18 @@ export default function IndustryMaster() {
         <input
           type="text"
           value={name}
+          disabled={isSaving || isListing}
           onChange={(e) => setName(e.target.value)}
           placeholder="Enter industry"
-          className="w-full border px-3 py-2 rounded mt-1 mb-6"
+          className="w-full border px-3 py-2 rounded mt-1 mb-6 disabled:bg-gray-100"
         />
 
         <button
           onClick={handleSave}
-          className="bg-[#2e56a6] text-white px-5 py-2 rounded hover:bg-[#bf7e4e]"
+          disabled={isSaving || isListing}
+          className="bg-[#2e56a6] text-white px-5 py-2 rounded hover:bg-[#bf7e4e] disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          Save
+          {isSaving ? "Saving..." : "Save"}
         </button>
       </div>
 
@@ -203,68 +219,77 @@ export default function IndustryMaster() {
       <div className="w-2/3 bg-white p-6 shadow rounded-xl">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Industry List</h2>
-          {loading && <span className="text-sm text-gray-500">Loading...</span>}
         </div>
 
-        {/* Table */}
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="p-3">ID</th>
-              <th className="p-1">Industry</th>
-              <th className="p-1">Actions</th>
-            </tr>
-          </thead>
+        {/* TABLE + LOCAL LOADER */}
+        <div className="relative min-h-[230px]">
+          {isListing && (
+            <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10">
+              <div className="h-10 w-10 border-4 border-gray-300 border-t-[#2e56a6] rounded-full animate-spin" />
+            </div>
+          )}
 
-          <tbody>
-            {currentRecords.length === 0 && !loading && (
-              <tr>
-                <td colSpan={3} className="p-4 text-center text-gray-500">
-                  No industries found
-                </td>
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-100 text-left">
+                <th className="p-3">ID</th>
+                <th className="p-1">Industry</th>
+                <th className="p-1">Actions</th>
               </tr>
-            )}
+            </thead>
 
-            {currentRecords.map((item,index) => (
-              <tr key={item.id} className="border-b hover:bg-gray-50">
-                <td className="p-3">{index+1}</td>
-                <td className="p-1">{item.name}</td>
+            <tbody className={isListing ? "opacity-40" : ""}>
+              {currentRecords.length === 0 && !isListing && (
+                <tr>
+                  <td colSpan={3} className="p-4 text-center text-gray-500">
+                    No industries found
+                  </td>
+                </tr>
+              )}
 
-                <td className="p-1 flex gap-3">
-                  {/* Edit */}
-                  <button
-                    className="text-blue-600 hover:text-blue-800"
-                    onClick={() => {
-                      setEditData({ id: item.id, name: item.name });
-                      setIsEditOpen(true);
-                    }}
-                  >
-                    <EditIcon fontSize="small" />
-                  </button>
+              {currentRecords.map((item, index) => (
+                <tr key={item.id} className="border-b hover:bg-gray-50">
+                  <td className="p-3">{index + 1}</td>
+                  <td className="p-1">{item.name}</td>
 
-                  {/* Delete */}
-                  <button
-                    className="text-red-600 hover:text-red-800"
-                    onClick={() => {
-                      setDeleteId(item.id);
-                      setIsDeleteOpen(true);
-                    }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  <td className="p-1 flex gap-3">
+                    {/* Edit */}
+                    <button
+                      className="text-blue-600 hover:text-blue-800 disabled:text-gray-400"
+                      disabled={isListing || isUpdating}
+                      onClick={() => {
+                        setEditData({ id: item.id, name: item.name });
+                        setIsEditOpen(true);
+                      }}
+                    >
+                      <EditIcon fontSize="small" />
+                    </button>
+
+                    {/* Delete */}
+                    <button
+                      className="text-red-600 hover:text-red-800 disabled:text-gray-400"
+                      disabled={isListing || isDeleting}
+                      onClick={() => {
+                        setDeleteId(item.id);
+                        setIsDeleteOpen(true);
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {/* Pagination */}
         {industries.length > 0 && (
           <div className="flex justify-center items-center mt-4 gap-2">
             <button
-              disabled={currentPage === 1}
+              disabled={currentPage === 1 || isListing}
               onClick={() => handlePageChange(currentPage - 1)}
-              className={`px-3 py-1 rounded border ${currentPage === 1
+              className={`px-3 py-1 rounded border ${currentPage === 1 || isListing
                   ? "bg-gray-200 cursor-not-allowed"
                   : "bg-white hover:bg-gray-100"
                 }`}
@@ -277,6 +302,7 @@ export default function IndustryMaster() {
               return (
                 <button
                   key={page}
+                  disabled={isListing}
                   onClick={() => handlePageChange(page)}
                   className={`px-3 py-1 rounded border ${currentPage === page
                       ? "bg-[#2e56a6] text-white"
@@ -289,9 +315,9 @@ export default function IndustryMaster() {
             })}
 
             <button
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages || isListing}
               onClick={() => handlePageChange(currentPage + 1)}
-              className={`px-3 py-1 rounded border ${currentPage === totalPages
+              className={`px-3 py-1 rounded border ${currentPage === totalPages || isListing
                   ? "bg-gray-200 cursor-not-allowed"
                   : "bg-white hover:bg-gray-100"
                 }`}
@@ -303,7 +329,7 @@ export default function IndustryMaster() {
 
         {/* Edit Modal */}
         {isEditOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96">
               <h2 className="text-xl font-semibold mb-4">Edit Industry</h2>
 
@@ -311,25 +337,28 @@ export default function IndustryMaster() {
               <input
                 type="text"
                 value={editData.name}
+                disabled={isUpdating}
                 onChange={(e) =>
                   setEditData({ ...editData, name: e.target.value })
                 }
-                className="w-full border px-3 py-2 rounded mt-1 mb-4"
+                className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
               />
 
               <div className="flex justify-end gap-3">
                 <button
                   className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
                   onClick={() => setIsEditOpen(false)}
+                  disabled={isUpdating}
                 >
                   Cancel
                 </button>
 
                 <button
-                  className="px-4 py-2 bg-[#2e56a6] text-white rounded hover:bg-blue-700"
+                  className="px-4 py-2 bg-[#2e56a6] text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                   onClick={handleUpdate}
+                  disabled={isUpdating}
                 >
-                  Update
+                  {isUpdating ? "Updating..." : "Update"}
                 </button>
               </div>
             </div>
@@ -338,7 +367,7 @@ export default function IndustryMaster() {
 
         {/* Delete Modal */}
         {isDeleteOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40">
             <div className="bg-white p-6 rounded-2xl shadow-xl w-[380px]">
               <h2 className="text-xl font-semibold text-red-600 mb-2">
                 Delete Record
@@ -352,20 +381,21 @@ export default function IndustryMaster() {
                 <button
                   className="px-5 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100"
                   onClick={() => setIsDeleteOpen(false)}
+                  disabled={isDeleting}
                 >
                   Cancel
                 </button>
 
                 <button
-                  className="px-5 py-2 rounded-full bg-red-600 text-white hover:bg-red-700"
+                  className="px-5 py-2 rounded-full bg-red-600 text-white hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                   onClick={() => {
                     if (deleteId !== null) {
                       handleDelete(deleteId);
                     }
-                    setIsDeleteOpen(false);
                   }}
+                  disabled={isDeleting}
                 >
-                  Delete
+                  {isDeleting ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </div>
