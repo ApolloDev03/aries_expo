@@ -1,409 +1,375 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useNavigate } from "react-router-dom";
 
-
-interface ExpoData {
-  id: number;
+interface UserData {
+  id: number | null;
   name: string;
-  city: string;
-  expoType: string;
-  year: number;
-  phone: string;
-  email: string;
+  mobile: string;
+  address: string;
+  department: string;
 }
 
+export default function UserMaster() {
+  const [name, setName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [address, setAddress] = useState("");
+  const [department, setDepartment] = useState("");
 
-const expoTypes = ["Tech Expo", "Food Expo", "Auto Expo"];
-const cities = ["New York", "Los Angeles", "Chicago", "Houston", "Seattle"];
+  const [searchMobile, setSearchMobile] = useState("");
 
-// Dummy data
-const dummyData: ExpoData[] = Array.from({ length: 23 }, (_, i) => ({
-  id: i + 1,
-  name: `Visitor ${i + 1}`,
-  city: cities[i % cities.length],
-  expoType: expoTypes[i % expoTypes.length],
-  year: 2020 + (i % 5), // random year
-  phone: `98765${10000 + i}`, // example phone
-  email: `visitor${i + 1}@example.com`,
-}));
-
-
-export default function SearchableTablePage() {
-  const [expoType, setExpoType] = useState("");
-  const [city, setCity] = useState("");
-  const [filteredData, setFilteredData] = useState<ExpoData[]>(dummyData);
-  const navigate = useNavigate();
+  const [users, setUsers] = useState<UserData[]>([
+    {
+      id: 1,
+      name: "Rahul Shah",
+      mobile: "9876543210",
+      address: "Ahmedabad",
+      department: "Data Entry",
+    },
+    {
+      id: 2,
+      name: "Priya Patel",
+      mobile: "9090909090",
+      address: "Surat",
+      department: "Marketing",
+    },
+  ]);
 
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<ExpoData | null>(null);
+  const [editData, setEditData] = useState<UserData>({
+    id: null,
+    name: "",
+    mobile: "",
+    address: "",
+    department: "",
+  });
+
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<ExpoData | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
+  // Save New User
+  const handleSave = () => {
+    if (!name || !mobile || !address || !department)
+      return alert("Please fill all fields");
 
+    const newUser = {
+      id: users.length + 1,
+      name,
+      mobile,
+      address,
+      department,
+    };
+
+    setUsers([...users, newUser]);
+
+    setName("");
+    setMobile("");
+    setAddress("");
+    setDepartment("");
+  };
+
+  // Update User
+  const handleUpdate = () => {
+    setUsers(
+      users.map((u) =>
+        u.id === editData.id ? editData : u
+      )
+    );
+    setIsEditOpen(false);
+  };
+
+  // Delete User
+  const handleDelete = (id: any) => {
+    setUsers(users.filter((item) => item.id !== id));
+  };
+
+  // 🔍 Filter by Mobile Number
+  const filteredUsers = users.filter((item) =>
+    item.mobile.toLowerCase().includes(searchMobile.toLowerCase())
+  );
 
   // Pagination
-  const itemsPerPage = 10;
-  const [page, setPage] = useState(1);
-  const startIndex = (page - 1) * itemsPerPage;
-  const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 10;
 
-  const handleSearch = () => {
-    let data = dummyData;
-    if (expoType) data = data.filter((item) => item.expoType === expoType);
-    if (city) data = data.filter((item) => item.city === city);
-    setFilteredData(data);
-    setPage(1);
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+
+  const currentRecords = filteredUsers.slice(indexOfFirstRecord, indexOfLastRecord);
+
+  const totalPages = Math.ceil(filteredUsers.length / recordsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
-
-  const handleUpdate = (updatedUser: ExpoData) => {
-    const updatedList = filteredData.map((item) =>
-      item.id === updatedUser.id ? updatedUser : item
-    );
-
-    setFilteredData(updatedList);
-  };
-
-  const handleDelete = () => {
-    if (userToDelete) {
-      const updatedList = filteredData.filter(
-        (item) => item.id !== userToDelete.id
-      );
-      setFilteredData(updatedList);
-    }
-    setIsDeleteOpen(false);
-  };
-
-
 
   return (
-    <div className="w-full mx-auto font-inter">
+    <div className="flex  gap-8 p-6">
 
-      {/* Header Row with Add Button */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold tracking-wide text-gray-800">
-          Visitor Data
-        </h2>
-        <button
-          className="flex items-center gap-2 bg-[#005B9D] 
-                     text-white px-6 py-2 rounded-lg shadow-lg hover:shadow-xl 
-                     transition-all active:scale-95"
-          onClick={() => navigate("/admin/users/add")}
-        >
-          <Plus size={18} />
-          Add New
-        </button>
-      </div>
+      {/* LEFT: Add User Form */}
+      <div className="w-1/3 bg-white p-6 shadow rounded-xl">
+        <h2 className="text-xl font-semibold mb-4">Add User</h2>
 
-      {/* Search Bar with Glass Effect */}
-      <div
-        className="flex items-center gap-4 p-5 backdrop-blur-lg bg-white/70 
-                 rounded-xl shadow-md border border-gray-200"
-      >
+        <label className="font-medium">Name</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Enter name"
+          className="w-full border px-3 py-2 rounded mt-1 mb-4"
+        />
+
+        <label className="font-medium">Mobile</label>
+        <input
+          type="number"
+          value={mobile}
+          onChange={(e) => setMobile(e.target.value)}
+          placeholder="Enter mobile number"
+          className="w-full border px-3 py-2 rounded mt-1 mb-4"
+        />
+
+        <label className="font-medium">Address</label>
+        <input
+          type="text"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          placeholder="Enter address"
+          className="w-full border px-3 py-2 rounded mt-1 mb-4"
+        />
+
+        <label className="font-medium">Department</label>
         <select
-          value={expoType}
-          onChange={(e) => setExpoType(e.target.value)}
-          className="px-4 py-2 rounded-lg border border-gray-300 bg-white shadow-sm 
-                     focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition w-56"
+          value={department}
+          onChange={(e) => setDepartment(e.target.value)}
+          className="w-full border px-3 py-2 rounded mt-1 mb-6"
         >
-          <option value="">Expo Type</option>
-          {expoTypes.map((ex, i) => (
-            <option key={i} value={ex}>
-              {ex}
-            </option>
-          ))}
-        </select>
+          <option value="">Select Department</option>
+          <option value="Data Entry">Data Entry</option>
+          <option value="Marketing">Marketing</option>
 
-        <select
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          className="px-4 py-2 rounded-lg border border-gray-300 bg-white shadow-sm 
-                     focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition w-56"
-        >
-          <option value="">City</option>
-          {cities.map((ct, i) => (
-            <option key={i} value={ct}>
-              {ct}
-            </option>
-          ))}
         </select>
 
         <button
-          onClick={handleSearch}
-          className="bg-[#005B9D] text-white px-6 py-2 rounded-lg shadow-lg 
-                     hover:bg-blue-700 hover:shadow-xl transition-all active:scale-95"
+          onClick={handleSave}
+          className="bg-[#2e56a6] text-white px-5 py-2 rounded hover:bg-[#bf7e4e]"
         >
-          Search
+          Save
         </button>
       </div>
 
-      {/* Table */}
-      <div className="mt-10 border border-gray-200 rounded-xl overflow-hidden shadow-lg">
-        <table className="w-full">
-          <thead className="bg-gray-100 text-gray-700">
-            <tr className="text-left">
-              <th className="p-3 border-b">ID</th>
-              <th className="p-1 border-b">Name</th>
-              <th className="p-1 border-b">City</th>
-              <th className="p-1 border-b">Expo</th>
-              <th className="p-1 border-b">Year</th>
-              <th className="p-1 border-b">Phone</th>
-              <th className="p-1 border-b">Email</th>
-              <th className="p-1 border-b text-center">Actions</th>
+      {/* RIGHT: User List */}
+      <div className="w-2/3 bg-white p-6 shadow rounded-xl">
+        <h2 className="text-xl font-semibold mb-4">User List</h2>
+
+        {/* Search */}
+        <div className="bg-white border rounded-xl p-4 mb-5 shadow-sm flex items-center gap-3">
+          <input
+            type="text"
+            placeholder="Search by Mobile Number"
+            value={searchMobile}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (/^\d{0,10}$/.test(value)) {
+                setSearchMobile(value);
+              }
+            }}
+
+            className="border px-3 py-2 rounded w-1/3"
+          />
+          <button className="bg-[#2e56a6] text-white px-5 py-2 rounded">
+            Search
+          </button>
+        </div>
+
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-100 text-left">
+              <th className="p-3">ID</th>
+              <th className="p-1">Name</th>
+              <th className="p-1">Mobile</th>
+              <th className="p-1">Address</th>
+              <th className="p-1">Department</th>
+              <th className="p-1">Actions</th>
             </tr>
           </thead>
 
           <tbody>
-            {paginatedData.map((item, index) => (
-              <tr
-                key={item.id}
-                className={`transition hover:bg-blue-50 ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                  }`}
-              >
-                <td className="p-3 border-b">{item.id}</td>
-                <td className="p-1 border-b">{item.name}</td>
-                <td className="p-1 border-b">{item.city}</td>
-                <td className="p-1 border-b">{item.expoType}</td>
-                <td className="p-1 border-b">{item.year}</td>
-                <td className="p-1 border-b">{item.phone}</td>
-                <td className="p-1 border-b">{item.email}</td>
+            {currentRecords.map((item) => (
+              <tr key={item.id} className="border-b hover:bg-gray-50">
+                <td className="p-3">{item.id}</td>
+                <td className="p-1">{item.name}</td>
+                <td className="p-1">{item.mobile}</td>
+                <td className="p-1">{item.address}</td>
+                <td className="p-1">{item.department}</td>
 
-                {/* Action Buttons */}
-                <td className="p-1 border-b text-center">
-                  <div className="flex justify-center gap-3">
+                <td className="p-1 flex gap-3">
+                  <button
+                    className="text-blue-600 hover:text-blue-800"
+                    onClick={() => {
+                      setEditData(item);
+                      setIsEditOpen(true);
+                    }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </button>
 
-                    {/* Edit Icon Button */}
-                    <button
-                      className="p-2 text-blue-600  
-                  transition active:scale-95"
-                      onClick={() => {
-                        setSelectedUser(item); // store the clicked row data
-                        setIsEditOpen(true);   // open modal
-                      }}
-
-                    >
-                      <EditIcon fontSize="small" />
-                    </button>
-
-                    {/* Delete Icon Button */}
-                    <button
-                      className="p-2  text-red-600 
-                  transition active:scale-95"
-                      onClick={() => {
-                        setUserToDelete(item);   // store user to delete
-                        setIsDeleteOpen(true);   // open delete modal
-                      }}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </button>
-
-                  </div>
+                  <button
+                    className="text-red-600 hover:text-red-800"
+                    onClick={() => {
+                      setDeleteId(item.id);
+                      setIsDeleteOpen(true);
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </button>
                 </td>
-
               </tr>
             ))}
-
-            {paginatedData.length === 0 && (
-              <tr>
-                <td
-                  colSpan={8}
-                  className="text-center p-6 text-gray-500 italic"
-                >
-                  No results found...
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
-      </div>
 
-
-      {/* Pagination */}
-      <div className="flex justify-center mt-6 gap-2">
-        <button
-          disabled={page === 1}
-          onClick={() => setPage(page - 1)}
-          className="px-3 py-1 rounded-full border bg-white shadow hover:bg-gray-100 
-                     disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Prev
-        </button>
-
-        {[...Array(totalPages)].map((_, i) => (
+        {/* PAGINATION */}
+        <div className="flex justify-center items-center mt-4 gap-2">
           <button
-            key={i}
-            onClick={() => setPage(i + 1)}
-            className={`px-3 py-1 rounded-full border shadow transition ${page === i + 1
-              ? "bg-[#005B9D] text-white"
-              : "bg-white hover:bg-gray-100"
+            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+            className={`px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 cursor-not-allowed" : "bg-white hover:bg-gray-100"
               }`}
           >
-            {i + 1}
+            Prev
           </button>
-        ))}
 
-        <button
-          disabled={page === totalPages}
-          onClick={() => setPage(page + 1)}
-          className="px-3 py-1 rounded-full border bg-white shadow hover:bg-gray-100
-                     disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Next
-        </button>
+          {[...Array(totalPages)].map((_, index) => {
+            const page = index + 1;
+            return (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`px-3 py-1 rounded border ${currentPage === page ? "bg-[#2e56a6] text-white" : "bg-white hover:bg-gray-100"
+                  }`}
+              >
+                {page}
+              </button>
+            );
+          })}
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+            className={`px-3 py-1 rounded border ${currentPage === totalPages
+                ? "bg-gray-200 cursor-not-allowed"
+                : "bg-white hover:bg-gray-100"
+              }`}
+          >
+            Next
+          </button>
+        </div>
+
+        {/* EDIT MODAL */}
+        {isEditOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+
+              <h2 className="text-xl font-semibold mb-4">Edit User</h2>
+
+              <label className="font-medium">Name</label>
+              <input
+                type="text"
+                value={editData.name}
+                onChange={(e) =>
+                  setEditData({ ...editData, name: e.target.value })
+                }
+                className="w-full border px-3 py-2 rounded mt-1 mb-4"
+              />
+
+              <label className="font-medium">Mobile</label>
+              <input
+                type="text"
+                value={editData.mobile}
+                onChange={(e) =>
+                  setEditData({ ...editData, mobile: e.target.value })
+                }
+                className="w-full border px-3 py-2 rounded mt-1 mb-4"
+              />
+
+              <label className="font-medium">Address</label>
+              <input
+                type="text"
+                value={editData.address}
+                onChange={(e) =>
+                  setEditData({ ...editData, address: e.target.value })
+                }
+                className="w-full border px-3 py-2 rounded mt-1 mb-4"
+              />
+
+              <label className="font-medium">Department</label>
+              <select
+                value={editData.department}
+                onChange={(e) =>
+                  setEditData({ ...editData, department: e.target.value })
+                }
+                className="w-full border px-3 py-2 rounded mt-1 mb-4"
+              >
+                <option value="">Select Department</option>
+                <option value="Data Entry">Data Entry</option>
+                <option value="Marketing">Marketing</option>
+              </select>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  className="px-4 py-2 bg-gray-300 rounded"
+                  onClick={() => setIsEditOpen(false)}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="px-4 py-2 bg-[#2e56a6] text-white rounded"
+                  onClick={handleUpdate}
+                >
+                  Update
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* DELETE POPUP */}
+        {isDeleteOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-2xl shadow-xl w-[380px]">
+              <h2 className="text-xl font-semibold text-red-600 mb-2">
+                Delete User
+              </h2>
+
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete this user?
+              </p>
+
+              <div className="flex justify-center gap-4">
+                <button
+                  className="px-5 py-2 border rounded-full"
+                  onClick={() => setIsDeleteOpen(false)}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="px-5 py-2 bg-red-600 text-white rounded-full"
+                  onClick={() => {
+                    if (deleteId !== null) handleDelete(deleteId);
+                    setIsDeleteOpen(false);
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
-
-      {isEditOpen && selectedUser && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl p-6">
-
-            <h2 className="text-xl font-semibold mb-4">Edit Visitor</h2>
-
-            {/* Form Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-              {/* Name */}
-              <div>
-                <label className="text-sm font-semibold">Name</label>
-                <input
-                  type="text"
-                  value={selectedUser.name}
-                  onChange={(e) =>
-                    setSelectedUser({ ...selectedUser, name: e.target.value })
-                  }
-                  className="w-full border rounded-lg p-2 mt-1"
-                />
-              </div>
-
-              {/* City */}
-              <div>
-                <label className="text-sm font-semibold">City</label>
-                <input
-                  type="text"
-                  value={selectedUser.city}
-                  onChange={(e) =>
-                    setSelectedUser({ ...selectedUser, city: e.target.value })
-                  }
-                  className="w-full border rounded-lg p-2 mt-1"
-                />
-              </div>
-
-              {/* Expo */}
-              <div>
-                <label className="text-sm font-semibold">Expo</label>
-                <input
-                  type="text"
-                  value={selectedUser.expoType}
-                  onChange={(e) =>
-                    setSelectedUser({ ...selectedUser, expoType: e.target.value })
-                  }
-                  className="w-full border rounded-lg p-2 mt-1"
-                />
-              </div>
-
-              {/* Year */}
-              <div>
-                <label className="text-sm font-semibold">Year</label>
-                <input
-                  type="number"
-                  value={selectedUser.year}
-                  onChange={(e) =>
-                    setSelectedUser({ ...selectedUser, year: Number(e.target.value) })
-                  }
-                  className="w-full border rounded-lg p-2 mt-1"
-                />
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label className="text-sm font-semibold">Phone Number</label>
-                <input
-                  type="text"
-                  value={selectedUser.phone}
-                  onChange={(e) =>
-                    setSelectedUser({ ...selectedUser, phone: e.target.value })
-                  }
-                  className="w-full border rounded-lg p-2 mt-1"
-                />
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="text-sm font-semibold">Email</label>
-                <input
-                  type="email"
-                  value={selectedUser.email}
-                  onChange={(e) =>
-                    setSelectedUser({ ...selectedUser, email: e.target.value })
-                  }
-                  className="w-full border rounded-lg p-2 mt-1"
-                />
-              </div>
-            </div>
-
-            {/* Buttons */}
-            <div className="flex justify-end gap-4 mt-6">
-              <button
-                onClick={() => setIsEditOpen(false)}
-                className="px-5 py-2 rounded-full border border-gray-400 text-gray-700 hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={() => {
-                  handleUpdate(selectedUser);
-                  setIsEditOpen(false);
-                }}
-                className="px-5 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Update
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isDeleteOpen && userToDelete && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-md rounded-xl shadow-2xl p-6">
-
-            <h2 className="text-xl font-bold text-red-600 mb-4">
-              Delete Record
-            </h2>
-
-            <p className="text-gray-700 mb-6">
-              Are you sure you want to delete the record?
-            </p>
-
-            <div className="flex justify-end gap-4">
-              {/* Cancel */}
-              <button
-                onClick={() => setIsDeleteOpen(false)}
-                className="px-5 py-2 rounded-full border border-gray-400 
-                     text-gray-700 hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-
-              {/* Confirm Delete */}
-              <button
-                onClick={handleDelete}
-                className="px-5 py-2 rounded-full bg-red-600 text-white 
-                     hover:bg-red-700 active:scale-95"
-              >
-                Delete
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
-
-
-
     </div>
   );
 }

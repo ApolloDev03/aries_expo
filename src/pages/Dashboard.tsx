@@ -76,40 +76,69 @@ export default function Dashboard() {
 
 
             {/* TABLE SECTION */}
-            <div className="bg-white shadow rounded-xl p-6">
-                <h2 className="text-lg font-semibold mb-4">Recent Visitor Registrations</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Today Visitor Registration */}
+                <div className="bg-white rounded-xl shadow p-6">
+                    <h2 className="text-xl font-semibold mb-4 border-b pb-2">
+                        Today Visitor Registration
+                    </h2>
 
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="border-b text-gray-600">
-                            <th className="p-3">Name</th>
-                            <th className="p-3">City</th>
-                            <th className="p-3">Industry</th>
-                            <th className="p-3">Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr className="border-b hover:bg-gray-50">
-                            <td className="p-3">Ramesh Patel</td>
-                            <td className="p-3">Ahmedabad</td>
-                            <td className="p-3">Electrical</td>
-                            <td className="p-3">2025-12-08</td>
-                        </tr>
-                        <tr className="border-b hover:bg-gray-50">
-                            <td className="p-3">Mehul Shah</td>
-                            <td className="p-3">Surat</td>
-                            <td className="p-3">Power</td>
-                            <td className="p-3">2025-12-07</td>
-                        </tr>
-                        <tr className="hover:bg-gray-50">
-                            <td className="p-3">Komal Desai</td>
-                            <td className="p-3">Vadodara</td>
-                            <td className="p-3">Automation</td>
-                            <td className="p-3">2025-12-07</td>
-                        </tr>
-                    </tbody>
-                </table>
+                    <table className="w-full border-collapse">
+                        <thead>
+                            <tr className="bg-gray-100 text-gray-700">
+                                <th className="p-3 text-left">Name</th>
+                                <th className="p-3 text-right">Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr className="border-b hover:bg-gray-50">
+                                <td className="p-3">Ramesh Patel</td>
+                                <td className="p-3 text-right font-semibold text-blue-600">12</td>
+                            </tr>
+                            <tr className="border-b hover:bg-gray-50">
+                                <td className="p-3">Mehul Shah</td>
+                                <td className="p-3 text-right font-semibold text-blue-600">7</td>
+                            </tr>
+                            <tr className="hover:bg-gray-50">
+                                <td className="p-3">Komal Desai</td>
+                                <td className="p-3 text-right font-semibold text-blue-600">9</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Today Exhibitor Registration */}
+                <div className="bg-white rounded-xl shadow p-6">
+                    <h2 className="text-xl font-semibold mb-4 border-b pb-2">
+                        Today Exhibitor Registration
+                    </h2>
+
+                    <table className="w-full border-collapse">
+                        <thead>
+                            <tr className="bg-gray-100 text-gray-700">
+                                <th className="p-3 text-left">Name</th>
+                                <th className="p-3 text-right">Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr className="border-b hover:bg-gray-50">
+                                <td className="p-3">Jatin Kumar</td>
+                                <td className="p-3 text-right font-semibold text-blue-600">5</td>
+                            </tr>
+                            <tr className="border-b hover:bg-gray-50">
+                                <td className="p-3">Naresh Modi</td>
+                                <td className="p-3 text-right font-semibold text-blue-600">3</td>
+                            </tr>
+                            <tr className="hover:bg-gray-50">
+                                <td className="p-3">Bhavika Shah</td>
+                                <td className="p-3 text-right font-semibold text-blue-600">11</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
+
         </div>
     );
 }

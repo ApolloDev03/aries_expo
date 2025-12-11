@@ -2,55 +2,57 @@ import { useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-interface IndustryData {
+interface DepartmentData {
   id: number | null;
-  industry: string;
+  department: string;
 }
 
-export default function IndustryMaster() {
-  const [industry, setIndustry] = useState("");
+export default function DepartmentMaster() {
+  const [department, setDepartment] = useState("");
 
-  const [industries, setIndustries] = useState([
-    { id: 1, industry: "IT" },
-    { id: 2, industry: "Construction" },
-    { id: 3, industry: "Manufacturing" },
+  const [departments, setDepartments] = useState([
+    { id: 1, department: "HR" },
+    { id: 2, department: "Finance" },
+    { id: 3, department: "Operations" },
   ]);
 
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editData, setEditData] = useState<IndustryData>({
+  const [editData, setEditData] = useState<DepartmentData>({
     id: null,
-    industry: "",
+    department: "",
   });
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  // Add Industry
+  // Add Department
   const handleSave = () => {
-    if (!industry) return alert("Please enter industry name");
+    if (!department) return alert("Please enter department name");
 
-    const newIndustry = {
-      id: industries.length + 1,
-      industry,
+    const newDepartment = {
+      id: departments.length + 1,
+      department,
     };
 
-    setIndustries([...industries, newIndustry]);
-    setIndustry("");
+    setDepartments([...departments, newDepartment]);
+    setDepartment("");
   };
 
-  // Update Industry
+  // Update Department
   const handleUpdate = () => {
-    setIndustries(
-      industries.map((item) =>
-        item.id === editData.id ? { ...item, industry: editData.industry } : item
+    setDepartments(
+      departments.map((item) =>
+        item.id === editData.id
+          ? { ...item, department: editData.department }
+          : item
       )
     );
     setIsEditOpen(false);
   };
 
-  // Delete Industry
+  // Delete Department
   const handleDelete = (id: any) => {
-    setIndustries(industries.filter((item) => item.id !== id));
+    setDepartments(departments.filter((item) => item.id !== id));
   };
 
   // Pagination
@@ -60,9 +62,9 @@ export default function IndustryMaster() {
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
 
-  const currentRecords = industries.slice(indexOfFirstRecord, indexOfLastRecord);
+  const currentRecords = departments.slice(indexOfFirstRecord, indexOfLastRecord);
 
-  const totalPages = Math.ceil(industries.length / recordsPerPage);
+  const totalPages = Math.ceil(departments.length / recordsPerPage);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -70,17 +72,16 @@ export default function IndustryMaster() {
 
   return (
     <div className="flex gap-8 p-6">
-
       {/* LEFT FORM */}
       <div className="w-1/3 bg-white p-6 shadow rounded-xl">
-        <h2 className="text-xl font-semibold mb-4">Add Industry</h2>
+        <h2 className="text-xl font-semibold mb-4">Add Department</h2>
 
-        <label className="font-medium">Industry Name</label>
+        <label className="font-medium">Department Name</label>
         <input
           type="text"
-          value={industry}
-          onChange={(e) => setIndustry(e.target.value)}
-          placeholder="Enter industry"
+          value={department}
+          onChange={(e) => setDepartment(e.target.value)}
+          placeholder="Enter department"
           className="w-full border px-3 py-2 rounded mt-1 mb-6"
         />
 
@@ -94,14 +95,14 @@ export default function IndustryMaster() {
 
       {/* RIGHT LIST */}
       <div className="w-2/3 bg-white p-6 shadow rounded-xl">
-        <h2 className="text-xl font-semibold mb-4">Industry List</h2>
+        <h2 className="text-xl font-semibold mb-4">Department List</h2>
 
         {/* Table */}
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-100 text-left">
               <th className="p-3">ID</th>
-              <th className="p-1">Industry</th>
+              <th className="p-1">Department</th>
               <th className="p-1">Actions</th>
             </tr>
           </thead>
@@ -110,7 +111,7 @@ export default function IndustryMaster() {
             {currentRecords.map((item) => (
               <tr key={item.id} className="border-b hover:bg-gray-50">
                 <td className="p-3">{item.id}</td>
-                <td className="p-1">{item.industry}</td>
+                <td className="p-1">{item.department}</td>
 
                 <td className="p-1 flex gap-3">
                   {/* Edit */}
@@ -188,14 +189,14 @@ export default function IndustryMaster() {
         {isEditOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-              <h2 className="text-xl font-semibold mb-4">Edit Industry</h2>
+              <h2 className="text-xl font-semibold mb-4">Edit Department</h2>
 
-              <label className="font-medium">Industry</label>
+              <label className="font-medium">Department</label>
               <input
                 type="text"
-                value={editData.industry}
+                value={editData.department}
                 onChange={(e) =>
-                  setEditData({ ...editData, industry: e.target.value })
+                  setEditData({ ...editData, department: e.target.value })
                 }
                 className="w-full border px-3 py-2 rounded mt-1 mb-4"
               />
@@ -228,7 +229,7 @@ export default function IndustryMaster() {
               </h2>
 
               <p className="text-gray-600 mb-6">
-                Are you sure you want to delete this industry?
+                Are you sure you want to delete this department?
               </p>
 
               <div className="flex justify-center gap-4">
@@ -255,7 +256,6 @@ export default function IndustryMaster() {
           </div>
         )}
       </div>
-
     </div>
   );
 }
