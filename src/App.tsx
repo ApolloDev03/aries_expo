@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import AdminLayout from "./layout/AdminLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -11,10 +11,12 @@ import UserList from "./pages/Users/UserList";
 import UserForm from "./pages/Users/UserForm";
 import Logout from "./pages/Logout";
 import DummyAdminPage from "./pages/Form/Formlist";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
@@ -46,6 +48,7 @@ export default function App() {
 
         </Route>
       </Routes>
-    </BrowserRouter>
+      <ToastContainer position="top-right" autoClose={3000} />
+    </>
   );
 }
