@@ -5,12 +5,14 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import CityList from "./pages/city/CityList";
 import IndustryList from "./pages/Industry/IndustryList";
-import IndustryForm from "./pages/Industry/ IndustryForm";
+
+
 
 import UserList from "./pages/Users/UserList";
 import UserForm from "./pages/Users/UserForm";
 import Logout from "./pages/Logout";
 import DummyAdminPage from "./pages/Form/Formlist";
+import ExpoMaster from "./pages/expo/ExpoList";
 
 
 
@@ -36,8 +38,8 @@ export default function App() {
 
           {/* INDUSTRY ROUTES */}
           <Route path="industry" element={<IndustryList />} />
-          <Route path="industry/add" element={<IndustryForm />} />
-          <Route path="industry/edit/:id" element={<IndustryForm />} />
+
+          <Route path="expo" element={<ExpoMaster />} />
 
           {/* USERS ROUTES */}
           <Route path="users" element={<UserList />} />
