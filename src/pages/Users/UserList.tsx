@@ -1,6 +1,9 @@
 import { useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import { Navigate, useNavigate } from "react-router-dom";
+
 
 interface UserData {
   id: number | null;
@@ -8,6 +11,7 @@ interface UserData {
   mobile: string;
   address: string;
   department: string;
+  password:string;
 }
 
 export default function UserMaster() {
@@ -15,6 +19,7 @@ export default function UserMaster() {
   const [mobile, setMobile] = useState("");
   const [address, setAddress] = useState("");
   const [department, setDepartment] = useState("");
+  const [password, setPassword] = useState("");
 
   const [searchMobile, setSearchMobile] = useState("");
 
@@ -25,6 +30,7 @@ export default function UserMaster() {
       mobile: "9876543210",
       address: "Ahmedabad",
       department: "Data Entry",
+      password:"rahul123",
     },
     {
       id: 2,
@@ -32,6 +38,7 @@ export default function UserMaster() {
       mobile: "9090909090",
       address: "Surat",
       department: "Marketing",
+      password:"priya123"
     },
   ]);
 
@@ -42,10 +49,13 @@ export default function UserMaster() {
     mobile: "",
     address: "",
     department: "",
+    password:""
   });
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+
+  const navigate = useNavigate();
 
   // Save New User
   const handleSave = () => {
@@ -58,6 +68,7 @@ export default function UserMaster() {
       mobile,
       address,
       department,
+      password
     };
 
     setUsers([...users, newUser]);
@@ -66,6 +77,7 @@ export default function UserMaster() {
     setMobile("");
     setAddress("");
     setDepartment("");
+    setPassword("");
   };
 
   // Update User
@@ -149,6 +161,15 @@ export default function UserMaster() {
 
         </select>
 
+        <label className="font-medium">Password</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Enter password"
+          className="w-full border px-3 py-2 rounded mt-1 mb-6"
+        />
+
         <button
           onClick={handleSave}
           className="bg-[#2e56a6] text-white px-5 py-2 rounded hover:bg-[#bf7e4e]"
@@ -158,7 +179,7 @@ export default function UserMaster() {
       </div>
 
       {/* RIGHT: User List */}
-      <div className="w-2/3 bg-white p-6 shadow rounded-xl">
+      <div className="w-2/3  bg-white p-6 shadow rounded-xl">
         <h2 className="text-xl font-semibold mb-4">User List</h2>
 
         {/* Search */}
@@ -181,7 +202,7 @@ export default function UserMaster() {
           </button>
         </div>
 
-        <table className="w-full border-collapse">
+        <table className="w-full overflow-x-scroll border-collapse">
           <thead>
             <tr className="bg-gray-100 text-left">
               <th className="p-3">ID</th>
@@ -189,6 +210,8 @@ export default function UserMaster() {
               <th className="p-1">Mobile</th>
               <th className="p-1">Address</th>
               <th className="p-1">Department</th>
+              <th className="p-1">Expo Count</th>
+              <th className="p-1">Password</th>
               <th className="p-1">Actions</th>
             </tr>
           </thead>
@@ -201,8 +224,10 @@ export default function UserMaster() {
                 <td className="p-1">{item.mobile}</td>
                 <td className="p-1">{item.address}</td>
                 <td className="p-1">{item.department}</td>
+                <td className="p-1 text-center">10</td>
+                <td className="p-1">{item.password}</td>
 
-                <td className="p-1 flex gap-3">
+                <td className="p-1 py-2 flex items-center gap-1">
                   <button
                     className="text-blue-600 hover:text-blue-800"
                     onClick={() => {
@@ -221,6 +246,14 @@ export default function UserMaster() {
                     }}
                   >
                     <DeleteIcon fontSize="small" />
+                  </button>
+
+                  <button
+                    className="text-blue-600 hover:text-blue-800"
+                     onClick={() => navigate(`/admin/users/assign/${item.id}`)}
+
+                  >
+                    <AssignmentIcon fontSize="small" />
                   </button>
                 </td>
               </tr>
@@ -257,8 +290,8 @@ export default function UserMaster() {
             disabled={currentPage === totalPages}
             onClick={() => handlePageChange(currentPage + 1)}
             className={`px-3 py-1 rounded border ${currentPage === totalPages
-                ? "bg-gray-200 cursor-not-allowed"
-                : "bg-white hover:bg-gray-100"
+              ? "bg-gray-200 cursor-not-allowed"
+              : "bg-white hover:bg-gray-100"
               }`}
           >
             Next
