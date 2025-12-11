@@ -146,7 +146,7 @@ export default function UserMaster() {
           <option value="">Select Department</option>
           <option value="Data Entry">Data Entry</option>
           <option value="Marketing">Marketing</option>
-          
+
         </select>
 
         <button
@@ -167,7 +167,13 @@ export default function UserMaster() {
             type="text"
             placeholder="Search by Mobile Number"
             value={searchMobile}
-            onChange={(e) => setSearchMobile(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (/^\d{0,10}$/.test(value)) {
+                setSearchMobile(value);
+              }
+            }}
+
             className="border px-3 py-2 rounded w-1/3"
           />
           <button className="bg-[#2e56a6] text-white px-5 py-2 rounded">
@@ -227,9 +233,8 @@ export default function UserMaster() {
           <button
             disabled={currentPage === 1}
             onClick={() => handlePageChange(currentPage - 1)}
-            className={`px-3 py-1 rounded border ${
-              currentPage === 1 ? "bg-gray-200 cursor-not-allowed" : "bg-white hover:bg-gray-100"
-            }`}
+            className={`px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 cursor-not-allowed" : "bg-white hover:bg-gray-100"
+              }`}
           >
             Prev
           </button>
@@ -240,9 +245,8 @@ export default function UserMaster() {
               <button
                 key={page}
                 onClick={() => handlePageChange(page)}
-                className={`px-3 py-1 rounded border ${
-                  currentPage === page ? "bg-[#2e56a6] text-white" : "bg-white hover:bg-gray-100"
-                }`}
+                className={`px-3 py-1 rounded border ${currentPage === page ? "bg-[#2e56a6] text-white" : "bg-white hover:bg-gray-100"
+                  }`}
               >
                 {page}
               </button>
@@ -252,11 +256,10 @@ export default function UserMaster() {
           <button
             disabled={currentPage === totalPages}
             onClick={() => handlePageChange(currentPage + 1)}
-            className={`px-3 py-1 rounded border ${
-              currentPage === totalPages
+            className={`px-3 py-1 rounded border ${currentPage === totalPages
                 ? "bg-gray-200 cursor-not-allowed"
                 : "bg-white hover:bg-gray-100"
-            }`}
+              }`}
           >
             Next
           </button>

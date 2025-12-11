@@ -72,6 +72,14 @@ export default function Header() {
                 >
                   User
                 </Link>
+
+                <Link
+                  to="/admin/department"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={() => setOpenMaster(false)}
+                >
+                  Department
+                </Link>
               </div>
             )}
           </div>
