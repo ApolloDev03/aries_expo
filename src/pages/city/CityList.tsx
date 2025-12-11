@@ -96,6 +96,7 @@ export default function CityMaster() {
           <option value="Maharashtra">Maharashtra</option>
           <option value="Rajasthan">Rajasthan</option>
           <option value="Karnataka">Karnataka</option>
+          <option value="Karnataka">M P</option>
         </select>
 
         <label className="font-medium">City</label>
