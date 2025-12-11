@@ -61,6 +61,23 @@ export default function CityMaster() {
     item.city.toLowerCase().includes(searchCity.toLowerCase())
   );
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 10;
+
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+
+  // slice only 10 records for current page
+  const currentRecords = filteredCities.slice(indexOfFirstRecord, indexOfLastRecord);
+
+  // total pages
+  const totalPages = Math.ceil(filteredCities.length / recordsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return (
     <div className="flex gap-8 p-6">
 
@@ -129,7 +146,7 @@ export default function CityMaster() {
           </thead>
 
           <tbody>
-            {filteredCities.map((item) => (
+            {currentRecords.map((item) => (
               <tr key={item.id} className="border-b hover:bg-gray-50">
                 <td className="p-3">{item.id}</td>
                 <td className="p-1">{item.state}</td>
@@ -158,6 +175,50 @@ export default function CityMaster() {
             ))}
           </tbody>
         </table>
+        {/* PAGINATION */}
+        <div className="flex justify-center items-center mt-4 gap-2">
+
+          {/* Prev Button */}
+          <button
+            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+            className={`px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 cursor-not-allowed" : "bg-white hover:bg-gray-100"
+              }`}
+          >
+            Prev
+          </button>
+
+          {/* Page Numbers */}
+          {[...Array(totalPages)].map((_, index) => {
+            const page = index + 1;
+            return (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`px-3 py-1 rounded border ${currentPage === page
+                    ? "bg-[#2e56a6] text-white"
+                    : "bg-white hover:bg-gray-100"
+                  }`}
+              >
+                {page}
+              </button>
+            );
+          })}
+
+          {/* Next Button */}
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+            className={`px-3 py-1 rounded border ${currentPage === totalPages
+                ? "bg-gray-200 cursor-not-allowed"
+                : "bg-white hover:bg-gray-100"
+              }`}
+          >
+            Next
+          </button>
+
+        </div>
+
         {/* EDIT MODAL */}
         {isEditOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
@@ -210,7 +271,7 @@ export default function CityMaster() {
           </div>
         )}
 
-      
+
         {/* DELETE CONFIRMATION POPUP */}
         {isDeleteOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
