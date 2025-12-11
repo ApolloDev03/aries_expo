@@ -2,152 +2,148 @@ import { useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-interface UserData {
+interface ExpoData {
   id: number | null;
-  name: string;
-  mobile: string;
-  address: string;
-  department: string;
+  expoName: string;
+  industry: string;
+  state: string;
+  city: string;
 }
 
-export default function UserMaster() {
-  const [name, setName] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [address, setAddress] = useState("");
-  const [department, setDepartment] = useState("");
+export default function ExpoMaster() {
+  const [expoName, setExpoName] = useState("");
+  const [industryValue, setIndustryValue] = useState("");
+  const [stateValue, setStateValue] = useState("");
+  const [cityValue, setCityValue] = useState("");
 
-  const [searchMobile, setSearchMobile] = useState("");
+  const [searchExpo, setSearchExpo] = useState("");
 
-  const [users, setUsers] = useState<UserData[]>([
+  const [expoList, setExpoList] = useState<ExpoData[]>([
     {
       id: 1,
-      name: "Rahul Shah",
-      mobile: "9876543210",
-      address: "Ahmedabad",
-      department: "Data Entry",
+      expoName: "Tech Expo",
+      industry: "Technology",
+      state: "Gujarat",
+      city: "Ahmedabad",
     },
     {
       id: 2,
-      name: "Priya Patel",
-      mobile: "9090909090",
-      address: "Surat",
-      department: "Marketing",
+      expoName: "Food Fest",
+      industry: "Food",
+      state: "Maharashtra",
+      city: "Mumbai",
     },
   ]);
 
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editData, setEditData] = useState<UserData>({
+  const [editData, setEditData] = useState<ExpoData>({
     id: null,
-    name: "",
-    mobile: "",
-    address: "",
-    department: "",
+    expoName: "",
+    industry: "",
+    state: "",
+    city: "",
   });
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  // Save New User
   const handleSave = () => {
-    if (!name || !mobile || !address || !department)
+    if (!expoName || !industryValue || !stateValue || !cityValue)
       return alert("Please fill all fields");
 
-    const newUser = {
-      id: users.length + 1,
-      name,
-      mobile,
-      address,
-      department,
+    const newExpo = {
+      id: expoList.length + 1,
+      expoName,
+      industry: industryValue,
+      state: stateValue,
+      city: cityValue,
     };
 
-    setUsers([...users, newUser]);
-
-    setName("");
-    setMobile("");
-    setAddress("");
-    setDepartment("");
+    setExpoList([...expoList, newExpo]);
+    setExpoName("");
+    setIndustryValue("");
+    setStateValue("");
+    setCityValue("");
   };
 
-  // Update User
   const handleUpdate = () => {
-    setUsers(
-      users.map((u) =>
-        u.id === editData.id ? editData : u
+    setExpoList(
+      expoList.map((item) =>
+        item.id === editData.id ? editData : item
       )
     );
     setIsEditOpen(false);
   };
 
-  // Delete User
-  const handleDelete = (id: any) => {
-    setUsers(users.filter((item) => item.id !== id));
+  const handleDelete = (id: number) => {
+    setExpoList(expoList.filter((item) => item.id !== id));
   };
 
-  // 🔍 Filter by Mobile Number
-  const filteredUsers = users.filter((item) =>
-    item.mobile.toLowerCase().includes(searchMobile.toLowerCase())
+  // 🔍 SEARCH BY EXPO NAME
+  const filteredExpo = expoList.filter((item) =>
+    item.expoName.toLowerCase().includes(searchExpo.toLowerCase())
   );
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
 
-  const indexOfLastRecord = currentPage * recordsPerPage;
-  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const indexOfLast = currentPage * recordsPerPage;
+  const indexOfFirst = indexOfLast - recordsPerPage;
 
-  const currentRecords = filteredUsers.slice(indexOfFirstRecord, indexOfLastRecord);
-
-  const totalPages = Math.ceil(filteredUsers.length / recordsPerPage);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  const currentRecords = filteredExpo.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredExpo.length / recordsPerPage);
 
   return (
-    <div className="flex  gap-8 p-6">
+    <div className="flex gap-8 p-6">
 
-      {/* LEFT: Add User Form */}
+      {/* LEFT FORM */}
       <div className="w-1/3 bg-white p-6 shadow rounded-xl">
-        <h2 className="text-xl font-semibold mb-4">Add User</h2>
+        <h2 className="text-xl font-semibold mb-4">Add Expo</h2>
 
-        <label className="font-medium">Name</label>
+        <label className="font-medium">Expo Name</label>
         <input
           type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Enter name"
+          value={expoName}
+          onChange={(e) => setExpoName(e.target.value)}
+          placeholder="Enter Expo Name"
           className="w-full border px-3 py-2 rounded mt-1 mb-4"
         />
 
-        <label className="font-medium">Mobile</label>
-        <input
-          type="number"
-          value={mobile}
-          onChange={(e) => setMobile(e.target.value)}
-          placeholder="Enter mobile number"
-          className="w-full border px-3 py-2 rounded mt-1 mb-4"
-        />
-
-        <label className="font-medium">Address</label>
-        <input
-          type="text"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          placeholder="Enter address"
-          className="w-full border px-3 py-2 rounded mt-1 mb-4"
-        />
-
-        <label className="font-medium">Department</label>
+        <label className="font-medium">Industry</label>
         <select
-          value={department}
-          onChange={(e) => setDepartment(e.target.value)}
-          className="w-full border px-3 py-2 rounded mt-1 mb-6"
+          value={industryValue}
+          onChange={(e) => setIndustryValue(e.target.value)}
+          className="w-full border px-3 py-2 rounded mt-1 mb-4"
         >
-          <option value="">Select Department</option>
-          <option value="Data Entry">Data Entry</option>
-          <option value="Marketing">Marketing</option>
-          
+          <option value="">Select Industry</option>
+          <option value="Technology">Technology</option>
+          <option value="Food">Food</option>
+          <option value="Automobile">Automobile</option>
+          <option value="Construction">Construction</option>
         </select>
+
+        <label className="font-medium">State</label>
+        <select
+          value={stateValue}
+          onChange={(e) => setStateValue(e.target.value)}
+          className="w-full border px-3 py-2 rounded mt-1 mb-4"
+        >
+          <option value="">Select State</option>
+          <option value="Gujarat">Gujarat</option>
+          <option value="Maharashtra">Maharashtra</option>
+          <option value="Rajasthan">Rajasthan</option>
+          <option value="Karnataka">Karnataka</option>
+        </select>
+
+        <label className="font-medium">City</label>
+        <input
+          type="text"
+          value={cityValue}
+          onChange={(e) => setCityValue(e.target.value)}
+          placeholder="Enter City"
+          className="w-full border px-3 py-2 rounded mt-1 mb-6"
+        />
 
         <button
           onClick={handleSave}
@@ -157,17 +153,17 @@ export default function UserMaster() {
         </button>
       </div>
 
-      {/* RIGHT: User List */}
+      {/* RIGHT TABLE */}
       <div className="w-2/3 bg-white p-6 shadow rounded-xl">
-        <h2 className="text-xl font-semibold mb-4">User List</h2>
+        <h2 className="text-xl font-semibold mb-4">Expo List</h2>
 
         {/* Search */}
         <div className="bg-white border rounded-xl p-4 mb-5 shadow-sm flex items-center gap-3">
           <input
             type="text"
-            placeholder="Search by Mobile Number"
-            value={searchMobile}
-            onChange={(e) => setSearchMobile(e.target.value)}
+            placeholder="Search Expo Name"
+            value={searchExpo}
+            onChange={(e) => setSearchExpo(e.target.value)}
             className="border px-3 py-2 rounded w-1/3"
           />
           <button className="bg-[#2e56a6] text-white px-5 py-2 rounded">
@@ -179,10 +175,10 @@ export default function UserMaster() {
           <thead>
             <tr className="bg-gray-100 text-left">
               <th className="p-3">ID</th>
-              <th className="p-1">Name</th>
-              <th className="p-1">Mobile</th>
-              <th className="p-1">Address</th>
-              <th className="p-1">Department</th>
+              <th className="p-1">Expo</th>
+              <th className="p-1">Industry</th>
+              <th className="p-1">State</th>
+              <th className="p-1">City</th>
               <th className="p-1">Actions</th>
             </tr>
           </thead>
@@ -191,10 +187,10 @@ export default function UserMaster() {
             {currentRecords.map((item) => (
               <tr key={item.id} className="border-b hover:bg-gray-50">
                 <td className="p-3">{item.id}</td>
-                <td className="p-1">{item.name}</td>
-                <td className="p-1">{item.mobile}</td>
-                <td className="p-1">{item.address}</td>
-                <td className="p-1">{item.department}</td>
+                <td className="p-1">{item.expoName}</td>
+                <td className="p-1">{item.industry}</td>
+                <td className="p-1">{item.state}</td>
+                <td className="p-1">{item.city}</td>
 
                 <td className="p-1 flex gap-3">
                   <button
@@ -226,7 +222,7 @@ export default function UserMaster() {
         <div className="flex justify-center items-center mt-4 gap-2">
           <button
             disabled={currentPage === 1}
-            onClick={() => handlePageChange(currentPage - 1)}
+            onClick={() => setCurrentPage(currentPage - 1)}
             className={`px-3 py-1 rounded border ${
               currentPage === 1 ? "bg-gray-200 cursor-not-allowed" : "bg-white hover:bg-gray-100"
             }`}
@@ -239,9 +235,11 @@ export default function UserMaster() {
             return (
               <button
                 key={page}
-                onClick={() => handlePageChange(page)}
+                onClick={() => setCurrentPage(page)}
                 className={`px-3 py-1 rounded border ${
-                  currentPage === page ? "bg-[#2e56a6] text-white" : "bg-white hover:bg-gray-100"
+                  currentPage === page
+                    ? "bg-[#2e56a6] text-white"
+                    : "bg-white hover:bg-gray-100"
                 }`}
               >
                 {page}
@@ -251,7 +249,7 @@ export default function UserMaster() {
 
           <button
             disabled={currentPage === totalPages}
-            onClick={() => handlePageChange(currentPage + 1)}
+            onClick={() => setCurrentPage(currentPage + 1)}
             className={`px-3 py-1 rounded border ${
               currentPage === totalPages
                 ? "bg-gray-200 cursor-not-allowed"
@@ -262,72 +260,75 @@ export default function UserMaster() {
           </button>
         </div>
 
-        {/* EDIT MODAL */}
+        {/* EDIT POPUP */}
         {isEditOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96">
 
-              <h2 className="text-xl font-semibold mb-4">Edit User</h2>
+              <h2 className="text-xl font-semibold mb-4">Edit Expo</h2>
 
-              <label className="font-medium">Name</label>
+              <label className="font-medium">Expo Name</label>
               <input
                 type="text"
-                value={editData.name}
+                value={editData.expoName}
                 onChange={(e) =>
-                  setEditData({ ...editData, name: e.target.value })
+                  setEditData({ ...editData, expoName: e.target.value })
                 }
                 className="w-full border px-3 py-2 rounded mt-1 mb-4"
               />
 
-              <label className="font-medium">Mobile</label>
-              <input
-                type="text"
-                value={editData.mobile}
-                onChange={(e) =>
-                  setEditData({ ...editData, mobile: e.target.value })
-                }
-                className="w-full border px-3 py-2 rounded mt-1 mb-4"
-              />
-
-              <label className="font-medium">Address</label>
-              <input
-                type="text"
-                value={editData.address}
-                onChange={(e) =>
-                  setEditData({ ...editData, address: e.target.value })
-                }
-                className="w-full border px-3 py-2 rounded mt-1 mb-4"
-              />
-
-              <label className="font-medium">Department</label>
+              <label className="font-medium">Industry</label>
               <select
-                value={editData.department}
+                value={editData.industry}
                 onChange={(e) =>
-                  setEditData({ ...editData, department: e.target.value })
+                  setEditData({ ...editData, industry: e.target.value })
                 }
                 className="w-full border px-3 py-2 rounded mt-1 mb-4"
               >
-                <option value="">Select Department</option>
-                <option value="Data Entry">Data Entry</option>
-                <option value="Marketing">Marketing</option>
+                <option>Select Industry</option>
+                <option value="Technology">Technology</option>
+                <option value="Food">Food</option>
+                <option value="Automobile">Automobile</option>
               </select>
+
+              <label className="font-medium">State</label>
+              <select
+                value={editData.state}
+                onChange={(e) =>
+                  setEditData({ ...editData, state: e.target.value })
+                }
+                className="w-full border px-3 py-2 rounded mt-1 mb-4"
+              >
+                <option>Select State</option>
+                <option value="Gujarat">Gujarat</option>
+                <option value="Maharashtra">Maharashtra</option>
+              </select>
+
+              <label className="font-medium">City</label>
+              <input
+                type="text"
+                value={editData.city}
+                onChange={(e) =>
+                  setEditData({ ...editData, city: e.target.value })
+                }
+                className="w-full border px-3 py-2 rounded mt-1 mb-4"
+              />
 
               <div className="flex justify-end gap-3">
                 <button
-                  className="px-4 py-2 bg-gray-300 rounded"
                   onClick={() => setIsEditOpen(false)}
+                  className="px-4 py-2 bg-gray-300 rounded"
                 >
                   Cancel
                 </button>
 
                 <button
-                  className="px-4 py-2 bg-[#2e56a6] text-white rounded"
                   onClick={handleUpdate}
+                  className="px-4 py-2 bg-[#2e56a6] text-white rounded"
                 >
                   Update
                 </button>
               </div>
-
             </div>
           </div>
         )}
@@ -337,11 +338,11 @@ export default function UserMaster() {
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
             <div className="bg-white p-6 rounded-2xl shadow-xl w-[380px]">
               <h2 className="text-xl font-semibold text-red-600 mb-2">
-                Delete User
+                Delete Record
               </h2>
 
               <p className="text-gray-600 mb-6">
-                Are you sure you want to delete this user?
+                Are you sure you want to delete this expo?
               </p>
 
               <div className="flex justify-center gap-4">
@@ -365,7 +366,6 @@ export default function UserMaster() {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
