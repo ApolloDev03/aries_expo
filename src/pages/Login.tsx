@@ -1,19 +1,43 @@
 import { useState } from "react";
-import { saveToken } from "../utils/auth";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import logo from '../assets/logo.png'
+import { apiUrl } from "../config";
+import { useAuth } from "../components/context/AuthContext";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const nav = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
 
-  const login = async () => {
-    const res = await axios.post("/login", form);
-    saveToken(res.data.token);
-    nav("/admin");
+  const { login: authLogin } = useAuth(); // ⬅️ get login from context
+
+  const handleLogin = async () => {
+    try {
+      const res = await axios.post(`${apiUrl}/adminlogin`, form);
+
+      if (res.data.success) {
+        const token = res.data.authorisation?.token;
+
+        // If API returns user details, use that
+        const userData = res.data.user || { email: form.email };
+
+        // ⬅️ This will set state + localStorage (user + artoken)
+        authLogin(userData, token);
+
+        // (Optional) set axios default header for future requests
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+        nav("/admin");
+      } else {
+        alert(res.data.message || "Login failed");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Invalid credentials or server error");
+    }
   };
+
 
   return (
     <div className="h-screen w-full grid grid-cols-1 md:grid-cols-2">
@@ -132,7 +156,7 @@ export default function Login() {
 
           {/* BUTTON */}
           <button
-            onClick={login}
+            onClick={handleLogin}
             className="w-full bg-[#bf7e4e] text-white py-3 rounded-lg font-semibold transition"
           >
             Sign In
@@ -146,3 +170,5 @@ export default function Login() {
     </div>
   );
 }
+
+

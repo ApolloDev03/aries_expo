@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { logout } from "../utils/auth";
+// import { logout } from "../utils/auth";
 import { useNavigate } from "react-router-dom";
 import ariesLogo from "../assets/logo.png";
 import { useState } from "react";
@@ -12,7 +12,7 @@ export default function Header() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
+    // logout();
     navigate("/logout");
   };
 
