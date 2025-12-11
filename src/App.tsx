@@ -9,7 +9,7 @@ import IndustryList from "./pages/Industry/IndustryList";
 
 
 import UserList from "./pages/Users/UserList";
-import UserForm from "./pages/Users/UserForm";
+import UserForm from "./pages/Users/AssignForm";
 import Logout from "./pages/Logout";
 import DummyAdminPage from "./pages/Form/Formlist";
 import { ToastContainer } from "react-toastify";
@@ -48,7 +48,7 @@ export default function App() {
 
           {/* USERS ROUTES */}
           <Route path="users" element={<UserList />} />
-          <Route path="users/add" element={<UserForm />} />
+          <Route path="users/assign/:id" element={<UserForm />} />
           <Route path="users/edit/:id" element={<UserForm />} />;
 
           <Route path="form2" element={<DummyAdminPage />} />

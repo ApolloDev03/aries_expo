@@ -468,26 +468,7 @@ export default function DepartmentMaster() {
   }, []);
 
   // (Optional) Fetch single department by id via Departshow
-  const fetchDepartmentById = async (id: number) => {
-    try {
-      const res = await axios.post(
-        `${apiUrl}/Departshow`,
-        { department_id: String(id) },
-        { headers: getAuthHeaders() }
-      );
-
-      if (res.data?.success && res.data.data) {
-        const dep = res.data.data as Department;
-        setEditData({ id: dep.id, name: dep.name });
-        setIsEditOpen(true);
-      } else {
-        toast.error(res.data?.message || "Failed to fetch department");
-      }
-    } catch (error: any) {
-      console.error(error);
-      toast.error("Error fetching department");
-    }
-  };
+  
 
   // ---------- Add Department ----------
   const handleSave = async () => {
