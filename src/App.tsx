@@ -13,6 +13,7 @@ import UserForm from "./pages/Users/UserForm";
 import Logout from "./pages/Logout";
 import DummyAdminPage from "./pages/Form/Formlist";
 import ExpoMaster from "./pages/expo/ExpoList";
+import DepartmentMaster from "./pages/department/DepartmentList";
 
 
 
@@ -40,6 +41,8 @@ export default function App() {
           <Route path="industry" element={<IndustryList />} />
 
           <Route path="expo" element={<ExpoMaster />} />
+
+           <Route path="department" element={<DepartmentMaster />} />
 
           {/* USERS ROUTES */}
           <Route path="users" element={<UserList />} />
