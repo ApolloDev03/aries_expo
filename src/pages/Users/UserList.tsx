@@ -80,7 +80,7 @@ export default function SearchableTablePage() {
 
 
   return (
-    <div className="p-6 max-w-6xl mx-auto font-inter">
+    <div className="w-full mx-auto font-inter">
 
       {/* Header Row with Add Button */}
       <div className="flex justify-between items-center mb-6">
@@ -106,7 +106,7 @@ export default function SearchableTablePage() {
         <select
           value={expoType}
           onChange={(e) => setExpoType(e.target.value)}
-          className="px-4 py-2 rounded-full border border-gray-300 bg-white shadow-sm 
+          className="px-4 py-2 rounded-lg border border-gray-300 bg-white shadow-sm 
                      focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition w-56"
         >
           <option value="">Expo Type</option>
@@ -120,7 +120,7 @@ export default function SearchableTablePage() {
         <select
           value={city}
           onChange={(e) => setCity(e.target.value)}
-          className="px-4 py-2 rounded-full border border-gray-300 bg-white shadow-sm 
+          className="px-4 py-2 rounded-lg border border-gray-300 bg-white shadow-sm 
                      focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition w-56"
         >
           <option value="">City</option>
@@ -133,7 +133,7 @@ export default function SearchableTablePage() {
 
         <button
           onClick={handleSearch}
-          className="bg-[#005B9D] text-white px-6 py-2 rounded-full shadow-lg 
+          className="bg-[#005B9D] text-white px-6 py-2 rounded-lg shadow-lg 
                      hover:bg-blue-700 hover:shadow-xl transition-all active:scale-95"
         >
           Search
@@ -146,13 +146,13 @@ export default function SearchableTablePage() {
           <thead className="bg-gray-100 text-gray-700">
             <tr className="text-left">
               <th className="p-3 border-b">ID</th>
-              <th className="p-3 border-b">Name</th>
-              <th className="p-3 border-b">City</th>
-              <th className="p-3 border-b">Expo</th>
-              <th className="p-3 border-b">Year</th>
-              <th className="p-3 border-b">Phone</th>
-              <th className="p-3 border-b">Email</th>
-              <th className="p-3 border-b text-center">Actions</th>
+              <th className="p-1 border-b">Name</th>
+              <th className="p-1 border-b">City</th>
+              <th className="p-1 border-b">Expo</th>
+              <th className="p-1 border-b">Year</th>
+              <th className="p-1 border-b">Phone</th>
+              <th className="p-1 border-b">Email</th>
+              <th className="p-1 border-b text-center">Actions</th>
             </tr>
           </thead>
 
@@ -164,20 +164,20 @@ export default function SearchableTablePage() {
                   }`}
               >
                 <td className="p-3 border-b">{item.id}</td>
-                <td className="p-3 border-b">{item.name}</td>
-                <td className="p-3 border-b">{item.city}</td>
-                <td className="p-3 border-b">{item.expoType}</td>
-                <td className="p-3 border-b">{item.year}</td>
-                <td className="p-3 border-b">{item.phone}</td>
-                <td className="p-3 border-b">{item.email}</td>
+                <td className="p-1 border-b">{item.name}</td>
+                <td className="p-1 border-b">{item.city}</td>
+                <td className="p-1 border-b">{item.expoType}</td>
+                <td className="p-1 border-b">{item.year}</td>
+                <td className="p-1 border-b">{item.phone}</td>
+                <td className="p-1 border-b">{item.email}</td>
 
                 {/* Action Buttons */}
-                <td className="p-3 border-b text-center">
+                <td className="p-1 border-b text-center">
                   <div className="flex justify-center gap-3">
 
                     {/* Edit Icon Button */}
                     <button
-                      className="p-2   text-blue-600  
+                      className="p-2 text-blue-600  
                   transition active:scale-95"
                       onClick={() => {
                         setSelectedUser(item); // store the clicked row data
