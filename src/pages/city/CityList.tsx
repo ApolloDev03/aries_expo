@@ -765,9 +765,9 @@ export default function CityMaster() {
           </thead>
 
           <tbody>
-            {currentRecords.map((item) => (
+            {currentRecords.map((item,index) => (
               <tr key={item.cityid} className="border-b hover:bg-gray-50">
-                <td className="p-3">{item.cityid}</td>
+                <td className="p-3">{index+1}</td>
                 <td className="p-1">
                   {item.statename || getStateNameById(item.stateid)}
                 </td>
