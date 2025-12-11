@@ -2,8 +2,13 @@ import { Link } from "react-router-dom";
 import { logout } from "../utils/auth";
 import { useNavigate } from "react-router-dom";
 import ariesLogo from "../assets/logo.png";
+import { useState } from "react";
 
 export default function Header() {
+  const [openMaster, setOpenMaster] = useState(false);
+  const [openProfile, setOpenProfile] = useState(false);
+  const [openOthers, setOpenOthers] = useState(false);
+
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -25,33 +30,139 @@ export default function Header() {
             Dashboard
           </Link>
 
-          <Link className="hover:text-orange-600" to="/admin/city">
-            City Master
-          </Link>
+          {/* Master Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setOpenMaster(!openMaster)}
+              className="hover:text-orange-600 flex items-center gap-1"
+            >
+              Master ▼
+            </button>
 
-          <Link className="hover:text-orange-600" to="/admin/form2">
-            Form 2
-          </Link>
-          <Link className="hover:text-orange-600" to="/admin/industry">
-            Industry Master
-          </Link>
+            {openMaster && (
+              <div className="absolute top-7 left-0 bg-white shadow-lg border rounded-md w-40 py-2 z-50">
+                <Link
+                  to="/admin/city"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={() => setOpenMaster(false)}
+                >
+                  City
+                </Link>
 
-          <Link className="hover:text-orange-600" to="/admin/expo">
-            Expo Master
-          </Link>
+                <Link
+                  to="/admin/industry"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={() => setOpenMaster(false)}
+                >
+                  Industry
+                </Link>
 
-          <Link className="hover:text-orange-600" to="/admin/users">
-            User Master
-          </Link>
+                <Link
+                  to="/admin/expo"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={() => setOpenMaster(false)}
+                >
+                  Expo
+                </Link>
+
+                <Link
+                  to="/admin/users"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={() => setOpenMaster(false)}
+                >
+                  User
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Others Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setOpenOthers(!openOthers)}
+              className="hover:text-orange-600 flex items-center gap-1"
+            >
+              Others ▼
+            </button>
+
+            {openOthers && (
+              <div className="absolute top-7 left-0 bg-white shadow-lg border rounded-md w-44 py-2 z-50">
+
+                <Link
+                  to="/admin/city"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={() => setOpenOthers(false)}
+                >
+                  City Master
+                </Link>
+
+                <Link
+                  to="/admin/users"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={() => setOpenOthers(false)}
+                >
+                  Form 1
+                </Link>
+
+                <Link
+                  to="/admin/form2"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={() => setOpenOthers(false)}
+                >
+                  Form 2
+                </Link>
+
+                <Link
+                  to="/admin/industry"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={() => setOpenOthers(false)}
+                >
+                  Industry Master
+                </Link>
+
+              </div>
+            )}
+          </div>
+
         </nav>
 
         {/* LOGOUT BUTTON */}
-        <button
-          className="bg-[#005B9D] text-white px-4 py-2 rounded"
-          onClick={handleLogout}
-        >
-          Logout
-        </button>
+        {/* PROFILE DROPDOWN */}
+        <div className="relative">
+          <button
+            onClick={() => setOpenProfile(!openProfile)}
+            className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"
+          >
+            👤
+          </button>
+
+          {openProfile && (
+            <div className="absolute right-0 mt-2 bg-white border shadow-lg rounded-md w-48 py-2 z-50">
+              <Link
+                to="/admin/profile"
+                className="block px-4 py-2 hover:bg-gray-100"
+                onClick={() => setOpenProfile(false)}
+              >
+                Profile
+              </Link>
+
+              <Link
+                to="/admin/change-password"
+                className="block px-4 py-2 hover:bg-gray-100"
+                onClick={() => setOpenProfile(false)}
+              >
+                Change Password
+              </Link>
+
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

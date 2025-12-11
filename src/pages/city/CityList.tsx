@@ -1,274 +1,264 @@
-import { useState, useMemo } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  IconButton,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  Paper,
-  Pagination,
-  Typography,
-} from "@mui/material";
-
-import AddIcon from "@mui/icons-material/Add";
+import { useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import SearchIcon from "@mui/icons-material/Search";
 
-interface City {
-  id: number;
-  name: string;
+interface CityData {
+  id: number | null;
+  state: string;
+  city: string;
 }
 
-export default function CityList() {
-  const dummyCities: City[] = Array.from({ length: 50 }).map((_, i) => ({
-    id: i + 1,
-    name: `City ${i + 1}`,
-  }));
+export default function CityMaster() {
+  const [stateValue, setStateValue] = useState("");
+  const [city, setCity] = useState("");
+  const [searchCity, setSearchCity] = useState("");
+  const [cities, setCities] = useState([
+    { id: 1, state: "Gujarat", city: "Ahmedabad" },
+    { id: 2, state: "Maharashtra", city: "Mumbai" },
+  ]);
 
-  const [cities, setCities] = useState<City[]>(dummyCities);
-
-  const [open, setOpen] = useState(false);
-  const [cityName, setCityName] = useState("");
-  const [editId, setEditId] = useState<number | null>(null);
-
-  const [search, setSearch] = useState("");
-
-  const rowsPerPage = 10;
-  const [page, setPage] = useState(1);
-
-  const ARIES_ORANGE = "#F26A21";
-  const ROW_ODD = "#F9FAFB";
-
-  // DELETE CONFIRM POPUP STATES
-  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editData, setEditData] = useState<CityData>({
+    id: null,
+    state: "",
+    city: "",
+  });
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  // SEARCH FILTER
-  const filteredCities = useMemo(() => {
-    return cities.filter((c) =>
-      c.name.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [search, cities]);
 
-  const totalPages = Math.ceil(filteredCities.length / rowsPerPage);
-  const paginatedCities = filteredCities.slice(
-    (page - 1) * rowsPerPage,
-    page * rowsPerPage
-  );
-
-  const handlePageChange = (_: any, value: number) => {
-    setPage(value);
-  };
-
-  const handleOpenAdd = () => {
-    setCityName("");
-    setEditId(null);
-    setOpen(true);
-  };
-
-  const handleOpenEdit = (city: City) => {
-    setCityName(city.name);
-    setEditId(city.id);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setCityName("");
-    setEditId(null);
-    setOpen(false);
-  };
 
   const handleSave = () => {
-    if (!cityName.trim()) return;
+    if (!stateValue || !city) return alert("Please fill all fields");
 
-    if (editId) {
-      setCities((prev) =>
-        prev.map((c) => (c.id === editId ? { ...c, name: cityName } : c))
-      );
-    } else {
-      setCities((prev) => [...prev, { id: Date.now(), name: cityName }]);
-    }
+    const newCity = {
+      id: cities.length + 1,
+      state: stateValue,
+      city,
+    };
 
-    handleClose();
+    setCities([...cities, newCity]);
+    setStateValue("");
+    setCity("");
   };
 
-  // OPEN DELETE CONFIRMATION
-  const handleDeleteOpen = (id: number) => {
-    setDeleteId(id);
-    setDeleteOpen(true);
+  const handleUpdate = () => {
+    setCities(
+      cities.map((c) =>
+        c.id === editData.id ? { ...c, state: editData.state, city: editData.city } : c
+      )
+    );
+    setIsEditOpen(false);
   };
 
-  // CONFIRM DELETE
-  const confirmDelete = () => {
-    setCities((prev) => prev.filter((c) => c.id !== deleteId));
-    setDeleteOpen(false);
-    setDeleteId(null);
+
+  const handleDelete = (id: any) => {
+    setCities(cities.filter((item) => item.id !== id));
   };
+
+  // Filter cities based on search input
+  const filteredCities = cities.filter((item) =>
+    item.city.toLowerCase().includes(searchCity.toLowerCase())
+  );
 
   return (
-    <div>
-      {/* HEADER */}
-      <div className="flex justify-between mb-4">
-        <h2 className="text-xl font-bold text-[#1F3C88]">City Master</h2>
+    <div className="flex gap-8 p-6">
 
-        <Button
-          variant="contained"
-          sx={{ backgroundColor: ARIES_ORANGE }}
-          startIcon={<AddIcon />}
-          style={{ background: "#005B9D" }}
-          onClick={handleOpenAdd}
+      {/* LEFT: ADD CITY FORM */}
+      <div className="w-1/3 bg-white p-6 shadow rounded-xl">
+        <h2 className="text-xl font-semibold mb-4">Add City</h2>
+
+        <label className="font-medium">State</label>
+        <select
+          value={stateValue}
+          onChange={(e) => setStateValue(e.target.value)}
+          className="w-full border px-3 py-2 rounded mt-1 mb-4"
         >
-          Add City
-        </Button>
-      </div>
+          <option value="">Select State</option>
+          <option value="Gujarat">Gujarat</option>
+          <option value="Maharashtra">Maharashtra</option>
+          <option value="Rajasthan">Rajasthan</option>
+          <option value="Karnataka">Karnataka</option>
+        </select>
 
-      {/* SEARCH ROW */}
-      <div className="flex justify-between items-center mb-4 gap-4">
-        <TextField
-          label="Search City"
-          value={search}
-          onChange={(e) => {
-            setPage(1);
-            setSearch(e.target.value);
-          }}
-          sx={{ flex: 1 }}
+        <label className="font-medium">City</label>
+        <input
+          type="text"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          placeholder="Enter city"
+          className="w-full border px-3 py-2 rounded mt-1 mb-6"
         />
 
-        <Button
-          variant="contained"
-          startIcon={<SearchIcon />}
-          sx={{ backgroundColor: "#1F3C88" }}
+        <button
+          onClick={handleSave}
+          className="bg-[#2e56a6] text-white px-5 py-2 rounded hover:bg-[#bf7e4e]"
         >
-          Search
-        </Button>
+          Save
+        </button>
       </div>
 
-      {/* TABLE */}
-      <Paper elevation={3}>
-        <Table>
-          <TableHead sx={{ backgroundColor: "#F5F5F5" }}>
-            <TableRow>
-              <TableCell sx={{ fontWeight: "bold" }}>No</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>City Name</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Action</TableCell>
-            </TableRow>
-          </TableHead>
+      {/* RIGHT: CITY LIST */}
+      <div className="w-2/3 bg-white p-6 shadow rounded-xl">
+        <h2 className="text-xl font-semibold mb-4">City List</h2>
 
-          <TableBody>
-            {paginatedCities.map((city, index) => (
-              <TableRow
-                key={city.id}
-                sx={{ backgroundColor: index % 2 === 0 ? "white" : ROW_ODD }}
-              >
-                <TableCell>{(page - 1) * rowsPerPage + index + 1}</TableCell>
-                <TableCell>{city.name}</TableCell>
-
-                <TableCell>
-                  <IconButton color="primary" onClick={() => handleOpenEdit(city)}>
-                    <EditIcon />
-                  </IconButton>
-
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDeleteOpen(city.id)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-
-            {paginatedCities.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={3} align="center">
-                  No cities found
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Paper>
-
-      {/* PAGINATION */}
-      <div className="flex justify-center mt-4">
-        <Pagination
-          count={totalPages}
-          page={page}
-          onChange={handlePageChange}
-          color="primary"
-        />
-      </div>
-
-      {/* ADD / EDIT MODAL */}
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        maxWidth={false}
-        PaperProps={{
-          sx: {
-            width: "400px",
-            maxWidth: "90%",
-            borderRadius: "12px",
-            paddingBottom: 2,
-          },
-        }}
-      >
-        <DialogTitle>{editId ? "Edit City" : "Add City"}</DialogTitle>
-
-        <DialogContent>
-          <TextField
-            fullWidth
-            margin="dense"
-            label="City Name"
-            value={cityName}
-            onChange={(e) => setCityName(e.target.value)}
+        {/* 🔍 Search Section Added Here */}
+        <div className="bg-white border rounded-xl p-4 mb-5 shadow-sm flex items-center gap-3">
+          <input
+            type="text"
+            placeholder="Search City"
+            value={searchCity}
+            onChange={(e) => setSearchCity(e.target.value)}
+            className="border px-3 py-2 rounded w-1/3"
           />
-        </DialogContent>
-
-        <DialogActions>
-          <Button variant="outlined" onClick={handleClose}>
-            Cancel
-          </Button>
-
-          <Button
-            variant="contained"
-            sx={{ backgroundColor: ARIES_ORANGE }}
-            style={{ background: "#005B9D" }}
-            onClick={handleSave}
+          <button
+            className="bg-[#2e56a6] text-white px-5 py-2 rounded"
           >
-            {editId ? "Update" : "Save"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+            Search
+          </button>
+        </div>
 
-      {/* DELETE CONFIRMATION MODAL */}
-      <Dialog
-        open={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-      >
-        <DialogTitle>Delete City</DialogTitle>
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-100 text-left">
+              <th className="p-3">ID</th>
+              <th className="p-1">State</th>
+              <th className="p-1">City</th>
+              <th className="p-1">Actions</th>
+            </tr>
+          </thead>
 
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete this city?
-          </Typography>
-        </DialogContent>
+          <tbody>
+            {filteredCities.map((item) => (
+              <tr key={item.id} className="border-b hover:bg-gray-50">
+                <td className="p-3">{item.id}</td>
+                <td className="p-1">{item.state}</td>
+                <td className="p-1">{item.city}</td>
 
-        <DialogActions>
-          <Button onClick={() => setDeleteOpen(false)}>Cancel</Button>
-          <Button color="error" variant="contained" onClick={confirmDelete}>
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+                <td className="p-1 flex gap-3">
+                  <button className="text-blue-600 hover:text-blue-800"
+                    onClick={() => {
+                      setEditData(item);
+                      setIsEditOpen(true);
+                    }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </button>
+                  <button
+                    className="text-red-600 hover:text-red-800"
+                    onClick={() => {
+                      setDeleteId(item.id);  // store row id
+                      setIsDeleteOpen(true); // open popup
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {/* EDIT MODAL */}
+        {isEditOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+
+              <h2 className="text-xl font-semibold mb-4">Edit City</h2>
+
+              <label className="font-medium">State</label>
+              <select
+                value={editData.state}
+                onChange={(e) =>
+                  setEditData({ ...editData, state: e.target.value })
+                }
+                className="w-full border px-3 py-2 rounded mt-1 mb-4"
+              >
+                <option value="">Select State</option>
+                <option value="Gujarat">Gujarat</option>
+                <option value="Maharashtra">Maharashtra</option>
+                <option value="Rajasthan">Rajasthan</option>
+                <option value="Karnataka">Karnataka</option>
+              </select>
+
+              <label className="font-medium">City</label>
+              <input
+                type="text"
+                value={editData.city}
+                onChange={(e) =>
+                  setEditData({ ...editData, city: e.target.value })
+                }
+                className="w-full border px-3 py-2 rounded mt-1 mb-4"
+              />
+
+              <div className="flex justify-end gap-3">
+                <button
+                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                  onClick={() => setIsEditOpen(false)}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="px-4 py-2 bg-[#2e56a6] text-white rounded hover:bg-blue-700"
+                  onClick={handleUpdate}
+                >
+                  Update
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+      
+        {/* DELETE CONFIRMATION POPUP */}
+        {isDeleteOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-2xl shadow-xl w-[380px]">
+
+              {/* Title */}
+              <h2 className="text-xl font-semibold text-red-600 mb-2">
+                Delete Record
+              </h2>
+
+              {/* Message */}
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete the record?
+              </p>
+
+              {/* Buttons */}
+              <div className="flex justify-center gap-4">
+
+                {/* Cancel Button */}
+                <button
+                  className="px-5 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100"
+                  onClick={() => setIsDeleteOpen(false)}
+                >
+                  Cancel
+                </button>
+
+                {/* Delete Button */}
+                <button
+                  className="px-5 py-2 rounded-full bg-red-600 text-white hover:bg-red-700"
+                  onClick={() => {
+                    if (deleteId !== null) {
+                      handleDelete(deleteId);
+                    }
+                    setIsDeleteOpen(false);
+                  }}
+                >
+                  Delete
+                </button>
+
+              </div>
+
+            </div>
+          </div>
+        )}
+
+
+
+      </div>
     </div>
   );
 }
