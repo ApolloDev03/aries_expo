@@ -189,10 +189,7 @@ export default function Header() {
 
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // logout();
-    navigate("/admin/logout");
-  // ✅ LOGOUT WITH API
+
   const handleLogout = async () => {
     try {
       const adminId = localStorage.getItem("admin_id");
@@ -217,7 +214,7 @@ export default function Header() {
         toast.success(res.data?.message || "Logged out successfully");
 
         setOpenProfile(false);
-        navigate("/logout");
+        navigate("/admin/logout");
       } else {
         toast.error(res.data?.message || "Logout failed");
       }

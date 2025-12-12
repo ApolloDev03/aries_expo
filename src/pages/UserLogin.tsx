@@ -33,19 +33,24 @@ export default function UserLogin() {
   };
 
   return (
-    <div className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-[#1d3557] via-[#457b9d] to-[#a8dadc]">
+    <div className="relative h-screen w-full overflow-hidden flex items-center justify-center 
+bg-gradient-to-br from-[#6fb1fc] via-[#4e85c5] to-[#2d4f73]">
 
       {/* Floating Blobs */}
-      <div className="absolute w-72 h-72 bg-white/20 rounded-full blur-3xl top-10 left-10 animate-pulse"></div>
-      <div className="absolute w-96 h-96 bg-[#bf7e4e]/20 rounded-full blur-3xl bottom-10 right-10 animate-pulse"></div>
+      <div className="absolute w-72 h-72 bg-white/30 rounded-full blur-3xl top-10 left-10 animate-pulse"></div>
+      <div className="absolute w-96 h-96 bg-[#ffe3c4]/30 rounded-full blur-3xl bottom-10 right-10 animate-pulse"></div>
 
       {/* Login Card */}
-      <div className="relative w-[380px] md:w-[420px] bg-white/10 backdrop-blur-xl border border-white/20 p-10 rounded-2xl shadow-2xl">
+      <div className="relative w-[380px] md:w-[420px] 
+      bg-white/20 backdrop-blur-2xl border border-white/30 
+      p-10 rounded-2xl shadow-2xl">
 
         {/* Logo */}
         <div className="flex justify-center mb-4">
-          <img src={logo} alt="Logo" className="w-40 drop-shadow-xl" />
-        </div>
+      <div className="p-3 bg-white/60 rounded-xl shadow-lg backdrop-blur-md">
+        <img src={logo} alt="Logo" className="w-40" />
+      </div>
+    </div>
 
         <h2 className="text-3xl font-bold text-center text-white mb-6 drop-shadow-sm">
           User Login

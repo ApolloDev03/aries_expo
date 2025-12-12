@@ -7,7 +7,6 @@ import CityList from "./pages/city/CityList";
 import IndustryList from "./pages/Industry/IndustryList";
 
 
-
 import UserList from "./pages/Users/UserList";
 import UserForm from "./pages/Users/AssignForm";
 import Logout from "./pages/Logout";
