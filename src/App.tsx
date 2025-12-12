@@ -16,6 +16,8 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ExpoMaster from "./pages/expo/ExpoList";
 import DepartmentMaster from "./pages/department/DepartmentList";
+import AdminProfile from "./pages/adminProfile/Profile";
+import EditProfile from "./pages/adminProfile/EditProfile";
 
 
 
@@ -45,6 +47,9 @@ export default function App() {
           <Route path="expo" element={<ExpoMaster />} />
 
            <Route path="department" element={<DepartmentMaster />} />
+
+           <Route path="profile" element={<AdminProfile />} />
+           <Route path="edit-profile" element={<EditProfile />} />
 
           {/* USERS ROUTES */}
           <Route path="users" element={<UserList />} />
