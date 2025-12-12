@@ -137,13 +137,18 @@ export default function ExpoMaster() {
         </select>
 
         <label className="font-medium">City</label>
-        <input
-          type="text"
+        <select
           value={cityValue}
           onChange={(e) => setCityValue(e.target.value)}
-          placeholder="Enter City"
           className="w-full border px-3 py-2 rounded mt-1 mb-6"
-        />
+        >
+          <option value="">Select City</option>
+          <option value="Ahmedabad">Ahmedabad</option>
+          <option value="Mumbai">Mumbai</option>
+          <option value="Surat">Surat</option>
+          <option value="Pune">Pune</option>
+          <option value="Jaipur">Jaipur</option>
+        </select>
 
         <button
           onClick={handleSave}
@@ -223,9 +228,8 @@ export default function ExpoMaster() {
           <button
             disabled={currentPage === 1}
             onClick={() => setCurrentPage(currentPage - 1)}
-            className={`px-3 py-1 rounded border ${
-              currentPage === 1 ? "bg-gray-200 cursor-not-allowed" : "bg-white hover:bg-gray-100"
-            }`}
+            className={`px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 cursor-not-allowed" : "bg-white hover:bg-gray-100"
+              }`}
           >
             Prev
           </button>
@@ -236,11 +240,10 @@ export default function ExpoMaster() {
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                className={`px-3 py-1 rounded border ${
-                  currentPage === page
-                    ? "bg-[#2e56a6] text-white"
-                    : "bg-white hover:bg-gray-100"
-                }`}
+                className={`px-3 py-1 rounded border ${currentPage === page
+                  ? "bg-[#2e56a6] text-white"
+                  : "bg-white hover:bg-gray-100"
+                  }`}
               >
                 {page}
               </button>
@@ -250,11 +253,10 @@ export default function ExpoMaster() {
           <button
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage(currentPage + 1)}
-            className={`px-3 py-1 rounded border ${
-              currentPage === totalPages
-                ? "bg-gray-200 cursor-not-allowed"
-                : "bg-white hover:bg-gray-100"
-            }`}
+            className={`px-3 py-1 rounded border ${currentPage === totalPages
+              ? "bg-gray-200 cursor-not-allowed"
+              : "bg-white hover:bg-gray-100"
+              }`}
           >
             Next
           </button>
@@ -305,14 +307,21 @@ export default function ExpoMaster() {
               </select>
 
               <label className="font-medium">City</label>
-              <input
-                type="text"
+              <select
                 value={editData.city}
                 onChange={(e) =>
                   setEditData({ ...editData, city: e.target.value })
                 }
                 className="w-full border px-3 py-2 rounded mt-1 mb-4"
-              />
+              >
+                <option value="">Select City</option>
+                <option value="Ahmedabad">Ahmedabad</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Surat">Surat</option>
+                <option value="Pune">Pune</option>
+                <option value="Jaipur">Jaipur</option>
+              </select>
+
 
               <div className="flex justify-end gap-3">
                 <button
