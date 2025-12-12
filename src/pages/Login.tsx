@@ -4,6 +4,7 @@ import axios from "axios";
 import logo from '../assets/logo.png'
 import { apiUrl } from "../config";
 import { useAuth } from "../components/context/AuthContext";
+import { toast } from "react-toastify";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -12,33 +13,81 @@ export default function Login() {
 
   const { login: authLogin } = useAuth(); // ⬅️ get login from context
 
+  // const handleLogin = async () => {
+  //   try {
+  //     const res = await axios.post(`${apiUrl}/adminlogin`, form);
+
+  //     if (res.data.success) {
+  //       const token = res.data.authorisation?.token;
+
+  //       // If API returns user details, use that
+  //       const userData = res.data.user || { email: form.email };
+
+  //       // ⬅️ This will set state + localStorage (user + artoken)
+  //       authLogin(userData, token);
+
+  //       // (Optional) set axios default header for future requests
+  //       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  //       localStorage.setItem("admin_id", res?.data?.data?.id)
+  //       localStorage.removeItem("userID")
+  //       nav("/admin");
+  //     } else {
+  //       alert(res.data.message || "Login failed");
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     alert("Invalid credentials or server error");
+  //   }
+  // };
+
   const handleLogin = async () => {
     try {
       const res = await axios.post(`${apiUrl}/adminlogin`, form);
 
-      if (res.data.success) {
-        const token = res.data.authorisation?.token;
+      if (res.data?.success) {
+        const token = res.data?.authorisation?.token;
+
+        if (!token) {
+          toast.error("Token not found in response");
+          return;
+        }
+
+        // ✅ admin id (your API may return in data or user)
+        const adminId =
+          res?.data?.data?.id || res?.data?.user?.id || res?.data?.admin?.id;
 
         // If API returns user details, use that
-        const userData = res.data.user || { email: form.email };
+        const userData = res.data.user || res.data.data || { email: form.email };
 
         // ⬅️ This will set state + localStorage (user + artoken)
         authLogin(userData, token);
 
-        // (Optional) set axios default header for future requests
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
+        if (adminId) localStorage.setItem("admin_id", String(adminId));
+
+        localStorage.removeItem("userID");
+
+        toast.success(res.data?.message || "Login successful");
         nav("/admin");
       } else {
-        alert(res.data.message || "Login failed");
+        // ✅ API-level failure (success = false)
+        const msg = res.data?.message || res.data?.error || "Login failed";
+        toast.error(msg);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Invalid credentials or server error");
+
+      // ✅ HTTP error (4xx/5xx) message from backend
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Invalid credentials or server error";
+
+      toast.error(msg);
     }
   };
-
-
   return (
     <div className="h-screen w-full grid grid-cols-1 md:grid-cols-2">
 

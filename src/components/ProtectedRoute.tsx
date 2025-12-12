@@ -1,26 +1,27 @@
-// import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import type { ReactNode } from "react";
-// import { useAuth } from "./context/AuthContext";
 
 interface ProtectedRouteProps {
     children: ReactNode;
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-    // const { token } = useAuth();           // ⬅️ get token from context
-    // const location = useLocation();
+    const location = useLocation();
 
-    // // If not logged in, redirect to login page
-    // if (!token) {
-    //     return (
-    //         <Navigate
-    //             to="/"
-    //             replace
-    //             state={{ from: location }}      // optional: so you can go back after login
-    //         />
-    //     );
-    // }
+    // ✅ get from localStorage
+    const adminId = localStorage.getItem("admin_id");
+    const token = localStorage.getItem("artoken"); // (optional but recommended)
 
-    // If logged in, render the protected children
+    // ✅ if not logged in -> redirect
+    if (!adminId || !token) {
+        return (
+            <Navigate
+                to="/"          // change if your login route is "/"
+                replace
+                state={{ from: location }}
+            />
+        );
+    }
+
     return <>{children}</>;
 }
