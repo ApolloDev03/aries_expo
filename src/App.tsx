@@ -18,6 +18,11 @@ import ExpoMaster from "./pages/expo/ExpoList";
 import DepartmentMaster from "./pages/department/DepartmentList";
 import AdminProfile from "./pages/adminProfile/Profile";
 import EditProfile from "./pages/adminProfile/EditProfile";
+import UserLogin from "./pages/UserLogin";
+import UserLayout from "./layout/UserLayout";
+import UserDashboard from "./pages/UserDashboard";
+import AssignedExpoList from "./pages/my-expo/MyExpo";
+import AddVisitor from "./pages/add-visitor/AddVisitor";
 
 
 
@@ -25,8 +30,33 @@ export default function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/logout" element={<Logout />} />
+        {/* admin login */}
+        <Route path="/" element={<UserLogin />} />
+        {/* <Route path="/logout" element={<Logout />} /> */}
+
+        {/* admin login */}
+        <Route path="/admin/login" element={<Login />} />
+        <Route path="/admin/logout" element={<Logout />} />
+
+        {/* users */}
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <UserLayout />
+            </ProtectedRoute>
+          }
+        > 
+        <Route index element={<UserDashboard />} />
+
+        <Route path="my-expo" element={<AssignedExpoList />} />
+
+        <Route path="add-visitors" element={<AddVisitor />} />
+
+
+        </Route>
+
+        {/* admin */}
         <Route
           path="/admin"
           element={

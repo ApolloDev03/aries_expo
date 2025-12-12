@@ -13,7 +13,7 @@ export default function Header() {
 
   const handleLogout = () => {
     // logout();
-    navigate("/logout");
+    navigate("/admin/logout");
   };
 
   return (

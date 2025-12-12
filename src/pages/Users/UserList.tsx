@@ -2,8 +2,8 @@ import { useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AssignmentIcon from "@mui/icons-material/Assignment";
-import {  useNavigate } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
+import VpnKeyIcon from "@mui/icons-material/VpnKey";
 
 interface UserData {
   id: number | null;
@@ -11,7 +11,8 @@ interface UserData {
   mobile: string;
   address: string;
   department: string;
-  password:string;
+  password: string;
+  status: "active" | "inactive";
 }
 
 export default function UserMaster() {
@@ -22,6 +23,10 @@ export default function UserMaster() {
   const [password, setPassword] = useState("");
 
   const [searchMobile, setSearchMobile] = useState("");
+  const [isPasswordOpen, setIsPasswordOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordUserId, setPasswordUserId] = useState<number | null>(null);
 
   const [users, setUsers] = useState<UserData[]>([
     {
@@ -30,7 +35,8 @@ export default function UserMaster() {
       mobile: "9876543210",
       address: "Ahmedabad",
       department: "Data Entry",
-      password:"rahul123",
+      password: "rahul123",
+      status: "active",
     },
     {
       id: 2,
@@ -38,7 +44,8 @@ export default function UserMaster() {
       mobile: "9090909090",
       address: "Surat",
       department: "Marketing",
-      password:"priya123"
+      password: "priya123",
+      status: "active",
     },
   ]);
 
@@ -49,7 +56,8 @@ export default function UserMaster() {
     mobile: "",
     address: "",
     department: "",
-    password:""
+    password: "",
+    status: "active",
   });
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -62,13 +70,14 @@ export default function UserMaster() {
     if (!name || !mobile || !address || !department)
       return alert("Please fill all fields");
 
-    const newUser = {
+    const newUser: UserData = {
       id: users.length + 1,
       name,
       mobile,
       address,
       department,
-      password
+      password,
+      status: "active",
     };
 
     setUsers([...users, newUser]);
@@ -83,9 +92,7 @@ export default function UserMaster() {
   // Update User
   const handleUpdate = () => {
     setUsers(
-      users.map((u) =>
-        u.id === editData.id ? editData : u
-      )
+      users.map((u) => (u.id === editData.id ? editData : u))
     );
     setIsEditOpen(false);
   };
@@ -95,7 +102,18 @@ export default function UserMaster() {
     setUsers(users.filter((item) => item.id !== id));
   };
 
-  // 🔍 Filter by Mobile Number
+  // Toggle Status
+  const toggleStatus = (id: number) => {
+    setUsers(
+      users.map((u) =>
+        u.id === id
+          ? { ...u, status: u.status === "active" ? "inactive" : "active" }
+          : u
+      )
+    );
+  };
+
+  // Filter
   const filteredUsers = users.filter((item) =>
     item.mobile.toLowerCase().includes(searchMobile.toLowerCase())
   );
@@ -107,7 +125,10 @@ export default function UserMaster() {
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
 
-  const currentRecords = filteredUsers.slice(indexOfFirstRecord, indexOfLastRecord);
+  const currentRecords = filteredUsers.slice(
+    indexOfFirstRecord,
+    indexOfLastRecord
+  );
 
   const totalPages = Math.ceil(filteredUsers.length / recordsPerPage);
 
@@ -115,9 +136,28 @@ export default function UserMaster() {
     setCurrentPage(page);
   };
 
-  return (
-    <div className="flex  gap-8 p-6">
+  const handlePasswordUpdate = () => {
+    if (!newPassword || !confirmPassword)
+      return alert("Please fill all fields");
 
+    if (newPassword !== confirmPassword)
+      return alert("Passwords do not match");
+
+    setUsers(
+      users.map((user) =>
+        user.id === passwordUserId
+          ? { ...user, password: newPassword }
+          : user
+      )
+    );
+
+    setIsPasswordOpen(false);
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+  return (
+    <div className="flex gap-8 p-6">
       {/* LEFT: Add User Form */}
       <div className="w-1/3 bg-white p-6 shadow rounded-xl">
         <h2 className="text-xl font-semibold mb-4">Add User</h2>
@@ -158,7 +198,6 @@ export default function UserMaster() {
           <option value="">Select Department</option>
           <option value="Data Entry">Data Entry</option>
           <option value="Marketing">Marketing</option>
-
         </select>
 
         <label className="font-medium">Password</label>
@@ -179,7 +218,7 @@ export default function UserMaster() {
       </div>
 
       {/* RIGHT: User List */}
-      <div className="w-2/3  bg-white p-6 shadow rounded-xl">
+      <div className="w-2/3 bg-white p-6 shadow rounded-xl">
         <h2 className="text-xl font-semibold mb-4">User List</h2>
 
         {/* Search */}
@@ -194,7 +233,6 @@ export default function UserMaster() {
                 setSearchMobile(value);
               }
             }}
-
             className="border px-3 py-2 rounded w-1/3"
           />
           <button className="bg-[#2e56a6] text-white px-5 py-2 rounded">
@@ -202,71 +240,101 @@ export default function UserMaster() {
           </button>
         </div>
 
-        <table className="w-full overflow-x-scroll border-collapse">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="p-3">ID</th>
-              <th className="p-1">Name</th>
-              <th className="p-1">Mobile</th>
-              <th className="p-1">Address</th>
-              <th className="p-1">Department</th>
-              <th className="p-1">Expo Count</th>
-              <th className="p-1">Password</th>
-              <th className="p-1">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {currentRecords.map((item) => (
-              <tr key={item.id} className="border-b hover:bg-gray-50">
-                <td className="p-3">{item.id}</td>
-                <td className="p-1">{item.name}</td>
-                <td className="p-1">{item.mobile}</td>
-                <td className="p-1">{item.address}</td>
-                <td className="p-1">{item.department}</td>
-                <td className="p-1 text-center">10</td>
-                <td className="p-1">{item.password}</td>
-
-                <td className="p-1 py-2 flex items-center gap-1">
-                  <button
-                    className="text-blue-600 hover:text-blue-800"
-                    onClick={() => {
-                      setEditData(item);
-                      setIsEditOpen(true);
-                    }}
-                  >
-                    <EditIcon fontSize="small" />
-                  </button>
-
-                  <button
-                    className="text-red-600 hover:text-red-800"
-                    onClick={() => {
-                      setDeleteId(item.id);
-                      setIsDeleteOpen(true);
-                    }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </button>
-
-                  <button
-                    className="text-blue-600 hover:text-blue-800"
-                     onClick={() => navigate(`/admin/users/assign/${item.id}`)}
-
-                  >
-                    <AssignmentIcon fontSize="small" />
-                  </button>
-                </td>
+        <div className="overflow-x-scroll">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-100 text-left">
+                <th className="p-3">ID</th>
+                <th className="p-1">Name</th>
+                <th className="p-1">Mobile</th>
+                <th className="p-1">Address</th>
+                <th className="p-1">Department</th>
+                <th className="p-1">Expo Count</th>
+                <th className="p-1">Status</th>
+                <th className="p-1">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {currentRecords.map((item) => (
+                <tr key={item.id} className="border-b hover:bg-gray-50">
+                  <td className="p-3">{item.id}</td>
+                  <td className="p-1">{item.name}</td>
+                  <td className="p-1">{item.mobile}</td>
+                  <td className="p-1">{item.address}</td>
+                  <td className="p-1">{item.department}</td>
+                  <td className="p-1 text-center">10</td>
+
+                  {/* STATUS BUTTON */}
+                  <td className="p-1">
+                    <button
+                      onClick={() => toggleStatus(item.id!)}
+                      className="text-white px-3 py-1 rounded-md text-sm"
+                      style={{
+                        background:
+                          item.status === "active"
+                            ? "linear-gradient(135deg, #3d78e3 0, #67b173 100%)"
+                            : "linear-gradient(135deg, #f17171 0, #5b71b9 100%)",
+                      }}
+                    >
+                      {item.status === "active" ? "Active" : "Inactive"}
+                    </button>
+                  </td>
+
+                  <td className="p-1 py-2 flex items-center gap-1">
+                    <button
+                      className="text-blue-600 hover:text-blue-800"
+                      onClick={() => {
+                        setEditData(item);
+                        setIsEditOpen(true);
+                      }}
+                    >
+                      <EditIcon fontSize="small" />
+                    </button>
+
+                    <button
+                      className="text-red-600 hover:text-red-800"
+                      onClick={() => {
+                        setDeleteId(item.id!);
+                        setIsDeleteOpen(true);
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </button>
+
+                    <button
+                      className="text-blue-600 hover:text-blue-800"
+                      onClick={() =>
+                        navigate(`/admin/users/assign/${item.id}`)
+                      }
+                    >
+                      <AssignmentIcon fontSize="small" />
+                    </button>
+
+                    <button
+                      className="text-yellow-600 hover:text-yellow-800"
+                      onClick={() => {
+                        setPasswordUserId(item.id!);
+                        setIsPasswordOpen(true);
+                      }}
+                    >
+                      <VpnKeyIcon fontSize="small" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {/* PAGINATION */}
         <div className="flex justify-center items-center mt-4 gap-2">
           <button
             disabled={currentPage === 1}
             onClick={() => handlePageChange(currentPage - 1)}
-            className={`px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 cursor-not-allowed" : "bg-white hover:bg-gray-100"
+            className={`px-3 py-1 rounded border ${currentPage === 1
+                ? "bg-gray-200 cursor-not-allowed"
+                : "bg-white hover:bg-gray-100"
               }`}
           >
             Prev
@@ -278,7 +346,9 @@ export default function UserMaster() {
               <button
                 key={page}
                 onClick={() => handlePageChange(page)}
-                className={`px-3 py-1 rounded border ${currentPage === page ? "bg-[#2e56a6] text-white" : "bg-white hover:bg-gray-100"
+                className={`px-3 py-1 rounded border ${currentPage === page
+                    ? "bg-[#2e56a6] text-white"
+                    : "bg-white hover:bg-gray-100"
                   }`}
               >
                 {page}
@@ -290,8 +360,8 @@ export default function UserMaster() {
             disabled={currentPage === totalPages}
             onClick={() => handlePageChange(currentPage + 1)}
             className={`px-3 py-1 rounded border ${currentPage === totalPages
-              ? "bg-gray-200 cursor-not-allowed"
-              : "bg-white hover:bg-gray-100"
+                ? "bg-gray-200 cursor-not-allowed"
+                : "bg-white hover:bg-gray-100"
               }`}
           >
             Next
@@ -302,7 +372,6 @@ export default function UserMaster() {
         {isEditOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-
               <h2 className="text-xl font-semibold mb-4">Edit User</h2>
 
               <label className="font-medium">Name</label>
@@ -363,7 +432,6 @@ export default function UserMaster() {
                   Update
                 </button>
               </div>
-
             </div>
           </div>
         )}
@@ -402,6 +470,58 @@ export default function UserMaster() {
           </div>
         )}
 
+        {/* PASSWORD POPUP */}
+        {isPasswordOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-2xl shadow-xl w-[380px]">
+              <h2 className="text-xl font-semibold text-blue-600 mb-4">
+                Change Password
+              </h2>
+
+              <div className="mb-4">
+                <label className="text-sm font-medium text-gray-700">
+                  New Password <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  className="w-full border px-3 py-2 rounded mt-1"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="text-sm font-medium text-gray-700">
+                  Confirm Password <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm password"
+                  className="w-full border px-3 py-2 rounded mt-1"
+                />
+              </div>
+
+              <div className="flex justify-end gap-4">
+                <button
+                  className="px-4 py-2 bg-gray-300 rounded"
+                  onClick={() => setIsPasswordOpen(false)}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="px-4 py-2 bg-blue-600 text-white rounded"
+                  onClick={handlePasswordUpdate}
+                >
+                  Update
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
