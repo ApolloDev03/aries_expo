@@ -189,6 +189,9 @@ export default function Header() {
 
   const navigate = useNavigate();
 
+  const handleLogout = () => {
+    // logout();
+    navigate("/admin/logout");
   // ✅ LOGOUT WITH API
   const handleLogout = async () => {
     try {
