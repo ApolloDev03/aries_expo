@@ -33,7 +33,7 @@ export default function Logout() {
 
                 {/* Sign In button */}
                 <button
-                    onClick={() => nav("/")}
+                    onClick={() => nav("/admin/login")}
                     className="w-full py-3 bg-[#bf7e4e] text-white rounded-lg hover:bg-gray-800 transition"
                 >
                     Sign In
