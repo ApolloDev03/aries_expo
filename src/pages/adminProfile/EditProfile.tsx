@@ -70,7 +70,7 @@ export default function EditProfile() {
                 const d = res.data.data;
 
                 // Your profile API returns first_name + last_name
-                const fullName = `${d.first_name || ""} ${d.last_name || ""}`.trim();
+                const fullName = `${d.first_name || ""} `.trim();
 
                 setName(fullName);
                 setEmail(d.email || "");

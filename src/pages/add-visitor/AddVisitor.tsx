@@ -5,6 +5,7 @@ export default function AddVisitor() {
   const todayCount = 42; // Example count
 
   const [mobile, setMobile] = useState("");
+  const [companyName, setCompanyName] = useState("")
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [state, setState] = useState("");
@@ -62,7 +63,17 @@ export default function AddVisitor() {
           </div>
 
           {/* NAME + EMAIL */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Company Name</label>
+              <input
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="Enter company name"
+                className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+              />
+            </div>
             <div>
               <label className="block text-sm font-medium mb-1">Name</label>
               <input

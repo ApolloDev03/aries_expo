@@ -177,7 +177,7 @@
 // }
 import { Link, useNavigate } from "react-router-dom";
 import ariesLogo from "../assets/logo.png";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { apiUrl } from "../config";
@@ -186,6 +186,8 @@ export default function Header() {
   const [openMaster, setOpenMaster] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
   const [openOthers, setOpenOthers] = useState(false);
+ const masterRef = useRef<HTMLDivElement>(null);
+const profileRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
 
@@ -231,6 +233,29 @@ export default function Header() {
     }
   };
 
+  useEffect(() => {
+  const handleClickOutside = (e: MouseEvent) => {
+    if (
+      masterRef.current &&
+      !masterRef.current.contains(e.target as Node)
+    ) {
+      setOpenMaster(false);
+    }
+
+    if (
+      profileRef.current &&
+      !profileRef.current.contains(e.target as Node)
+    ) {
+      setOpenProfile(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => document.removeEventListener("mousedown", handleClickOutside);
+}, []);
+
+
+
   return (
     <header className="flex justify-between items-center px-6 py-4 bg-white shadow">
       {/* LEFT SIDE LOGO */}
@@ -246,7 +271,7 @@ export default function Header() {
           </Link>
 
           {/* MASTER */}
-          <div className="relative">
+          <div className="relative" ref={masterRef}>
             <button
               onClick={() => setOpenMaster(!openMaster)}
               className="hover:text-orange-600 flex items-center gap-1"
@@ -321,7 +346,7 @@ export default function Header() {
         </nav>
 
         {/* PROFILE */}
-        <div className="relative">
+        <div className="relative" ref={profileRef}>
           <button
             onClick={() => setOpenProfile(!openProfile)}
             className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"
