@@ -64,7 +64,7 @@ export default function AdminProfile() {
   }, []);
 
   const fullName = profile
-    ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim()
+    ? `${profile.first_name || ""}`.trim()
     : "";
 
   return (
