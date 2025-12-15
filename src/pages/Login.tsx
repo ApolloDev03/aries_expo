@@ -13,33 +13,6 @@ export default function Login() {
 
   const { login: authLogin } = useAuth(); // ⬅️ get login from context
 
-  // const handleLogin = async () => {
-  //   try {
-  //     const res = await axios.post(`${apiUrl}/adminlogin`, form);
-
-  //     if (res.data.success) {
-  //       const token = res.data.authorisation?.token;
-
-  //       // If API returns user details, use that
-  //       const userData = res.data.user || { email: form.email };
-
-  //       // ⬅️ This will set state + localStorage (user + artoken)
-  //       authLogin(userData, token);
-
-  //       // (Optional) set axios default header for future requests
-  //       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  //       localStorage.setItem("admin_id", res?.data?.data?.id)
-  //       localStorage.removeItem("userID")
-  //       nav("/admin");
-  //     } else {
-  //       alert(res.data.message || "Login failed");
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //     alert("Invalid credentials or server error");
-  //   }
-  // };
-
   const handleLogin = async () => {
     try {
       const res = await axios.post(`${apiUrl}/adminlogin`, form);
@@ -52,9 +25,7 @@ export default function Login() {
           return;
         }
 
-        // ✅ admin id (your API may return in data or user)
-        const adminId =
-          res?.data?.data?.id || res?.data?.user?.id || res?.data?.admin?.id;
+       
 
         // If API returns user details, use that
         const userData = res.data.user || res.data.data || { email: form.email };
@@ -64,10 +35,9 @@ export default function Login() {
 
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-        if (adminId) localStorage.setItem("admin_id", String(adminId));
+        if (res?.data?.data?.id) localStorage.setItem("admin_id", String(res?.data?.data?.id));
 
-        localStorage.removeItem("userID");
-
+  
         toast.success(res.data?.message || "Login successful");
         nav("/admin");
       } else {

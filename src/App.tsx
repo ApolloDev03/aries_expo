@@ -1,12 +1,9 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import AdminLayout from "./layout/AdminLayout";
-import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import CityList from "./pages/city/CityList";
 import IndustryList from "./pages/Industry/IndustryList";
-
-
 import UserList from "./pages/Users/UserList";
 import UserForm from "./pages/Users/AssignForm";
 import Logout from "./pages/Logout";
@@ -22,6 +19,7 @@ import UserLayout from "./layout/UserLayout";
 import UserDashboard from "./pages/UserDashboard";
 import AssignedExpoList from "./pages/my-expo/MyExpo";
 import AddVisitor from "./pages/add-visitor/AddVisitor";
+import ProtectedRoute from "./components/AdminProtectedRoute";
 
 
 
@@ -41,16 +39,14 @@ export default function App() {
         <Route
           path="/users"
           element={
-            <ProtectedRoute>
-              <UserLayout />
-            </ProtectedRoute>
+            <UserLayout />
           }
-        > 
-        <Route index element={<UserDashboard />} />
+        >
+          <Route index element={<UserDashboard />} />
 
-        <Route path="my-expo" element={<AssignedExpoList />} />
+          <Route path="my-expo" element={<AssignedExpoList />} />
 
-        <Route path="add-visitors" element={<AddVisitor />} />
+          <Route path="add-visitors" element={<AddVisitor />} />
 
 
         </Route>
@@ -75,10 +71,10 @@ export default function App() {
 
           <Route path="expo" element={<ExpoMaster />} />
 
-           <Route path="department" element={<DepartmentMaster />} />
+          <Route path="department" element={<DepartmentMaster />} />
 
-           <Route path="profile" element={<AdminProfile />} />
-           <Route path="edit-profile" element={<EditProfile />} />
+          <Route path="profile" element={<AdminProfile />} />
+          <Route path="edit-profile" element={<EditProfile />} />
 
           {/* USERS ROUTES */}
           <Route path="users" element={<UserList />} />

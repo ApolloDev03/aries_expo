@@ -16,7 +16,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     if (!adminId || !token) {
         return (
             <Navigate
-                to="/"          // change if your login route is "/"
+                to="/admin/login"          // change if your login route is "/"
                 replace
                 state={{ from: location }}
             />
