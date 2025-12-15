@@ -1,62 +1,416 @@
-import { useEffect, useState } from "react";
+// import { useEffect, useState } from "react";
+// import { useParams } from "react-router-dom";
+// import DeleteIcon from "@mui/icons-material/Delete";
+
+// interface AssignedItem {
+//   id: number;
+//   industry: string;
+//   expo: string;
+// }
+
+// export default function AssignForm() {
+//   const { id } = useParams();
+
+//   const [userName, setUserName] = useState<string>("");
+//   const [industry, setIndustry] = useState<string>("");
+//   const [expo, setExpo] = useState<string>("");
+
+//   const [showDeleteModal, setShowDeleteModal] = useState(false);
+//   const [deleteId, setDeleteId] = useState<number | null>(null);
+
+
+//   const [assignedList, setAssignedList] = useState<AssignedItem[]>([]);
+
+//   // Fetch user by ID
+//   useEffect(() => {
+//     const demoUsers = [
+//       { id: "1", name: "Sweta Panchal" },
+//       { id: "2", name: "Priya Patel" },
+//     ];
+
+//     const selectedUser = demoUsers.find((u) => u.id === id);
+//     if (selectedUser) setUserName(selectedUser.name);
+//   }, [id]);
+
+//   // Save Assigned Expo
+//   const handleSave = () => {
+//     if (!industry || !expo) return;
+
+//     const newEntry: AssignedItem = {
+//       id: Date.now(),
+//       industry,
+//       expo,
+//     };
+
+//     setAssignedList([...assignedList, newEntry]);
+//     setIndustry("");
+//     setExpo("");
+//   };
+
+//   // Delete Assigned Expo
+//   const handleDelete = (deleteId: number) => {
+//     setAssignedList(assignedList.filter((item) => item.id !== deleteId));
+//   };
+
+//   return (
+//     <div className="p-6">
+//       {/* HEADING */}
+//       <h1 className="text-2xl font-bold mb-6">
+//         Assigning Expo to <span className="text-blue-600">{userName}</span>
+//       </h1>
+
+//       <div className="flex gap-6">
+//         {/* LEFT SIDE FORM */}
+//         <div className="w-1/3 bg-white p-6 rounded-xl shadow">
+//           <h2 className="text-xl font-semibold mb-4">Assign Expo</h2>
+
+//           {/* Industry Dropdown */}
+//           <label className="font-medium">Select Industry</label>
+//           <select
+//             value={industry}
+//             onChange={(e) => setIndustry(e.target.value)}
+//             className="w-full border px-3 py-2 rounded mt-1 mb-4"
+//           >
+//             <option value="">-- Select Industry --</option>
+//             <option value="Autoshow expo">Autoshow expo</option>
+//             <option value="Electric expo">Electric expo</option>
+//             <option value="Earthcon expo">Earthcon expo</option>
+//           </select>
+
+//           {/* Expo Dropdown */}
+//           <label className="font-medium">Select Expo</label>
+//           <select
+//             value={expo}
+//             onChange={(e) => setExpo(e.target.value)}
+//             className="w-full border px-3 py-2 rounded mt-1 mb-4"
+//           >
+//             <option value="">-- Select Expo --</option>
+//             <option value="Auto Expo 2024">Auto Expo 2024</option>
+//             <option value="IT Global Meetup">IT Global Meetup</option>
+//             <option value="Textile India">Textile India</option>
+//           </select>
+
+//           <button
+//             onClick={handleSave}
+//             className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"
+//           >
+//             Save
+//           </button>
+//         </div>
+
+//         {/* RIGHT SIDE TABLE */}
+//         <div className="w-2/3 bg-white p-6 rounded-xl shadow">
+//           <h2 className="text-xl font-semibold mb-4">Assigned Expos</h2>
+
+//           <table className="w-full border-collapse">
+//             <thead>
+//               <tr className="bg-gray-100">
+//                 <th className="p-1 border">Industry</th>
+//                 <th className="p-1 border">Expo</th>
+//                 <th className="p-1 border">Action</th>
+//               </tr>
+//             </thead>
+
+//             <tbody>
+//               {assignedList.length === 0 ? (
+//                 <tr>
+//                   <td colSpan={3} className="text-center p-4 text-gray-500">
+//                     No expo assigned yet
+//                   </td>
+//                 </tr>
+//               ) : (
+//                 assignedList.map((item) => (
+//                   <tr key={item.id} className="border-b text-center">
+//                     <td className="p-1 border">{item.industry}</td>
+//                     <td className="p-1 border">{item.expo}</td>
+//                     <td className="p-1 border text-center">
+//                       <button
+//                         onClick={() => {
+//                           setDeleteId(item.id);
+//                           setShowDeleteModal(true);
+//                         }}
+//                         className="text-red-600 hover:text-red-800"
+//                       >
+//                         <DeleteIcon fontSize="small" />
+//                       </button>
+//                     </td>
+//                   </tr>
+//                 ))
+//               )}
+//             </tbody>
+//           </table>
+
+//           {showDeleteModal && (
+//             <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+
+//               <div className="bg-white rounded-lg shadow-lg p-6 w-80">
+//                 <h2 className="text-xl font-semibold text-red-600 mb-2">
+//                 Delete Record
+//               </h2>
+//               <p className="text-gray-600 mb-6">
+//                 Are you sure you want to delete the record?
+//               </p>
+
+//                 <div className="flex justify-center gap-4">
+//                   <button
+//                     onClick={() => setShowDeleteModal(false)}
+//                     className="px-5 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100"
+//                   >
+//                     Cancel
+//                   </button>
+
+//                   <button
+//                     onClick={() => {
+//                       if (deleteId !== null) handleDelete(deleteId);
+//                       setShowDeleteModal(false);
+//                     }}
+//                     className="px-5 py-2 rounded-full bg-red-600 text-white hover:bg-red-700"
+//                   >
+//                     Delete
+//                   </button>
+//                 </div>
+//               </div>
+
+//             </div>
+//           )}
+
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import DeleteIcon from "@mui/icons-material/Delete";
+import axios from "axios";
+import { toast } from "react-toastify";
+
+const apiUrl = "https://getdemo.in/aries_software/api";
+
+interface IndustryItem {
+  id: number;
+  name: string;
+}
+
+interface ExpoItem {
+  id: number;
+  name: string;
+  statename?: string;
+  cityname?: string;
+  industryname?: string;
+}
 
 interface AssignedItem {
-  id: number;
-  industry: string;
-  expo: string;
+  expo_assign_user_id: number;
+  industryname: string;
+  exponame: string;
+  username: string;
 }
 
 export default function AssignForm() {
-  const { id } = useParams();
+  const { id } = useParams(); // user_id from route
+
+  // ---------------- Auth Header ----------------
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("artoken");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+  const userId = useMemo(() => String(id || ""), [id]);
 
   const [userName, setUserName] = useState<string>("");
-  const [industry, setIndustry] = useState<string>("");
-  const [expo, setExpo] = useState<string>("");
 
+  // Dropdown lists
+  const [industryList, setIndustryList] = useState<IndustryItem[]>([]);
+  const [expoList, setExpoList] = useState<ExpoItem[]>([]);
+
+  // Selected values (IDs)
+  const [industryId, setIndustryId] = useState<string>("");
+  const [expoId, setExpoId] = useState<string>("");
+
+  // Assigned list
+  const [assignedList, setAssignedList] = useState<AssignedItem[]>([]);
+
+  // Modals
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
+  // Loaders
+  const [loading, setLoading] = useState(false); // page fetch
+  const [saving, setSaving] = useState(false); // save btn
+  const [deletingId, setDeletingId] = useState<number | null>(null); // per row delete
 
-  const [assignedList, setAssignedList] = useState<AssignedItem[]>([]);
-
-  // Fetch user by ID
+  // ✅ OPTIONAL: if you already have username in UserList page, pass it via navigate state.
+  // For now keep demo fallback.
   useEffect(() => {
     const demoUsers = [
       { id: "1", name: "Sweta Panchal" },
       { id: "2", name: "Priya Patel" },
+      { id: "3", name: "harshita" },
     ];
-
-    const selectedUser = demoUsers.find((u) => u.id === id);
+    const selectedUser = demoUsers.find((u) => u.id === userId);
     if (selectedUser) setUserName(selectedUser.name);
-  }, [id]);
+  }, [userId]);
 
-  // Save Assigned Expo
-  const handleSave = () => {
-    if (!industry || !expo) return;
+  // ---------------- Fetch Industry List ----------------
+  const fetchIndustries = async () => {
+    try {
+      const res = await axios.post(
+        `${apiUrl}/IndustryList`,
+        {},
+        { headers: { ...getAuthHeaders() } }
+      );
 
-    const newEntry: AssignedItem = {
-      id: Date.now(),
-      industry,
-      expo,
-    };
+      const list: IndustryItem[] = (res.data?.data || []).map((x: any) => ({
+        id: Number(x.id),
+        name: String(x.name ?? ""),
+      }));
 
-    setAssignedList([...assignedList, newEntry]);
-    setIndustry("");
-    setExpo("");
+      setIndustryList(list);
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Industry list fetch failed");
+      setIndustryList([]);
+    }
   };
 
-  // Delete Assigned Expo
-  const handleDelete = (deleteId: number) => {
-    setAssignedList(assignedList.filter((item) => item.id !== deleteId));
+  // ---------------- Fetch Expo List ----------------
+  const fetchExpos = async () => {
+    try {
+      const res = await axios.post(
+        `${apiUrl}/ExpoList`,
+        {},
+        { headers: { ...getAuthHeaders() } }
+      );
+
+      const list: ExpoItem[] = (res.data?.data || []).map((x: any) => ({
+        id: Number(x.Expoid ?? x.expoid ?? x.id),
+        name: String(x.name ?? ""),
+        statename: String(x.statename ?? ""),
+        cityname: String(x.cityname ?? ""),
+        industryname: String(x.industryname ?? ""),
+      }));
+
+      setExpoList(list);
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Expo list fetch failed");
+      setExpoList([]);
+    }
+  };
+
+  // ---------------- Fetch Assigned List ----------------
+  const fetchAssignedList = async () => {
+    if (!userId) return;
+
+    try {
+      const res = await axios.post(
+        `${apiUrl}/ExpoAssign/UserList`,
+        { user_id: userId },
+        { headers: { ...getAuthHeaders() } }
+      );
+
+      const list: AssignedItem[] = (res.data?.data || []).map((x: any) => ({
+        expo_assign_user_id: Number(x.expo_assign_user_id),
+        industryname: String(x.industryname ?? ""),
+        exponame: String(x.exponame ?? ""),
+        username: String(x.username ?? ""),
+      }));
+
+      setAssignedList(list);
+
+      // ✅ set username from API if available
+      if (list.length > 0 && list[0].username) {
+        setUserName(list[0].username);
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Assigned expo list fetch failed");
+      setAssignedList([]);
+    }
+  };
+
+  // ---------------- Initial Load ----------------
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        await Promise.all([fetchIndustries(), fetchExpos()]);
+        await fetchAssignedList();
+      } finally {
+        setLoading(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  // ---------------- Save Assigned Expo (API) ----------------
+  const handleSave = async () => {
+    if (!userId) return toast.error("User id missing");
+    if (!industryId) return toast.error("Please select industry");
+    if (!expoId) return toast.error("Please select expo");
+
+    try {
+      setSaving(true);
+
+      const res = await axios.post(
+        `${apiUrl}/ExpoAssign/UserAdd`,
+        {
+          user_id: userId,
+          industry_id: String(industryId),
+          expo_id: String(expoId),
+        },
+        { headers: { ...getAuthHeaders() } }
+      );
+
+      if (res.data?.success) {
+        toast.success(res.data?.message || "Expo assigned successfully");
+        setIndustryId("");
+        setExpoId("");
+        await fetchAssignedList();
+      } else {
+        toast.error(res.data?.message || "Assign failed");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.response?.data?.message || "Assign failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ---------------- Delete Assigned Expo (API) ----------------
+  const handleDelete = async (expo_assign_user_id: number) => {
+    try {
+      setDeletingId(expo_assign_user_id);
+
+      const res = await axios.post(
+        `${apiUrl}/ExpoAssign/UserDelete`,
+        { expo_assign_user_id: String(expo_assign_user_id) },
+        { headers: { ...getAuthHeaders() } }
+      );
+
+      if (res.data?.success) {
+        toast.success(res.data?.message || "Deleted successfully");
+        await fetchAssignedList();
+      } else {
+        toast.error(res.data?.message || "Delete failed");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.response?.data?.message || "Delete failed");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
     <div className="p-6">
       {/* HEADING */}
       <h1 className="text-2xl font-bold mb-6">
-        Assigning Expo to <span className="text-blue-600">{userName}</span>
+        Assigning Expo to <span className="text-blue-600">{userName || "-"}</span>
       </h1>
 
       <div className="flex gap-6">
@@ -67,52 +421,73 @@ export default function AssignForm() {
           {/* Industry Dropdown */}
           <label className="font-medium">Select Industry</label>
           <select
-            value={industry}
-            onChange={(e) => setIndustry(e.target.value)}
+            value={industryId}
+            onChange={(e) => setIndustryId(e.target.value)}
             className="w-full border px-3 py-2 rounded mt-1 mb-4"
           >
             <option value="">-- Select Industry --</option>
-            <option value="Autoshow expo">Autoshow expo</option>
-            <option value="Electric expo">Electric expo</option>
-            <option value="Earthcon expo">Earthcon expo</option>
+            {industryList.map((ind) => (
+              <option key={ind.id} value={String(ind.id)}>
+                {ind.name}
+              </option>
+            ))}
           </select>
 
           {/* Expo Dropdown */}
           <label className="font-medium">Select Expo</label>
           <select
-            value={expo}
-            onChange={(e) => setExpo(e.target.value)}
+            value={expoId}
+            onChange={(e) => setExpoId(e.target.value)}
             className="w-full border px-3 py-2 rounded mt-1 mb-4"
           >
             <option value="">-- Select Expo --</option>
-            <option value="Auto Expo 2024">Auto Expo 2024</option>
-            <option value="IT Global Meetup">IT Global Meetup</option>
-            <option value="Textile India">Textile India</option>
+            {expoList.map((ex) => (
+              <option key={ex.id} value={String(ex.id)}>
+                {ex.name}
+              </option>
+            ))}
           </select>
 
           <button
             onClick={handleSave}
-            className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"
+            disabled={saving}
+            className="bg-blue-600 disabled:opacity-60 text-white px-5 py-2 rounded hover:bg-blue-700"
           >
-            Save
+            {saving ? "Saving..." : "Save"}
           </button>
         </div>
 
         {/* RIGHT SIDE TABLE */}
         <div className="w-2/3 bg-white p-6 rounded-xl shadow">
-          <h2 className="text-xl font-semibold mb-4">Assigned Expos</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Assigned Expos</h2>
+
+            <button
+              onClick={fetchAssignedList}
+              disabled={loading}
+              className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-60"
+            >
+              {loading ? "Refreshing..." : "Refresh"}
+            </button>
+          </div>
 
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-100">
-                <th className="p-1 border">Industry</th>
-                <th className="p-1 border">Expo</th>
-                <th className="p-1 border">Action</th>
+                <th className="p-2 border text-left">Industry</th>
+                <th className="p-2 border text-left">Expo</th>
+                <th className="p-2 border text-center">Action</th>
               </tr>
             </thead>
 
             <tbody>
-              {assignedList.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={3} className="text-center p-4 text-gray-500">
+                    Loading...
+                  </td>
+                </tr>
+              ) : assignedList.length === 0 ? (
                 <tr>
                   <td colSpan={3} className="text-center p-4 text-gray-500">
                     No expo assigned yet
@@ -120,16 +495,22 @@ export default function AssignForm() {
                 </tr>
               ) : (
                 assignedList.map((item) => (
-                  <tr key={item.id} className="border-b text-center">
-                    <td className="p-1 border">{item.industry}</td>
-                    <td className="p-1 border">{item.expo}</td>
-                    <td className="p-1 border text-center">
+                  <tr key={item.expo_assign_user_id} className="border-b">
+                    <td className="p-2 border">
+                      {item.industryname || "-"}
+                    </td>
+                    <td className="p-2 border">
+                      {item.exponame || "-"}
+                    </td>
+                    <td className="p-2 border text-center">
                       <button
+                        disabled={deletingId === item.expo_assign_user_id}
                         onClick={() => {
-                          setDeleteId(item.id);
+                          setDeleteId(item.expo_assign_user_id);
                           setShowDeleteModal(true);
                         }}
-                        className="text-red-600 hover:text-red-800"
+                        className="text-red-600 hover:text-red-800 disabled:opacity-60"
+                        title="Delete"
                       >
                         <DeleteIcon fontSize="small" />
                       </button>
@@ -140,16 +521,16 @@ export default function AssignForm() {
             </tbody>
           </table>
 
+          {/* DELETE MODAL */}
           {showDeleteModal && (
             <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-
               <div className="bg-white rounded-lg shadow-lg p-6 w-80">
                 <h2 className="text-xl font-semibold text-red-600 mb-2">
-                Delete Record
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Are you sure you want to delete the record?
-              </p>
+                  Delete Record
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  Are you sure you want to delete the record?
+                </p>
 
                 <div className="flex justify-center gap-4">
                   <button
@@ -160,20 +541,20 @@ export default function AssignForm() {
                   </button>
 
                   <button
-                    onClick={() => {
-                      if (deleteId !== null) handleDelete(deleteId);
+                    disabled={deleteId === null || deletingId === deleteId}
+                    onClick={async () => {
+                      if (deleteId !== null) await handleDelete(deleteId);
                       setShowDeleteModal(false);
+                      setDeleteId(null);
                     }}
-                    className="px-5 py-2 rounded-full bg-red-600 text-white hover:bg-red-700"
+                    className="px-5 py-2 rounded-full bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
                   >
-                    Delete
+                    {deletingId === deleteId ? "Deleting..." : "Delete"}
                   </button>
                 </div>
               </div>
-
             </div>
           )}
-
         </div>
       </div>
     </div>

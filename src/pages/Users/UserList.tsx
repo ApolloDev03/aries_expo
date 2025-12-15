@@ -1,160 +1,409 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AssignmentIcon from "@mui/icons-material/Assignment";
-import { useNavigate } from "react-router-dom";
 import VpnKeyIcon from "@mui/icons-material/VpnKey";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
+const apiUrl = "https://getdemo.in/aries_software/api";
+
+type StatusType = "active" | "inactive";
 
 interface UserData {
-  id: number | null;
+  id: number;
   name: string;
   mobile: string;
   address: string;
-  department: string;
-  password: string;
-  status: "active" | "inactive";
+  department_id?: number | null;
+  department?: string; // name
+  expo_count?: number;
+  status: StatusType;
+  iStatus?: number; // backend status (1/0)
+}
+
+interface Department {
+  id: number;
+  name: string;
 }
 
 export default function UserMaster() {
+  const navigate = useNavigate();
+
+  // ---------------- Auth Header ----------------
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("artoken");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+  // ---------------- Form States ----------------
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
   const [address, setAddress] = useState("");
-  const [department, setDepartment] = useState("");
+  const [departmentId, setDepartmentId] = useState<string>("");
   const [password, setPassword] = useState("");
 
+  // ---------------- Search + Pagination ----------------
   const [searchMobile, setSearchMobile] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 10;
+
+  // ---------------- Data ----------------
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
+
+  // ---------------- UI ----------------
+  const [loading, setLoading] = useState(false); // ✅ only for list fetch
+
+  // ✅ per-action loaders
+  const [saving, setSaving] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [statusLoadingId, setStatusLoadingId] = useState<number | null>(null);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editData, setEditData] = useState<UserData | null>(null);
+
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordUserId, setPasswordUserId] = useState<number | null>(null);
 
-  const [users, setUsers] = useState<UserData[]>([
-    {
-      id: 1,
-      name: "Rahul Shah",
-      mobile: "9876543210",
-      address: "Ahmedabad",
-      department: "Data Entry",
-      password: "rahul123",
-      status: "active",
-    },
-    {
-      id: 2,
-      name: "Priya Patel",
-      mobile: "9090909090",
-      address: "Surat",
-      department: "Marketing",
-      password: "priya123",
-      status: "active",
-    },
-  ]);
+  // ---------------- Fetch Departments ----------------
+  const fetchDepartments = async (): Promise<Department[]> => {
+    try {
+      const res = await axios.post(
+        `${apiUrl}/DepartList`,
+        {},
+        { headers: { ...getAuthHeaders() } }
+      );
 
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editData, setEditData] = useState<UserData>({
-    id: null,
-    name: "",
-    mobile: "",
-    address: "",
-    department: "",
-    password: "",
-    status: "active",
-  });
+      const list: Department[] = (res.data?.data || []).map((d: any) => ({
+        id: Number(d.id),
+        name: String(d.name),
+      }));
 
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
-
-  const navigate = useNavigate();
-
-  // Save New User
-  const handleSave = () => {
-    if (!name || !mobile || !address || !department)
-      return alert("Please fill all fields");
-
-    const newUser: UserData = {
-      id: users.length + 1,
-      name,
-      mobile,
-      address,
-      department,
-      password,
-      status: "active",
-    };
-
-    setUsers([...users, newUser]);
-
-    setName("");
-    setMobile("");
-    setAddress("");
-    setDepartment("");
-    setPassword("");
+      setDepartments(list);
+      return list;
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Department list fetch failed");
+      setDepartments([]);
+      return [];
+    }
   };
 
-  // Update User
-  const handleUpdate = () => {
-    setUsers(
-      users.map((u) => (u.id === editData.id ? editData : u))
-    );
-    setIsEditOpen(false);
+  // ---------------- Fetch Users ----------------
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+
+      const res = await axios.post(
+        `${apiUrl}/UserList`,
+        {},
+        { headers: { ...getAuthHeaders() } }
+      );
+
+      // ✅ FIX: iStatus number + status string
+      const list: UserData[] = (res.data?.data || []).map((u: any) => {
+        const rawStatus = Number(u.iStatus ?? 1); // 1 or 0
+
+        return {
+          id: Number(u.Userid ?? u.Usersid ?? u.id),
+          name: String(u.name ?? ""),
+          mobile: String(u.mobile ?? ""),
+          address: String(u.address ?? ""),
+          department: String(u.departname ?? u.department ?? ""),
+          department_id: u.depart_id ? Number(u.depart_id) : null,
+          expo_count: u.expo_count ? Number(u.expo_count) : 0,
+
+          iStatus: rawStatus,
+          status: rawStatus === 1 ? "active" : "inactive",
+        };
+      });
+
+      setUsers(list);
+    } catch (err: any) {
+      console.error(err);
+      toast.error("User list fetch failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Delete User
-  const handleDelete = (id: any) => {
-    setUsers(users.filter((item) => item.id !== id));
+  useEffect(() => {
+    fetchDepartments();
+    fetchUsers();
+  }, []);
+
+  // ---------------- Add User ----------------
+  const handleSave = async () => {
+    if (!name || !mobile || !address || !departmentId || !password) {
+      toast.error("Please fill all fields");
+      return;
+    }
+    if (!/^\d{10}$/.test(mobile)) {
+      toast.error("Mobile must be 10 digits");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      const payload = {
+        name,
+        mobile,
+        address,
+        department_id: departmentId,
+        password,
+      };
+
+      const res = await axios.post(`${apiUrl}/UserAdd`, payload, {
+        headers: { ...getAuthHeaders() },
+      });
+
+      if (res.data?.success) {
+        toast.success(res.data?.message || "User Added Successfully");
+        setName("");
+        setMobile("");
+        setAddress("");
+        setDepartmentId("");
+        setPassword("");
+        await fetchUsers();
+      } else {
+        toast.error(res.data?.message || "User add failed");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.response?.data?.message || "User add failed");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  // Toggle Status
-  const toggleStatus = (id: number) => {
-    setUsers(
-      users.map((u) =>
-        u.id === id
-          ? { ...u, status: u.status === "active" ? "inactive" : "active" }
-          : u
-      )
-    );
+  // ---------------- Open Edit (Usershow) ----------------
+  const openEdit = async (userId: number) => {
+    try {
+      setLoading(true);
+
+      const deptList =
+        departments.length > 0 ? departments : await fetchDepartments();
+
+      const res = await axios.post(
+        `${apiUrl}/Usershow`,
+        { user_id: String(userId) },
+        { headers: { ...getAuthHeaders() } }
+      );
+
+      const row = res.data?.data?.[0];
+      if (!row) {
+        const fallback = users.find((u) => u.id === userId);
+        if (fallback) setEditData(fallback);
+        setIsEditOpen(true);
+        return;
+      }
+
+      const deptName = String(row.department ?? row.departname ?? "").trim();
+
+      const matchedDept = deptList.find(
+        (d) => d.name.trim().toLowerCase() === deptName.toLowerCase()
+      );
+
+      setEditData({
+        id: Number(row.Usersid ?? row.Userid ?? userId),
+        name: String(row.name ?? ""),
+        mobile: String(row.mobile ?? ""),
+        address: String(row.address ?? ""),
+        department: deptName,
+        department_id: matchedDept ? matchedDept.id : null,
+        status: "active",
+        iStatus: 1,
+      });
+
+      setIsEditOpen(true);
+    } catch (err) {
+      console.error(err);
+      const fallback = users.find((u) => u.id === userId);
+      if (fallback) {
+        setEditData(fallback);
+        setIsEditOpen(true);
+      } else {
+        toast.error("User fetch failed");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Filter
-  const filteredUsers = users.filter((item) =>
-    item.mobile.toLowerCase().includes(searchMobile.toLowerCase())
-  );
+  // ---------------- Update User ----------------
+  const handleUpdate = async () => {
+    if (!editData) return;
 
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 10;
+    if (!editData.name || !editData.mobile || !editData.address) {
+      toast.error("Please fill all fields");
+      return;
+    }
 
+    const deptId =
+      editData.department_id ??
+      (editData.department
+        ? departments.find(
+          (d) => d.name.toLowerCase() === editData.department!.toLowerCase()
+        )?.id
+        : null);
+
+    if (!deptId) {
+      toast.error("Please select department");
+      return;
+    }
+
+    try {
+      setUpdating(true);
+
+      const payload: any = {
+        user_id: String(editData.id),
+        name: editData.name,
+        mobile: editData.mobile,
+        address: editData.address,
+        department_id: String(deptId),
+      };
+
+      const res = await axios.post(`${apiUrl}/UserUpdate`, payload, {
+        headers: { ...getAuthHeaders() },
+      });
+
+      if (res.data?.success) {
+        toast.success(res.data?.message || "User updated successfully.");
+        setIsEditOpen(false);
+        setEditData(null);
+        await fetchUsers();
+      } else {
+        toast.error(res.data?.message || "User update failed");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.response?.data?.message || "User update failed");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // ---------------- Delete User ----------------
+  const handleDelete = async (userId: number) => {
+    try {
+      setDeletingId(userId);
+
+      const res = await axios.post(
+        `${apiUrl}/UserDelete`,
+        { user_id: String(userId) },
+        { headers: { ...getAuthHeaders() } }
+      );
+
+      if (res.data?.success) {
+        toast.success(res.data?.message || "User Deleted Successfully");
+        await fetchUsers();
+      } else {
+        toast.error(res.data?.message || "User delete failed");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.response?.data?.message || "User delete failed");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  // ---------------- Toggle Status (API) ----------------
+  const handleStatusChange = async (userId: number, nextStatus: 0 | 1) => {
+    try {
+      setStatusLoadingId(userId);
+
+      const res = await axios.post(
+        `${apiUrl}/user/change-status`,
+        {
+          user_id: String(userId),
+          iStatus: String(nextStatus),
+        },
+        { headers: { ...getAuthHeaders() } }
+      );
+
+      if (res.data?.success) {
+        toast.success(res.data?.message || "Status updated");
+        await fetchUsers();
+      } else {
+        toast.error(res.data?.message || "Status update failed");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.response?.data?.message || "Status update failed");
+    } finally {
+      setStatusLoadingId(null);
+    }
+  };
+
+  // ---------------- Password Update (API) ----------------
+  const handlePasswordUpdate = async () => {
+    if (!newPassword || !confirmPassword)
+      return toast.error("Please fill all fields");
+
+    if (newPassword !== confirmPassword)
+      return toast.error("Passwords do not match");
+
+    if (!passwordUserId) return;
+
+    try {
+      setPasswordLoading(true);
+
+      const res = await axios.post(
+        `${apiUrl}/user/change-password`,
+        {
+          user_id: String(passwordUserId),
+          new_password: newPassword,
+          confirm_password: confirmPassword,
+        },
+        { headers: { ...getAuthHeaders() } }
+      );
+
+      if (res.data?.success) {
+        toast.success(res.data?.message || "Password changed successfully");
+        setIsPasswordOpen(false);
+        setNewPassword("");
+        setConfirmPassword("");
+        setPasswordUserId(null);
+      } else {
+        toast.error(res.data?.message || "Password change failed");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.response?.data?.message || "Password change failed");
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  // ---------------- Filter + Pagination ----------------
+  const filteredUsers = useMemo(() => {
+    return users.filter((item) => item.mobile.includes(searchMobile));
+  }, [users, searchMobile]);
+
+  const totalPages = Math.ceil(filteredUsers.length / recordsPerPage);
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-
   const currentRecords = filteredUsers.slice(
     indexOfFirstRecord,
     indexOfLastRecord
   );
 
-  const totalPages = Math.ceil(filteredUsers.length / recordsPerPage);
+  const handlePageChange = (page: number) => setCurrentPage(page);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const handlePasswordUpdate = () => {
-    if (!newPassword || !confirmPassword)
-      return alert("Please fill all fields");
-
-    if (newPassword !== confirmPassword)
-      return alert("Passwords do not match");
-
-    setUsers(
-      users.map((user) =>
-        user.id === passwordUserId
-          ? { ...user, password: newPassword }
-          : user
-      )
-    );
-
-    setIsPasswordOpen(false);
-    setNewPassword("");
-    setConfirmPassword("");
-  };
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchMobile]);
 
   return (
     <div className="flex gap-8 p-6">
@@ -173,9 +422,12 @@ export default function UserMaster() {
 
         <label className="font-medium">Mobile</label>
         <input
-          type="number"
+          type="text"
           value={mobile}
-          onChange={(e) => setMobile(e.target.value)}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (/^\d{0,10}$/.test(v)) setMobile(v);
+          }}
           placeholder="Enter mobile number"
           className="w-full border px-3 py-2 rounded mt-1 mb-4"
         />
@@ -191,13 +443,16 @@ export default function UserMaster() {
 
         <label className="font-medium">Department</label>
         <select
-          value={department}
-          onChange={(e) => setDepartment(e.target.value)}
+          value={departmentId}
+          onChange={(e) => setDepartmentId(e.target.value)}
           className="w-full border px-3 py-2 rounded mt-1 mb-6"
         >
           <option value="">Select Department</option>
-          <option value="Data Entry">Data Entry</option>
-          <option value="Marketing">Marketing</option>
+          {departments.map((d) => (
+            <option key={d.id} value={String(d.id)}>
+              {d.name}
+            </option>
+          ))}
         </select>
 
         <label className="font-medium">Password</label>
@@ -211,15 +466,26 @@ export default function UserMaster() {
 
         <button
           onClick={handleSave}
-          className="bg-[#2e56a6] text-white px-5 py-2 rounded hover:bg-[#bf7e4e]"
+          disabled={saving}
+          className="bg-[#2e56a6] disabled:opacity-60 text-white px-5 py-2 rounded hover:bg-[#bf7e4e]"
         >
-          Save
+          {saving ? "Saving..." : "Save"}
         </button>
       </div>
 
       {/* RIGHT: User List */}
       <div className="w-2/3 bg-white p-6 shadow rounded-xl">
-        <h2 className="text-xl font-semibold mb-4">User List</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">User List</h2>
+
+          <button
+            onClick={fetchUsers}
+            disabled={loading}
+            className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-60"
+          >
+            {loading ? "Refreshing..." : "Refresh"}
+          </button>
+        </div>
 
         {/* Search */}
         <div className="bg-white border rounded-xl p-4 mb-5 shadow-sm flex items-center gap-3">
@@ -229,9 +495,7 @@ export default function UserMaster() {
             value={searchMobile}
             onChange={(e) => {
               const value = e.target.value;
-              if (/^\d{0,10}$/.test(value)) {
-                setSearchMobile(value);
-              }
+              if (/^\d{0,10}$/.test(value)) setSearchMobile(value);
             }}
             className="border px-3 py-2 rounded w-1/3"
           />
@@ -240,36 +504,40 @@ export default function UserMaster() {
           </button>
         </div>
 
-        <div className="overflow-x-scroll">
+        <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-100 text-left">
                 <th className="p-3">ID</th>
-                <th className="p-1">Name</th>
-                <th className="p-1">Mobile</th>
-                <th className="p-1">Address</th>
-                <th className="p-1">Department</th>
-                <th className="p-1">Expo Count</th>
-                <th className="p-1">Status</th>
-                <th className="p-1">Actions</th>
+                <th className="p-2">Name</th>
+                <th className="p-2">Mobile</th>
+                <th className="p-2">Address</th>
+                <th className="p-2">Department</th>
+                <th className="p-2 text-center">Expo Count</th>
+                <th className="p-2">Status</th>
+                <th className="p-2">Actions</th>
               </tr>
             </thead>
 
             <tbody>
-              {currentRecords.map((item) => (
+              {currentRecords.map((item, index) => (
                 <tr key={item.id} className="border-b hover:bg-gray-50">
-                  <td className="p-3">{item.id}</td>
-                  <td className="p-1">{item.name}</td>
-                  <td className="p-1">{item.mobile}</td>
-                  <td className="p-1">{item.address}</td>
-                  <td className="p-1">{item.department}</td>
-                  <td className="p-1 text-center">10</td>
+                  <td className="p-3">{index + 1}</td>
+                  <td className="p-2">{item.name}</td>
+                  <td className="p-2">{item.mobile}</td>
+                  <td className="p-2">{item.address}</td>
+                  <td className="p-2">{item.department || "-"}</td>
+                  <td className="p-2 text-center">{item.expo_count ?? 0}</td>
 
                   {/* STATUS BUTTON */}
-                  <td className="p-1">
+                  <td className="p-2">
                     <button
-                      onClick={() => toggleStatus(item.id!)}
-                      className="text-white px-3 py-1 rounded-md text-sm"
+                      disabled={statusLoadingId === item.id}
+                      onClick={() => {
+                        const next = item.status === "active" ? 0 : 1;
+                        handleStatusChange(item.id, next);
+                      }}
+                      className="text-white px-3 py-1 rounded-md text-sm disabled:opacity-70"
                       style={{
                         background:
                           item.status === "active"
@@ -277,17 +545,19 @@ export default function UserMaster() {
                             : "linear-gradient(135deg, #f17171 0, #5b71b9 100%)",
                       }}
                     >
-                      {item.status === "active" ? "Active" : "Inactive"}
+                      {statusLoadingId === item.id
+                        ? "Updating..."
+                        : item.status === "active"
+                          ? "Active"
+                          : "Inactive"}
                     </button>
                   </td>
 
-                  <td className="p-1 py-2 flex items-center gap-1">
+                  <td className="p-2 py-2 flex items-center gap-1">
                     <button
                       className="text-blue-600 hover:text-blue-800"
-                      onClick={() => {
-                        setEditData(item);
-                        setIsEditOpen(true);
-                      }}
+                      onClick={() => openEdit(item.id)}
+                      title="Edit"
                     >
                       <EditIcon fontSize="small" />
                     </button>
@@ -295,18 +565,18 @@ export default function UserMaster() {
                     <button
                       className="text-red-600 hover:text-red-800"
                       onClick={() => {
-                        setDeleteId(item.id!);
+                        setDeleteId(item.id);
                         setIsDeleteOpen(true);
                       }}
+                      title="Delete"
                     >
                       <DeleteIcon fontSize="small" />
                     </button>
 
                     <button
                       className="text-blue-600 hover:text-blue-800"
-                      onClick={() =>
-                        navigate(`/admin/users/assign/${item.id}`)
-                      }
+                      onClick={() => navigate(`/admin/users/assign/${item.id}`)}
+                      title="Assign"
                     >
                       <AssignmentIcon fontSize="small" />
                     </button>
@@ -314,15 +584,26 @@ export default function UserMaster() {
                     <button
                       className="text-yellow-600 hover:text-yellow-800"
                       onClick={() => {
-                        setPasswordUserId(item.id!);
+                        setPasswordUserId(item.id);
+                        setNewPassword("");
+                        setConfirmPassword("");
                         setIsPasswordOpen(true);
                       }}
+                      title="Change Password"
                     >
                       <VpnKeyIcon fontSize="small" />
                     </button>
                   </td>
                 </tr>
               ))}
+
+              {!loading && currentRecords.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="text-center p-6 text-gray-500">
+                    No users found
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -340,7 +621,7 @@ export default function UserMaster() {
             Prev
           </button>
 
-          {[...Array(totalPages)].map((_, index) => {
+          {[...Array(totalPages || 1)].map((_, index) => {
             const page = index + 1;
             return (
               <button
@@ -357,9 +638,9 @@ export default function UserMaster() {
           })}
 
           <button
-            disabled={currentPage === totalPages}
+            disabled={currentPage === totalPages || totalPages === 0}
             onClick={() => handlePageChange(currentPage + 1)}
-            className={`px-3 py-1 rounded border ${currentPage === totalPages
+            className={`px-3 py-1 rounded border ${currentPage === totalPages || totalPages === 0
                 ? "bg-gray-200 cursor-not-allowed"
                 : "bg-white hover:bg-gray-100"
               }`}
@@ -369,7 +650,7 @@ export default function UserMaster() {
         </div>
 
         {/* EDIT MODAL */}
-        {isEditOpen && (
+        {isEditOpen && editData && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96">
               <h2 className="text-xl font-semibold mb-4">Edit User</h2>
@@ -388,9 +669,12 @@ export default function UserMaster() {
               <input
                 type="text"
                 value={editData.mobile}
-                onChange={(e) =>
-                  setEditData({ ...editData, mobile: e.target.value })
-                }
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (/^\d{0,10}$/.test(v)) {
+                    setEditData({ ...editData, mobile: v });
+                  }
+                }}
                 className="w-full border px-3 py-2 rounded mt-1 mb-4"
               />
 
@@ -406,30 +690,43 @@ export default function UserMaster() {
 
               <label className="font-medium">Department</label>
               <select
-                value={editData.department}
+                value={String(editData.department_id ?? "")}
                 onChange={(e) =>
-                  setEditData({ ...editData, department: e.target.value })
+                  setEditData({
+                    ...editData,
+                    department_id: e.target.value ? Number(e.target.value) : null,
+                    department:
+                      departments.find((d) => String(d.id) === e.target.value)
+                        ?.name || "",
+                  })
                 }
                 className="w-full border px-3 py-2 rounded mt-1 mb-4"
               >
                 <option value="">Select Department</option>
-                <option value="Data Entry">Data Entry</option>
-                <option value="Marketing">Marketing</option>
+                {departments.map((d) => (
+                  <option key={d.id} value={String(d.id)}>
+                    {d.name}
+                  </option>
+                ))}
               </select>
 
               <div className="flex justify-end gap-3">
                 <button
                   className="px-4 py-2 bg-gray-300 rounded"
-                  onClick={() => setIsEditOpen(false)}
+                  onClick={() => {
+                    setIsEditOpen(false);
+                    setEditData(null);
+                  }}
                 >
                   Cancel
                 </button>
 
                 <button
-                  className="px-4 py-2 bg-[#2e56a6] text-white rounded"
+                  className="px-4 py-2 bg-[#2e56a6] text-white rounded disabled:opacity-60"
+                  disabled={updating}
                   onClick={handleUpdate}
                 >
-                  Update
+                  {updating ? "Updating..." : "Update"}
                 </button>
               </div>
             </div>
@@ -457,13 +754,15 @@ export default function UserMaster() {
                 </button>
 
                 <button
-                  className="px-5 py-2 bg-red-600 text-white rounded-full"
+                  className="px-5 py-2 bg-red-600 text-white rounded-full disabled:opacity-60"
+                  disabled={deleteId === null || deletingId === deleteId}
                   onClick={() => {
                     if (deleteId !== null) handleDelete(deleteId);
+                    // keep popup open till done OR close immediately:
                     setIsDeleteOpen(false);
                   }}
                 >
-                  Delete
+                  {deletingId === deleteId ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </div>
@@ -513,10 +812,11 @@ export default function UserMaster() {
                 </button>
 
                 <button
-                  className="px-4 py-2 bg-blue-600 text-white rounded"
+                  className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-60"
+                  disabled={passwordLoading}
                   onClick={handlePasswordUpdate}
                 >
-                  Update
+                  {passwordLoading ? "Updating..." : "Update"}
                 </button>
               </div>
             </div>

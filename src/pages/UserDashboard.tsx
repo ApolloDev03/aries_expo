@@ -1,7 +1,61 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { apiUrl } from "../config";
+type CountRes = {
+    user_id: string;
+    total_visitors: number;
+    today_visitors: number;
+};
+
 export default function UserDashboard() {
+    const userId = localStorage.getItem("User_Id") || "";
+
+    const [loadingCounts, setLoadingCounts] = useState(false);
+    const [totalVisitors, setTotalVisitors] = useState(0);
+    const [todayVisitors, setTodayVisitors] = useState(0);
+
+    const fetchVisitorCounts = async () => {
+        if (!userId) {
+            toast.error("User_Id not found in localStorage");
+            setTotalVisitors(0);
+            setTodayVisitors(0);
+            return;
+        }
+
+        try {
+            setLoadingCounts(true);
+
+            const res = await axios.post(`${apiUrl}/visitor/user/count`, {
+                user_id: String(userId),
+            });
+
+            if (res.data?.success && res.data?.data) {
+                const d: CountRes = res.data.data;
+                setTotalVisitors(Number(d.total_visitors || 0));
+                setTodayVisitors(Number(d.today_visitors || 0));
+            } else {
+                toast.error(res.data?.message || "Visitor count fetch failed");
+                setTotalVisitors(0);
+                setTodayVisitors(0);
+            }
+        } catch (err: any) {
+            console.error(err);
+            toast.error(err?.response?.data?.message || "Visitor count fetch failed");
+            setTotalVisitors(0);
+            setTodayVisitors(0);
+        } finally {
+            setLoadingCounts(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchVisitorCounts();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     return (
         <div className="space-y-6">
-
             {/* HEADER */}
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-xl shadow">
                 <h1 className="text-2xl font-bold">Welcome Back 👋</h1>
@@ -10,25 +64,39 @@ export default function UserDashboard() {
 
             {/* TOP USER STATS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
                 {/* Card 1 */}
                 <div className="bg-white shadow rounded-xl p-6 border-l-4 border-blue-500">
-                    <h2 className="text-sm text-gray-500">Your Registered Exhibitions</h2>
-                    <p className="text-3xl font-bold text-gray-800 mt-2">3</p>
+                    <h2 className="text-sm text-gray-500">Total Visiters</h2>
+
+                    {loadingCounts ? (
+                        <div className="mt-3 flex items-center gap-2 text-gray-500">
+                            <span className="w-5 h-5 rounded-full border-2 border-gray-400 border-t-transparent animate-spin" />
+                            Loading...
+                        </div>
+                    ) : (
+                        <p className="text-3xl font-bold text-gray-800 mt-2">{totalVisitors}</p>
+                    )}
                 </div>
 
                 {/* Card 2 */}
                 <div className="bg-white shadow rounded-xl p-6 border-l-4 border-green-500">
-                    <h2 className="text-sm text-gray-500">Tickets Downloaded</h2>
-                    <p className="text-3xl font-bold text-gray-800 mt-2">7</p>
+                    <h2 className="text-sm text-gray-500">Today Total Visiters</h2>
+
+                    {loadingCounts ? (
+                        <div className="mt-3 flex items-center gap-2 text-gray-500">
+                            <span className="w-5 h-5 rounded-full border-2 border-gray-400 border-t-transparent animate-spin" />
+                            Loading...
+                        </div>
+                    ) : (
+                        <p className="text-3xl font-bold text-gray-800 mt-2">{todayVisitors}</p>
+                    )}
                 </div>
 
-                {/* Card 3 */}
+                {/* Card 3 (static for now) */}
                 <div className="bg-white shadow rounded-xl p-6 border-l-4 border-purple-500">
                     <h2 className="text-sm text-gray-500">Upcoming Events</h2>
                     <p className="text-3xl font-bold text-gray-800 mt-2">2</p>
                 </div>
-
             </div>
 
             {/* UPCOMING EXPO */}
@@ -43,7 +111,9 @@ export default function UserDashboard() {
                     </div>
 
                     <div>
-                        <h3 className="text-lg font-bold text-gray-800">Mega Industrial Expo 2025</h3>
+                        <h3 className="text-lg font-bold text-gray-800">
+                            Mega Industrial Expo 2025
+                        </h3>
                         <p className="text-gray-600 mt-1">Ahmedabad Exhibition Ground</p>
                         <p className="text-gray-500 text-sm mt-1">12 January 2025</p>
 
@@ -56,7 +126,6 @@ export default function UserDashboard() {
 
             {/* RECENT ACTIVITY + QUICK ACTIONS */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
                 {/* Recent Activity */}
                 <div className="md:col-span-2 bg-white shadow rounded-xl p-6">
                     <h2 className="text-xl font-semibold mb-4 border-b pb-2">
@@ -85,9 +154,7 @@ export default function UserDashboard() {
                         Need Help?
                     </h2>
 
-                    <p className="text-gray-600 mb-4">
-                        Our support team is here for you.
-                    </p>
+                    <p className="text-gray-600 mb-4">Our support team is here for you.</p>
 
                     <button className="bg-green-600 w-full text-white py-2 rounded-lg shadow hover:bg-green-700 transition">
                         Contact Support
@@ -97,7 +164,6 @@ export default function UserDashboard() {
                         FAQs
                     </button>
                 </div>
-
             </div>
         </div>
     );

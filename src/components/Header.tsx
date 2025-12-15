@@ -186,73 +186,133 @@ export default function Header() {
   const [openMaster, setOpenMaster] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
   const [openOthers, setOpenOthers] = useState(false);
- const masterRef = useRef<HTMLDivElement>(null);
-const profileRef = useRef<HTMLDivElement>(null);
+  const masterRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
 
 
+  // const handleLogout = async () => {
+  //   try {
+  //     const adminId = localStorage.getItem("admin_id");
+
+  //     if (!adminId) {
+  //       toast.error("Admin ID not found");
+  //       return;
+  //     }
+
+  //     const res = await axios.post(`${apiUrl}/logout`, {
+  //       admin_id: adminId,
+  //     });
+
+  //     if (res.data?.success) {
+  //       // ✅ clear auth
+  //       localStorage.removeItem("admin_id");
+  //       localStorage.removeItem("artoken");
+  //       localStorage.removeItem("user");
+
+  //       delete axios.defaults.headers.common["Authorization"];
+
+  //       toast.success(res.data?.message || "Logged out successfully");
+
+  //       setOpenProfile(false);
+  //       navigate("/admin/logout");
+  //     } else {
+  //       toast.error(res.data?.message || "Logout failed");
+  //     }
+  //   } catch (err: any) {
+  //     console.error(err);
+
+  //     const msg =
+  //       err?.response?.data?.message ||
+  //       err?.response?.data?.error ||
+  //       err?.message ||
+  //       "Logout failed";
+
+  //     toast.error(msg);
+  //   }
+  // };
   const handleLogout = async () => {
+    const forceLogout = (msg?: string) => {
+      // ✅ clear auth
+      localStorage.removeItem("admin_id");
+      localStorage.removeItem("artoken");
+      localStorage.removeItem("user");
+
+      delete axios.defaults.headers.common["Authorization"];
+
+      if (msg) toast.error(msg);
+
+      setOpenProfile(false);
+      navigate("/"); // ✅ login page route (change if your login route is different)
+    };
+
     try {
       const adminId = localStorage.getItem("admin_id");
+      const token = localStorage.getItem("artoken");
 
-      if (!adminId) {
-        toast.error("Admin ID not found");
-        return;
+      // if token/admin missing -> directly go login
+      if (!adminId || !token) {
+        return forceLogout("Session expired. Please login again.");
       }
 
-      const res = await axios.post(`${apiUrl}/logout`, {
-        admin_id: adminId,
-      });
+      const res = await axios.post(
+        `${apiUrl}/logout`,
+        { admin_id: adminId },
+        { headers: { Authorization: `Bearer ${token}` } } // ✅ send token
+      );
 
       if (res.data?.success) {
-        // ✅ clear auth
+        toast.success(res.data?.message || "Logged out successfully");
+        setOpenProfile(false);
+        navigate("/admin/login"); // ✅ login page
+        // clear after navigate also ok
         localStorage.removeItem("admin_id");
         localStorage.removeItem("artoken");
         localStorage.removeItem("user");
-
         delete axios.defaults.headers.common["Authorization"];
-
-        toast.success(res.data?.message || "Logged out successfully");
-
-        setOpenProfile(false);
-        navigate("/admin/logout");
       } else {
-        toast.error(res.data?.message || "Logout failed");
+        // ✅ if token parse error OR success false => go login
+        const errMsg =
+          res.data?.error ||
+          res.data?.message ||
+          "Session expired. Please login again.";
+        forceLogout(errMsg);
       }
     } catch (err: any) {
       console.error(err);
 
       const msg =
-        err?.response?.data?.message ||
         err?.response?.data?.error ||
+        err?.response?.data?.message ||
         err?.message ||
-        "Logout failed";
+        "Session expired. Please login again.";
 
-      toast.error(msg);
+      // ✅ any error => go login
+      forceLogout(msg);
     }
   };
 
   useEffect(() => {
-  const handleClickOutside = (e: MouseEvent) => {
-    if (
-      masterRef.current &&
-      !masterRef.current.contains(e.target as Node)
-    ) {
-      setOpenMaster(false);
-    }
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        masterRef.current &&
+        !masterRef.current.contains(e.target as Node)
+      ) {
+        setOpenMaster(false);
+      }
 
-    if (
-      profileRef.current &&
-      !profileRef.current.contains(e.target as Node)
-    ) {
-      setOpenProfile(false);
-    }
-  };
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(e.target as Node)
+      ) {
+        setOpenProfile(false);
+      }
+    };
 
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => document.removeEventListener("mousedown", handleClickOutside);
-}, []);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
 
 
