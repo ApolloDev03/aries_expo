@@ -211,9 +211,6 @@ export default function VisitorList() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-semibold">Visitor List</h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Label: <span className="font-medium">{label || "TotalVisitors"}</span>
-          </p>
         </div>
 
 
