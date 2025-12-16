@@ -577,12 +577,8 @@ export default function ExpoMaster() {
             onChange={(e) => setSearchExpo(e.target.value)}
             className="border px-3 py-2 rounded w-1/3 disabled:bg-gray-100"
           />
-          <button
-            onClick={() => fetchExpoList()}
-            disabled={isListing}
-            className="bg-[#2e56a6] text-white px-5 py-2 rounded disabled:bg-gray-400"
-          >
-            Refresh
+          <button className="bg-[#2e56a6] text-white px-5 py-2 rounded">
+            Search
           </button>
         </div>
 
