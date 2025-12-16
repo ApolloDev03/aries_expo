@@ -140,6 +140,7 @@ export default function AssignedExpoList() {
                                         <td className="p-2 text-center">
                                             <div className="flex justify-center gap-2">
                                                 <button
+                                                title="Add visitor"
                                                     className="px-3 py-1 text-white rounded-lg shadow bg-gradient-to-r from-blue-500 to-blue-600 hover:opacity-90"
                                                     onClick={() =>
                                                         navigate("/users/add-visitors", {
@@ -154,6 +155,7 @@ export default function AssignedExpoList() {
                                                 </button>
 
                                                 <button
+                                                title="Add exhibitor"
                                                     className="px-3 py-1 text-white rounded-lg shadow bg-gradient-to-r from-blue-500 to-blue-600 hover:opacity-90"
                                                     onClick={() =>
                                                         navigate("/users/stalls", {

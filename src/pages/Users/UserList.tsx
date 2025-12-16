@@ -655,8 +655,29 @@ export default function UserMaster() {
 
         {/* EDIT MODAL */}
         {isEditOpen && editData && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
+            onClick={() => {
+              setIsEditOpen(false);
+              setEditData(null);
+            }} // ✅ outside click close
+          >
+            <div
+              className="bg-white p-6 rounded-lg shadow-lg w-96 relative"
+              onClick={(e) => e.stopPropagation()} // ❌ prevent inside close
+            >
+              {/* ❌ Close (X) icon */}
+              <button
+                onClick={() => {
+                  setIsEditOpen(false);
+                  setEditData(null);
+                }}
+                className="absolute top-4 right-5 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                aria-label="Close"
+              >
+                ×
+              </button>
+
               <h2 className="text-xl font-semibold mb-4">Edit User</h2>
 
               <label className="font-medium">Name</label>
@@ -747,10 +768,26 @@ export default function UserMaster() {
           </div>
         )}
 
+
         {/* DELETE POPUP */}
         {isDeleteOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-2xl shadow-xl w-[380px]">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
+            onClick={() => setIsDeleteOpen(false)}   // ✅ outside click close
+          >
+            <div
+              className="bg-white p-6 rounded-2xl shadow-xl w-[380px] relative"
+              onClick={(e) => e.stopPropagation()}   // ❌ prevent close on inner click
+            >
+              {/* ❌ Cross (X) icon */}
+              <button
+                onClick={() => setIsDeleteOpen(false)}
+                className="absolute top-4 right-5 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                aria-label="Close"
+              >
+                ×
+              </button>
+
               <h2 className="text-xl font-semibold text-red-600 mb-2">
                 Delete User
               </h2>
@@ -772,7 +809,6 @@ export default function UserMaster() {
                   disabled={deleteId === null || deletingId === deleteId}
                   onClick={() => {
                     if (deleteId !== null) handleDelete(deleteId);
-                    // keep popup open till done OR close immediately:
                     setIsDeleteOpen(false);
                   }}
                 >
@@ -783,10 +819,26 @@ export default function UserMaster() {
           </div>
         )}
 
+
         {/* PASSWORD POPUP */}
         {isPasswordOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-2xl shadow-xl w-[380px]">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
+            onClick={() => setIsPasswordOpen(false)}   // ✅ outside click close
+          >
+            <div
+              className="bg-white p-6 rounded-2xl shadow-xl w-[380px] relative"
+              onClick={(e) => e.stopPropagation()}     // ❌ prevent inside close
+            >
+              {/* ❌ Cross (X) icon */}
+              <button
+                onClick={() => setIsPasswordOpen(false)}
+                className="absolute top-4 right-5 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                aria-label="Close"
+              >
+                ×
+              </button>
+
               <h2 className="text-xl font-semibold text-blue-600 mb-4">
                 Change Password
               </h2>
@@ -826,7 +878,7 @@ export default function UserMaster() {
                 </button>
 
                 <button
-                  className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-60"
+                  className="px-4 py-2 bg-[#2e56a6] text-white rounded disabled:opacity-60"
                   disabled={passwordLoading}
                   onClick={handlePasswordUpdate}
                 >
@@ -836,6 +888,7 @@ export default function UserMaster() {
             </div>
           </div>
         )}
+
       </div>
     </div>
   );

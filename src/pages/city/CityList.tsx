@@ -1579,22 +1579,41 @@ export default function CityMaster() {
 
           {/* EDIT MODAL */}
           {isEditOpen && editCity && (
-            <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-                <h2 className="text-xl font-semibold mb-4">Edit City</h2>
+            <div
+              className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40"
+              onClick={() => setIsEditOpen(false)} // ✅ outside click closes popup
+            >
+              <div
+                className="bg-white p-6 rounded-lg shadow-lg w-96 relative"
+                onClick={(e) => e.stopPropagation()} // ❌ prevent close inside
+              >
+                {/* Header */}
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">Edit City</h2>
+
+                  {/* ❌ Close icon */}
+                  <button
+                    onClick={() => setIsEditOpen(false)}
+                    disabled={isUpdating}
+                    className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                    aria-label="Close"
+                  >
+                    ×
+                  </button>
+                </div>
 
                 <label className="font-medium">State</label>
                 <select
-                  value={String(editCity.stateid ?? "")}  // ✅ FIXED (ID match)
+                  value={String(editCity.stateid ?? "")}
                   disabled={isUpdating}
                   onChange={(e) => {
-                    const newStateId = e.target.value; // ID
+                    const newStateId = e.target.value;
                     const stName = getStateNameById(newStateId);
 
                     setEditCity({
                       ...editCity,
-                      stateid: newStateId, // ✅ store id
-                      statename: stName,   // store name also
+                      stateid: newStateId,
+                      statename: stName,
                     });
                   }}
                   className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
@@ -1612,7 +1631,9 @@ export default function CityMaster() {
                   type="text"
                   value={editCity.name}
                   disabled={isUpdating}
-                  onChange={(e) => setEditCity({ ...editCity, name: e.target.value })}
+                  onChange={(e) =>
+                    setEditCity({ ...editCity, name: e.target.value })
+                  }
                   className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
                 />
 
@@ -1637,13 +1658,31 @@ export default function CityMaster() {
             </div>
           )}
 
+
           {/* DELETE CONFIRMATION POPUP */}
           {isDeleteOpen && (
-            <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40">
-              <div className="bg-white p-6 rounded-2xl shadow-xl w-[380px]">
+            <div
+              className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40"
+              onClick={() => setIsDeleteOpen(false)}   // ✅ outside click closes
+            >
+              <div
+                className="bg-white p-6 rounded-2xl shadow-xl w-[380px] relative"
+                onClick={(e) => e.stopPropagation()}   // ❌ prevent close inside
+              >
+                {/* ❌ Close icon */}
+                <button
+                  onClick={() => setIsDeleteOpen(false)}
+                  disabled={isDeleting}
+                  className="absolute top-4 right-5 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+
                 <h2 className="text-xl font-semibold text-red-600 mb-2">
                   Delete Record
                 </h2>
+
                 <p className="text-gray-600 mb-6">
                   Are you sure you want to delete the record?
                 </p>
@@ -1670,6 +1709,7 @@ export default function CityMaster() {
               </div>
             </div>
           )}
+
         </div>
       </div>
     </div>
