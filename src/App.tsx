@@ -20,6 +20,8 @@ import UserDashboard from "./pages/UserDashboard";
 import AssignedExpoList from "./pages/my-expo/MyExpo";
 import AddVisitor from "./pages/add-visitor/AddVisitor";
 import ProtectedRoute from "./components/AdminProtectedRoute";
+import UserProfile from "./pages/userProfile/UserProfile";
+import EditUserProfile from "./pages/userProfile/EditUserProfile";
 
 
 
@@ -29,7 +31,7 @@ export default function App() {
       <Routes>
         {/* admin login */}
         <Route path="/" element={<UserLogin />} />
-        {/* <Route path="/logout" element={<Logout />} /> */}
+        <Route path="/logout" element={<Logout />} />
 
         {/* admin login */}
         <Route path="/admin/login" element={<Login />} />
@@ -47,6 +49,9 @@ export default function App() {
           <Route path="my-expo" element={<AssignedExpoList />} />
 
           <Route path="add-visitors" element={<AddVisitor />} />
+
+          <Route path="profile" element={<UserProfile />} />
+          <Route path="edit-profile" element={<EditUserProfile />} />
 
 
         </Route>
