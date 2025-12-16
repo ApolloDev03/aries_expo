@@ -46,7 +46,7 @@ export default function UserHeader() {
   return (
     <header className="flex justify-between items-center px-6 py-4 bg-white shadow">
       {/* LEFT SIDE LOGO */}
-      <Link to="/admin">
+      <Link to="/users">
         <img src={ariesLogo} className="h-12 cursor-pointer" />
       </Link>
 

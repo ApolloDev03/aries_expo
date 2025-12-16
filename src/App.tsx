@@ -23,6 +23,7 @@ import ProtectedRoute from "./components/AdminProtectedRoute";
 import UserProfile from "./pages/userProfile/UserProfile";
 import EditUserProfile from "./pages/userProfile/EditUserProfile";
 import UserLogout from "./pages/UserLogout";
+import VisitorList from "./pages/add-visitor/VisitorList";
 
 
 
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="my-expo" element={<AssignedExpoList />} />
 
           <Route path="add-visitors" element={<AddVisitor />} />
+          <Route path="visitors-list" element={<VisitorList />} />
 
           <Route path="profile" element={<UserProfile />} />
           <Route path="edit-profile" element={<EditUserProfile />} />
