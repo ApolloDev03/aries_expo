@@ -22,6 +22,7 @@ import AddVisitor from "./pages/add-visitor/AddVisitor";
 import ProtectedRoute from "./components/AdminProtectedRoute";
 import UserProfile from "./pages/userProfile/UserProfile";
 import EditUserProfile from "./pages/userProfile/EditUserProfile";
+import UserLogout from "./pages/UserLogout";
 import VisitorList from "./pages/add-visitor/VisitorList";
 
 
@@ -32,7 +33,7 @@ export default function App() {
       <Routes>
         {/* admin login */}
         <Route path="/" element={<UserLogin />} />
-        <Route path="/logout" element={<Logout />} />
+        <Route path="/logout" element={<UserLogout />} />
 
         {/* admin login */}
         <Route path="/admin/login" element={<Login />} />
@@ -82,6 +83,7 @@ export default function App() {
 
           <Route path="profile" element={<AdminProfile />} />
           <Route path="edit-profile" element={<EditProfile />} />
+
 
           {/* USERS ROUTES */}
           <Route path="users" element={<UserList />} />

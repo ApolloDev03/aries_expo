@@ -462,13 +462,7 @@ export default function AssignForm() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Assigned Expos</h2>
 
-            <button
-              onClick={fetchAssignedList}
-              disabled={loading}
-              className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-60"
-            >
-              {loading ? "Refreshing..." : "Refresh"}
-            </button>
+
           </div>
 
           <table className="w-full border-collapse">

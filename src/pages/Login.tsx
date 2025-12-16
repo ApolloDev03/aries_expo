@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import logo from "../assets/logo.png";
 import { apiUrl } from "../config";
-import { useAuth } from "../components/context/AuthContext";
 import { toast } from "react-toastify";
+import { useAdminAuth } from "../components/context/AuthContext";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,7 +13,7 @@ export default function Login() {
   const nav = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
 
-  const { login: authLogin } = useAuth();
+  const { adminLogin: authLogin } = useAdminAuth();
 
   const handleLogin = async () => {
     if (loading) return;

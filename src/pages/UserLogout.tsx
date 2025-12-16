@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-export default function Logout() {
+export default function UserLogout() {
     const nav = useNavigate();
 
     return (
@@ -23,7 +23,7 @@ export default function Logout() {
 
                 {/* Heading */}
                 <h2 className="text-2xl font-semibold text-gray-800">
-                    You are Logged Out
+                    You are Logged Out user
                 </h2>
 
                 {/* Subtext */}

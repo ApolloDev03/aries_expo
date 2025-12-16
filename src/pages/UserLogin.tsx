@@ -115,8 +115,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import logo from "../assets/logo.png";
 import { apiUrl } from "../config";
-import { useAuth } from "../components/context/AuthContext";
 import { toast } from "react-toastify";
+import { useUserAuth } from "../components/context/UserAuthContext";
 
 export default function UserLogin() {
   const [showPassword, setShowPassword] = useState(false);
@@ -127,7 +127,7 @@ export default function UserLogin() {
   // API expects mobile
   const [form, setForm] = useState({ mobile: "", password: "" });
 
-  const { login: authLogin } = useAuth();
+  const { userLogin : authLogin } = useUserAuth();
 
   // ✅ LOGIN FUNCTION (used by Enter + Button)
   const handleLogin = async () => {
