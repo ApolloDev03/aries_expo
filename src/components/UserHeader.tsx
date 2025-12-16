@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-// import { logout } from "../utils/auth";
 import { useNavigate } from "react-router-dom";
 import ariesLogo from "../assets/logo.png";
 import { useState } from "react";
@@ -8,9 +7,7 @@ import axios from "axios";
 import { apiUrl } from "../config";
 
 export default function UserHeader() {
-  //   const [openMaster, setOpenMaster] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
-  //   const [openOthers, setOpenOthers] = useState(false);
 
   const navigate = useNavigate();
 
