@@ -517,11 +517,27 @@ export default function AssignForm() {
 
           {/* DELETE MODAL */}
           {showDeleteModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-              <div className="bg-white rounded-lg shadow-lg p-6 w-80">
+            <div
+              className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
+              onClick={() => setShowDeleteModal(false)}   // ✅ outside click close
+            >
+              <div
+                className="bg-white rounded-lg shadow-lg p-6 w-80 relative"
+                onClick={(e) => e.stopPropagation()}     // ❌ prevent inside click close
+              >
+                {/* ❌ Cross (X) icon */}
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="absolute top-4 right-5 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+
                 <h2 className="text-xl font-semibold text-red-600 mb-2">
                   Delete Record
                 </h2>
+
                 <p className="text-gray-600 mb-6">
                   Are you sure you want to delete the record?
                 </p>
@@ -549,6 +565,7 @@ export default function AssignForm() {
               </div>
             </div>
           )}
+
         </div>
       </div>
     </div>

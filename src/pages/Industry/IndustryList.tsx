@@ -290,8 +290,8 @@ export default function IndustryMaster() {
               disabled={currentPage === 1 || isListing}
               onClick={() => handlePageChange(currentPage - 1)}
               className={`px-3 py-1 rounded border ${currentPage === 1 || isListing
-                  ? "bg-gray-200 cursor-not-allowed"
-                  : "bg-white hover:bg-gray-100"
+                ? "bg-gray-200 cursor-not-allowed"
+                : "bg-white hover:bg-gray-100"
                 }`}
             >
               Prev
@@ -305,8 +305,8 @@ export default function IndustryMaster() {
                   disabled={isListing}
                   onClick={() => handlePageChange(page)}
                   className={`px-3 py-1 rounded border ${currentPage === page
-                      ? "bg-[#2e56a6] text-white"
-                      : "bg-white hover:bg-gray-100"
+                    ? "bg-[#2e56a6] text-white"
+                    : "bg-white hover:bg-gray-100"
                     }`}
                 >
                   {page}
@@ -318,8 +318,8 @@ export default function IndustryMaster() {
               disabled={currentPage === totalPages || isListing}
               onClick={() => handlePageChange(currentPage + 1)}
               className={`px-3 py-1 rounded border ${currentPage === totalPages || isListing
-                  ? "bg-gray-200 cursor-not-allowed"
-                  : "bg-white hover:bg-gray-100"
+                ? "bg-gray-200 cursor-not-allowed"
+                : "bg-white hover:bg-gray-100"
                 }`}
             >
               Next
@@ -329,8 +329,24 @@ export default function IndustryMaster() {
 
         {/* Edit Modal */}
         {isEditOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40"
+            onClick={() => setIsEditOpen(false)} // ✅ outside click close
+          >
+            <div
+              className="bg-white p-6 rounded-lg shadow-lg w-96 relative"
+              onClick={(e) => e.stopPropagation()} // ❌ prevent inside click
+            >
+              {/* ❌ Close icon */}
+              <button
+                onClick={() => setIsEditOpen(false)}
+                disabled={isUpdating}
+                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                aria-label="Close"
+              >
+                ×
+              </button>
+
               <h2 className="text-xl font-semibold mb-4">Edit Industry</h2>
 
               <label className="font-medium">Industry</label>
@@ -365,10 +381,27 @@ export default function IndustryMaster() {
           </div>
         )}
 
+
         {/* Delete Modal */}
         {isDeleteOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40">
-            <div className="bg-white p-6 rounded-2xl shadow-xl w-[380px]">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40"
+            onClick={() => setIsDeleteOpen(false)}   // ✅ outside click close
+          >
+            <div
+              className="bg-white p-6 rounded-2xl shadow-xl w-[380px] relative"
+              onClick={(e) => e.stopPropagation()}   // ❌ prevent inside close
+            >
+              {/* ❌ Close icon */}
+              <button
+                onClick={() => setIsDeleteOpen(false)}
+                disabled={isDeleting}
+                className="absolute top-4 right-5 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                aria-label="Close"
+              >
+                ×
+              </button>
+
               <h2 className="text-xl font-semibold text-red-600 mb-2">
                 Delete Record
               </h2>
@@ -401,6 +434,7 @@ export default function IndustryMaster() {
             </div>
           </div>
         )}
+
       </div>
     </div>
   );
