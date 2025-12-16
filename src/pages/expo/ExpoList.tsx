@@ -577,12 +577,8 @@ export default function ExpoMaster() {
             onChange={(e) => setSearchExpo(e.target.value)}
             className="border px-3 py-2 rounded w-1/3 disabled:bg-gray-100"
           />
-          <button
-            onClick={() => fetchExpoList()}
-            disabled={isListing}
-            className="bg-[#2e56a6] text-white px-5 py-2 rounded disabled:bg-gray-400"
-          >
-            Refresh
+          <button className="bg-[#2e56a6] text-white px-5 py-2 rounded">
+            Search
           </button>
         </div>
 
@@ -659,8 +655,8 @@ export default function ExpoMaster() {
             disabled={currentPage === 1 || isListing}
             onClick={() => setCurrentPage(currentPage - 1)}
             className={`px-3 py-1 rounded border ${currentPage === 1 || isListing
-                ? "bg-gray-200 cursor-not-allowed"
-                : "bg-white hover:bg-gray-100"
+              ? "bg-gray-200 cursor-not-allowed"
+              : "bg-white hover:bg-gray-100"
               }`}
           >
             Prev
@@ -674,8 +670,8 @@ export default function ExpoMaster() {
                 disabled={isListing}
                 onClick={() => setCurrentPage(page)}
                 className={`px-3 py-1 rounded border ${currentPage === page
-                    ? "bg-[#2e56a6] text-white"
-                    : "bg-white hover:bg-gray-100"
+                  ? "bg-[#2e56a6] text-white"
+                  : "bg-white hover:bg-gray-100"
                   }`}
               >
                 {page}
@@ -687,8 +683,8 @@ export default function ExpoMaster() {
             disabled={currentPage === totalPages || totalPages === 0 || isListing}
             onClick={() => setCurrentPage(currentPage + 1)}
             className={`px-3 py-1 rounded border ${currentPage === totalPages || totalPages === 0 || isListing
-                ? "bg-gray-200 cursor-not-allowed"
-                : "bg-white hover:bg-gray-100"
+              ? "bg-gray-200 cursor-not-allowed"
+              : "bg-white hover:bg-gray-100"
               }`}
           >
             Next
