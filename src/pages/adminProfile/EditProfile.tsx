@@ -17,13 +17,15 @@ type ProfileRes = {
         mobile_number: string;
     };
     message?: string;
+    error?: string;
+    errors?: Record<string, string[]>;
 };
 
 export default function EditProfile() {
     const [activeTab, setActiveTab] = useState<Tab>("personal");
 
     // personal
-    const [name, setName] = useState(""); // API wants "name"
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
 
@@ -38,24 +40,45 @@ export default function EditProfile() {
     const [savingPassword, setSavingPassword] = useState(false);
 
     const getAdminId = () =>
-        localStorage.getItem("admin_id") || localStorage.getItem("adminId");
+        localStorage.getItem("admin_id") || localStorage.getItem("adminId") || "";
 
-    const toastApiError = (e: any, fallback = "Something went wrong") => {
-        const msg =
-            e?.response?.data?.message ||
-            e?.response?.data?.error ||
-            e?.message ||
-            fallback;
-        toast.error(msg);
+    const getToken = () =>
+        localStorage.getItem("artoken") ||
+        localStorage.getItem("token") ||
+        localStorage.getItem("admin_token") ||
+        "";
+
+    const getErrMsg = (e: any, fallback = "Something went wrong") => {
+        const data = e?.response?.data;
+
+        if (typeof data?.message === "string" && data.message.trim()) return data.message;
+        if (typeof data?.error === "string" && data.error.trim()) return data.error;
+
+        const firstErr =
+            data?.errors && typeof data.errors === "object"
+                ? Object.values(data.errors)?.flat?.()?.[0]
+                : null;
+
+        if (typeof firstErr === "string" && firstErr.trim()) return firstErr;
+
+        return e?.message || fallback;
     };
 
-    // ✅ FETCH PROFILE (prefill)
+    const authHeaders = () => {
+        const token = getToken();
+        return {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        };
+    };
+
+    // ✅ FETCH PROFILE
     const fetchProfile = async () => {
         const adminId = getAdminId();
-        if (!adminId) {
-            toast.error("Admin id not found. Please login again.");
-            return;
-        }
+        const token = getToken();
+
+        if (!adminId) return toast.error("Admin id not found. Please login again.");
+        if (!token) return toast.error("Token not found. Please login again.");
 
         try {
             setLoadingProfile(true);
@@ -63,24 +86,22 @@ export default function EditProfile() {
             const res = await axios.post<ProfileRes>(
                 `${apiUrl}/admin/profile`,
                 { admin_id: String(adminId) },
-                { headers: { "Content-Type": "application/json" } }
+                { headers: authHeaders() }
             );
 
             if (res.data?.success && res.data?.data) {
                 const d = res.data.data;
-
-                // Your profile API returns first_name + last_name
-                const fullName = `${d.first_name || ""} `.trim();
+                const fullName = `${d.first_name || ""}`.trim();
 
                 setName(fullName);
                 setEmail(d.email || "");
                 setPhone(d.mobile_number || "");
             } else {
-                toast.error(res.data?.message || "Failed to load profile");
+                toast.error(res.data?.message || res.data?.error || "Failed to load profile");
             }
         } catch (e: any) {
             console.error(e);
-            toastApiError(e, "Profile fetch failed");
+            toast.error(getErrMsg(e, "Profile fetch failed"));
         } finally {
             setLoadingProfile(false);
         }
@@ -94,7 +115,10 @@ export default function EditProfile() {
     // ✅ UPDATE PERSONAL DETAILS
     const handleUpdateDetails = async () => {
         const adminId = getAdminId();
+        const token = getToken();
+
         if (!adminId) return toast.error("Admin id not found. Please login again.");
+        if (!token) return toast.error("Token not found. Please login again.");
 
         if (!name.trim() || !email.trim() || !phone.trim()) {
             return toast.error("Please fill all fields");
@@ -115,19 +139,18 @@ export default function EditProfile() {
                     email: email.trim(),
                     mobile_no: phone.trim(),
                 },
-                { headers: { "Content-Type": "application/json" } }
+                { headers: authHeaders() }
             );
 
             if (res.data?.success) {
                 toast.success(res.data?.message || "Profile updated successfully");
-                // optional: refresh profile
                 await fetchProfile();
             } else {
-                toast.error(res.data?.message || "Failed to update profile");
+                toast.error(res.data?.message || res.data?.error || "Failed to update profile");
             }
         } catch (e: any) {
             console.error(e);
-            toastApiError(e, "Profile update failed");
+            toast.error(getErrMsg(e, "Profile update failed"));
         } finally {
             setSavingPersonal(false);
         }
@@ -136,7 +159,10 @@ export default function EditProfile() {
     // ✅ CHANGE PASSWORD
     const handleChangePassword = async () => {
         const adminId = getAdminId();
+        const token = getToken();
+
         if (!adminId) return toast.error("Admin id not found. Please login again.");
+        if (!token) return toast.error("Token not found. Please login again.");
 
         if (!oldPassword || !newPassword || !confirmNewPassword) {
             return toast.error("Please fill all password fields");
@@ -161,22 +187,20 @@ export default function EditProfile() {
                     new_password: newPassword,
                     confirm_new_password: confirmNewPassword,
                 },
-                { headers: { "Content-Type": "application/json" } }
+                { headers: authHeaders() }
             );
 
             if (res.data?.success) {
                 toast.success(res.data?.message || "Password updated successfully");
-
-                // reset password fields
                 setOldPassword("");
                 setNewPassword("");
                 setConfirmNewPassword("");
             } else {
-                toast.error(res.data?.message || "Failed to change password");
+                toast.error(res.data?.message || res.data?.error || "Failed to change password");
             }
         } catch (e: any) {
             console.error(e);
-            toastApiError(e, "Change password failed");
+            toast.error(getErrMsg(e, "Change password failed"));
         } finally {
             setSavingPassword(false);
         }
@@ -190,7 +214,7 @@ export default function EditProfile() {
                     <button
                         onClick={() => setActiveTab("personal")}
                         className={`flex items-center gap-2 px-4 py-3 font-medium border-b-2 transition 
-            ${activeTab === "personal"
+              ${activeTab === "personal"
                                 ? "border-blue-600 text-[#2e56a6]"
                                 : "border-transparent text-gray-600 hover:text-[#2e56a6]"
                             }`}
@@ -202,7 +226,7 @@ export default function EditProfile() {
                     <button
                         onClick={() => setActiveTab("password")}
                         className={`flex items-center gap-2 px-4 py-3 font-medium border-b-2 transition 
-            ${activeTab === "password"
+              ${activeTab === "password"
                                 ? "border-blue-600 text-[#2e56a6]"
                                 : "border-transparent text-gray-600 hover:text-[#2e56a6]"
                             }`}
@@ -212,7 +236,6 @@ export default function EditProfile() {
                     </button>
                 </div>
 
-                {/* Loading (prefill) */}
                 {loadingProfile && (
                     <div className="mb-4 text-sm text-gray-600">Loading profile...</div>
                 )}
@@ -243,9 +266,7 @@ export default function EditProfile() {
                         </div>
 
                         <div>
-                            <label className="text-sm font-medium text-gray-600">
-                                Phone Number
-                            </label>
+                            <label className="text-sm font-medium text-gray-600">Phone Number</label>
                             <input
                                 type="text"
                                 value={phone}
