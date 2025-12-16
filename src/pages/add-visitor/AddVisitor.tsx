@@ -415,7 +415,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { apiUrl } from "../../config";
 
 type StateItem = { stateId: number; stateName: string };
@@ -441,7 +441,7 @@ function getApiErrorMessage(data: any, fallback = "Something went wrong") {
 
 export default function AddVisitor() {
   const location = useLocation();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const expoName = location.state?.expo_name || "Expo";
   const expoId = String(location.state?.expoid || location.state?.assign_id || "");
