@@ -362,7 +362,7 @@ export default function Header() {
           </div>
 
           {/* OTHERS */}
-          <div className="relative">
+          {/* <div className="relative">
             <button
               onClick={() => setOpenOthers(!openOthers)}
               className="hover:text-orange-600 flex items-center gap-1"
@@ -402,7 +402,7 @@ export default function Header() {
                 </Link>
               </div>
             )}
-          </div>
+          </div> */}
         </nav>
 
         {/* PROFILE */}
