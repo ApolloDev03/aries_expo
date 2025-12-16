@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { apiUrl } from "../config";
+import { useNavigate } from "react-router-dom";
 type CountRes = {
     user_id: string;
     total_visitors: number;
@@ -10,7 +11,7 @@ type CountRes = {
 
 export default function UserDashboard() {
     const userId = localStorage.getItem("User_Id") || "";
-
+    const navigate = useNavigate();
     const [loadingCounts, setLoadingCounts] = useState(false);
     const [totalVisitors, setTotalVisitors] = useState(0);
     const [todayVisitors, setTodayVisitors] = useState(0);
@@ -65,7 +66,9 @@ export default function UserDashboard() {
             {/* TOP USER STATS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Card 1 */}
-                <div className="bg-white shadow rounded-xl p-6 border-l-4 border-blue-500">
+                <div
+                onClick={() => navigate("/users/visitors-list")}
+                className="bg-white shadow rounded-xl p-6 border-l-4 cursor-pointer border-blue-500">
                     <h2 className="text-sm text-gray-500">Total Visiters</h2>
 
                     {loadingCounts ? (
@@ -79,7 +82,9 @@ export default function UserDashboard() {
                 </div>
 
                 {/* Card 2 */}
-                <div className="bg-white shadow rounded-xl p-6 border-l-4 border-green-500">
+                <div
+                onClick={() => navigate("/users/visitors-list")}
+                className="bg-white shadow rounded-xl p-6 border-l-4 border-green-500 cursor-pointer">
                     <h2 className="text-sm text-gray-500">Today Total Visiters</h2>
 
                     {loadingCounts ? (
