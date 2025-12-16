@@ -265,7 +265,7 @@ export default function Header() {
       if (res.data?.success) {
         toast.success(res.data?.message || "Logged out successfully");
         setOpenProfile(false);
-        navigate("/admin/login"); // ✅ login page
+        navigate("/admin/logout"); // ✅ login page
         // clear after navigate also ok
         localStorage.removeItem("admin_id");
         localStorage.removeItem("artoken");

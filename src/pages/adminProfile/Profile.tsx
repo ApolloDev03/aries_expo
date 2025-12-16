@@ -19,6 +19,7 @@ export default function AdminProfile() {
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<AdminProfileData | null>(null);
 
+  // ✅ Common API error toast
   const toastApiError = (e: any, fallback = "Something went wrong") => {
     const msg =
       e?.response?.data?.message ||
@@ -28,12 +29,14 @@ export default function AdminProfile() {
     toast.error(msg);
   };
 
+  // ✅ Fetch Admin Profile
   const fetchProfile = async () => {
-    const adminId =
-      localStorage.getItem("admin_id") || localStorage.getItem("adminId"); // ✅ adjust if needed
+    const adminId = localStorage.getItem("admin_id"); // stored at login
+    const token = localStorage.getItem("artoken");    // stored at login
 
-    if (!adminId) {
-      toast.error("Admin id not found. Please login again.");
+    if (!adminId || !token) {
+      toast.error("Session expired. Please login again.");
+      navigate("/");
       return;
     }
 
@@ -43,7 +46,12 @@ export default function AdminProfile() {
       const res = await axios.post(
         `${apiUrl}/admin/profile`,
         { admin_id: String(adminId) },
-        { headers: { "Content-Type": "application/json" } }
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // ✅ TOKEN SET HERE
+          },
+        }
       );
 
       if (res.data?.success) {
@@ -54,6 +62,12 @@ export default function AdminProfile() {
     } catch (e: any) {
       console.error(e);
       toastApiError(e, "Profile fetch failed");
+
+      // Optional: logout on 401
+      if (e?.response?.status === 401) {
+        localStorage.clear();
+        navigate("/");
+      }
     } finally {
       setLoading(false);
     }
@@ -61,6 +75,7 @@ export default function AdminProfile() {
 
   useEffect(() => {
     fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fullName = profile
@@ -79,7 +94,7 @@ export default function AdminProfile() {
           />
 
           <h1 className="text-3xl font-semibold mt-4">
-            {loading ? "Loading..." : fullName || "Admin"}
+            {loading ? "Loading..." : fullName}
           </h1>
           <p className="text-gray-500">Administrator</p>
         </div>
@@ -92,7 +107,7 @@ export default function AdminProfile() {
             </label>
             <input
               type="text"
-              value={fullName || ""}
+              value={fullName}
               disabled
               className="w-full mt-1 px-4 py-3 bg-gray-100 border rounded-lg cursor-not-allowed"
             />
@@ -126,17 +141,11 @@ export default function AdminProfile() {
         {/* Buttons */}
         <div className="mt-8 text-center flex justify-center gap-3">
           <button
-            className="px-6 py-3 border rounded-lg transition disabled:opacity-60"
-            disabled={loading}
-            onClick={fetchProfile}
-          >
-            {loading ? "Refreshing..." : "Refresh"}
-          </button>
-
-          <button
             className="px-6 py-3 bg-[#2e56a6] text-white rounded-lg transition disabled:opacity-60"
             disabled={loading || !profile}
-            onClick={() => navigate("/admin/edit-profile", { state: profile })}
+            onClick={() =>
+              navigate("/admin/edit-profile", { state: profile })
+            }
           >
             Edit Profile
           </button>

@@ -478,13 +478,6 @@ export default function UserMaster() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">User List</h2>
 
-          <button
-            onClick={fetchUsers}
-            disabled={loading}
-            className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-60"
-          >
-            {loading ? "Refreshing..." : "Refresh"}
-          </button>
         </div>
 
         {/* Search */}
@@ -614,8 +607,8 @@ export default function UserMaster() {
             disabled={currentPage === 1}
             onClick={() => handlePageChange(currentPage - 1)}
             className={`px-3 py-1 rounded border ${currentPage === 1
-                ? "bg-gray-200 cursor-not-allowed"
-                : "bg-white hover:bg-gray-100"
+              ? "bg-gray-200 cursor-not-allowed"
+              : "bg-white hover:bg-gray-100"
               }`}
           >
             Prev
@@ -628,8 +621,8 @@ export default function UserMaster() {
                 key={page}
                 onClick={() => handlePageChange(page)}
                 className={`px-3 py-1 rounded border ${currentPage === page
-                    ? "bg-[#2e56a6] text-white"
-                    : "bg-white hover:bg-gray-100"
+                  ? "bg-[#2e56a6] text-white"
+                  : "bg-white hover:bg-gray-100"
                   }`}
               >
                 {page}
@@ -641,8 +634,8 @@ export default function UserMaster() {
             disabled={currentPage === totalPages || totalPages === 0}
             onClick={() => handlePageChange(currentPage + 1)}
             className={`px-3 py-1 rounded border ${currentPage === totalPages || totalPages === 0
-                ? "bg-gray-200 cursor-not-allowed"
-                : "bg-white hover:bg-gray-100"
+              ? "bg-gray-200 cursor-not-allowed"
+              : "bg-white hover:bg-gray-100"
               }`}
           >
             Next
