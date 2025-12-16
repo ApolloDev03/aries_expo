@@ -3,19 +3,46 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import ariesLogo from "../assets/logo.png";
 import { useState } from "react";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { apiUrl } from "../config";
 
 export default function UserHeader() {
-//   const [openMaster, setOpenMaster] = useState(false);
+  //   const [openMaster, setOpenMaster] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
-//   const [openOthers, setOpenOthers] = useState(false);
+  //   const [openOthers, setOpenOthers] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // logout();
-    navigate("/logout");
-  };
+  const handleLogout = async () => {
+    try {
+      const userId = localStorage.getItem("user_id"); // or admin_id based on your app
 
+      if (!userId) {
+        navigate("/logout");
+        return;
+      }
+
+      const res = await axios.post(`${apiUrl}/user/logout`, {
+        user_id: userId,
+      });
+
+      if (res.data?.success) {
+        // ✅ Clear auth data
+        localStorage.removeItem("artoken");
+        localStorage.removeItem("user");
+        localStorage.removeItem("user_id");
+
+        toast.success("Logged out successfully");
+
+        // ✅ Redirect to login
+        navigate("/logout");
+      }
+    } catch (error: any) {
+      console.error("Logout error:", error);
+      toast.error("Logout failed");
+    }
+  };
   return (
     <header className="flex justify-between items-center px-6 py-4 bg-white shadow">
       {/* LEFT SIDE LOGO */}
@@ -57,7 +84,7 @@ export default function UserHeader() {
               </Link>
 
               <Link
-                to="/admin/edit-profile"
+                to="/users/edit-profile"
                 className="block px-4 py-2 hover:bg-gray-100"
                 onClick={() => setOpenProfile(false)}
               >

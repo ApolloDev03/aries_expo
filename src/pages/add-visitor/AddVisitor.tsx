@@ -7,6 +7,31 @@
 // type StateItem = { stateId: number; stateName: string };
 // type CityItem = { id: number; name: string; stateid?: number };
 
+// function getApiErrorMessage(data: any, fallback = "Something went wrong") {
+//   if (!data) return fallback;
+
+//   // string error
+//   if (typeof data === "string") return data;
+
+//   // common keys
+//   if (data.message) return data.message;
+//   if (data.error) return data.error;
+
+//   // Laravel validation: { errors: { field: ["msg1","msg2"], ... } }
+//   if (data.errors && typeof data.errors === "object") {
+//     const msgs: string[] = [];
+
+//     Object.values(data.errors).forEach((v: any) => {
+//       if (Array.isArray(v)) msgs.push(...v.map(String));
+//       else if (typeof v === "string") msgs.push(v);
+//     });
+
+//     if (msgs.length) return msgs.join(" | ");
+//   }
+
+//   return fallback;
+// }
+
 // export default function AddVisitor() {
 //   const location = useLocation();
 
@@ -32,7 +57,6 @@
 //   const [loadingCity, setLoadingCity] = useState(false);
 //   const [saving, setSaving] = useState(false);
 
-//   // prevent repeated calls for same number
 //   const [lastFetchedMobile, setLastFetchedMobile] = useState<string>("");
 
 //   // ---------------- Fetch ALL States (pagination) ----------------
@@ -43,7 +67,9 @@
 
 //     while (page <= lastPage) {
 //       const res = await axios.post(`${apiUrl}/statelist`, { page: String(page) });
-//       if (!res.data?.success) throw new Error(res.data?.message || "State fetch failed");
+//       if (!res.data?.success) {
+//         throw new Error(getApiErrorMessage(res.data, "State fetch failed"));
+//       }
 
 //       const data: StateItem[] = (res.data?.data || []).map((s: any) => ({
 //         stateId: Number(s.stateId),
@@ -84,7 +110,6 @@
 
 //         setCities(list);
 
-//         // if mobile lookup gave cityId, select it after list loaded
 //         if (keepCityId) {
 //           const exists = list.some((x) => String(x.id) === String(keepCityId));
 //           setCityId(exists ? String(keepCityId) : "");
@@ -94,13 +119,13 @@
 //       } else {
 //         setCities([]);
 //         setCityId("");
-//         toast.error(res.data?.message || "City fetch failed");
+//         toast.error(getApiErrorMessage(res.data, "City fetch failed"));
 //       }
 //     } catch (err: any) {
 //       console.error(err);
+//       toast.error(getApiErrorMessage(err?.response?.data, "City fetch failed"));
 //       setCities([]);
 //       setCityId("");
-//       toast.error(err?.response?.data?.message || "City fetch failed");
 //     } finally {
 //       setLoadingCity(false);
 //     }
@@ -152,19 +177,19 @@
 //         const cid = v.cityid !== null && v.cityid !== undefined ? String(v.cityid) : "";
 
 //         setStateId(sid);
-
-//         // ✅ load cities by that state, then select city
 //         await fetchCitiesByState(sid, cid);
 
 //         toast.success("Visitor details loaded");
 //         setLastFetchedMobile(m);
 //       } else {
+//         // If API sends error/message for lookup, show it
+//         const msg = getApiErrorMessage(res.data, "");
+//         if (msg) toast.error(msg);
 //         setLastFetchedMobile(m);
 //       }
 //     } catch (err: any) {
 //       console.error(err);
-//       const msg = err?.response?.data?.message;
-//       if (msg) toast.error(msg);
+//       toast.error(getApiErrorMessage(err?.response?.data, "Mobile lookup failed"));
 //       setLastFetchedMobile(m);
 //     } finally {
 //       setLoadingMobile(false);
@@ -200,11 +225,11 @@
 
 //       if (res.data?.success) {
 //         toast.success(res.data?.message || "Visitor Added Successfully");
+
 //         if (typeof res.data?.today_visitor_count === "number") {
 //           setTodayCount(res.data.today_visitor_count);
 //         }
 
-//         // reset
 //         setMobile("");
 //         setCompanyName("");
 //         setName("");
@@ -214,11 +239,11 @@
 //         setCities([]);
 //         setLastFetchedMobile("");
 //       } else {
-//         toast.error(res.data?.message || "Visitor add failed");
+//         toast.error(getApiErrorMessage(res.data, "Visitor add failed"));
 //       }
 //     } catch (err: any) {
 //       console.error(err);
-//       toast.error(err?.response?.data?.message || "Visitor add failed");
+//       toast.error(getApiErrorMessage(err?.response?.data, "Visitor add failed"));
 //     } finally {
 //       setSaving(false);
 //     }
@@ -386,10 +411,11 @@
 // }
 
 
+
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { apiUrl } from "../../config";
 
 type StateItem = { stateId: number; stateName: string };
@@ -397,23 +423,16 @@ type CityItem = { id: number; name: string; stateid?: number };
 
 function getApiErrorMessage(data: any, fallback = "Something went wrong") {
   if (!data) return fallback;
-
-  // string error
   if (typeof data === "string") return data;
-
-  // common keys
   if (data.message) return data.message;
   if (data.error) return data.error;
 
-  // Laravel validation: { errors: { field: ["msg1","msg2"], ... } }
   if (data.errors && typeof data.errors === "object") {
     const msgs: string[] = [];
-
     Object.values(data.errors).forEach((v: any) => {
       if (Array.isArray(v)) msgs.push(...v.map(String));
       else if (typeof v === "string") msgs.push(v);
     });
-
     if (msgs.length) return msgs.join(" | ");
   }
 
@@ -422,6 +441,7 @@ function getApiErrorMessage(data: any, fallback = "Something went wrong") {
 
 export default function AddVisitor() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const expoName = location.state?.expo_name || "Expo";
   const expoId = String(location.state?.expoid || location.state?.assign_id || "");
@@ -445,7 +465,32 @@ export default function AddVisitor() {
   const [loadingCity, setLoadingCity] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const [loadingCount, setLoadingCount] = useState(false);
   const [lastFetchedMobile, setLastFetchedMobile] = useState<string>("");
+
+  // ✅ Today Visitor Count API (call on mount + after save)
+  const fetchTodayVisitorCount = async () => {
+    if (!userId) return;
+
+    try {
+      setLoadingCount(true);
+      const res = await axios.post(`${apiUrl}/visitor/user/count`, {
+        user_id: String(userId),
+      });
+
+      if (res.data?.success) {
+        const today = Number(res.data?.data?.today_visitors ?? 0);
+        setTodayCount(today);
+      } else {
+        toast.error(getApiErrorMessage(res.data, "Visitor count fetch failed"));
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(getApiErrorMessage(err?.response?.data, "Visitor count fetch failed"));
+    } finally {
+      setLoadingCount(false);
+    }
+  };
 
   // ---------------- Fetch ALL States (pagination) ----------------
   const fetchAllStates = async (): Promise<StateItem[]> => {
@@ -527,11 +572,16 @@ export default function AddVisitor() {
 
       try {
         setLoadingInit(true);
+
+        // ✅ load states
         const stateList = await fetchAllStates();
         setStates(stateList);
+
+        // ✅ load today count by default
+        await fetchTodayVisitorCount();
       } catch (err: any) {
         console.error(err);
-        toast.error(err?.message || "State fetch failed");
+        toast.error(err?.message || "Init failed");
         setStates([]);
       } finally {
         setLoadingInit(false);
@@ -570,7 +620,6 @@ export default function AddVisitor() {
         toast.success("Visitor details loaded");
         setLastFetchedMobile(m);
       } else {
-        // If API sends error/message for lookup, show it
         const msg = getApiErrorMessage(res.data, "");
         if (msg) toast.error(msg);
         setLastFetchedMobile(m);
@@ -614,10 +663,10 @@ export default function AddVisitor() {
       if (res.data?.success) {
         toast.success(res.data?.message || "Visitor Added Successfully");
 
-        if (typeof res.data?.today_visitor_count === "number") {
-          setTodayCount(res.data.today_visitor_count);
-        }
+        // ✅ After add, refresh count from API (your requirement)
+        await fetchTodayVisitorCount();
 
+        // reset form
         setMobile("");
         setCompanyName("");
         setName("");
@@ -637,14 +686,28 @@ export default function AddVisitor() {
     }
   };
 
+ 
   return (
     <div className="p-6 space-y-6">
       {/* HEADER */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">{expoName}</h1>
 
-        <div className="text-white bg-[#2e56a6] px-5 py-2 rounded-lg shadow">
-          Today’s Entry: <span className="font-semibold">{todayCount}</span>
+        <div className="flex items-center gap-3">
+          <div className="text-white bg-[#2e56a6] px-5 py-2 rounded-lg shadow">
+            Today’s Entry:{" "}
+            <span className="font-semibold">
+              {loadingCount ? "..." : todayCount}
+            </span>
+          </div>
+
+          {/* Optional logout button */}
+          {/* <button
+            onClick={handleLogout}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg shadow"
+          >
+            Logout
+          </button> */}
         </div>
       </div>
 
