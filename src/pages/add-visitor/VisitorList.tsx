@@ -858,7 +858,12 @@ export default function VisitorList() {
                 <div className="p-3 mb-3 rounded bg-red-50 text-red-700">{cityError}</div>
               )}
 
-          
+              {modalLoading && (
+                <div className="p-3 mb-3 rounded bg-gray-50 text-gray-700">
+                  Loading visitor details...
+                </div>
+              )}
+
               {!modalError && selectedVisitor && (
                 <>
                   <div className="grid grid-cols-2 gap-4 text-md mt-3">
