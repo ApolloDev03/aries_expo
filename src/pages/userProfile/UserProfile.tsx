@@ -118,7 +118,7 @@ export default function UserProfile() {
           />
 
           <h1 className="text-3xl font-semibold mt-4">{fullName}</h1>
-          <p className="text-gray-500">Administrator</p>
+          {/* <p className="text-gray-500">Administrator</p> */}
 
           {loading ? (
             <p className="mt-3 text-sm text-gray-500">Loading profile...</p>
