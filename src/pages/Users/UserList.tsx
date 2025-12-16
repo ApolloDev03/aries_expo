@@ -441,6 +441,15 @@ export default function UserMaster() {
           className="w-full border px-3 py-2 rounded mt-1 mb-4"
         />
 
+        <label className="font-medium">Email Address</label>
+        <input
+          type="text"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          placeholder="Enter email address"
+          className="w-full border px-3 py-2 rounded mt-1 mb-4"
+        />
+
         <label className="font-medium">Department</label>
         <select
           value={departmentId}
@@ -497,12 +506,13 @@ export default function UserMaster() {
           </button>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-scroll">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-100 text-left">
                 <th className="p-3">ID</th>
                 <th className="p-2">Name</th>
+                <th className="p-2">Email</th>
                 <th className="p-2">Mobile</th>
                 <th className="p-2">Address</th>
                 <th className="p-2">Department</th>
@@ -517,6 +527,7 @@ export default function UserMaster() {
                 <tr key={item.id} className="border-b hover:bg-gray-50">
                   <td className="p-3">{index + 1}</td>
                   <td className="p-2">{item.name}</td>
+                  <td className="p-2">dev8.apolloinfotech@gmail.com</td>
                   <td className="p-2">{item.mobile}</td>
                   <td className="p-2">{item.address}</td>
                   <td className="p-2">{item.department || "-"}</td>
@@ -672,6 +683,16 @@ export default function UserMaster() {
               />
 
               <label className="font-medium">Address</label>
+              <input
+                type="text"
+                value={editData.address}
+                onChange={(e) =>
+                  setEditData({ ...editData, address: e.target.value })
+                }
+                className="w-full border px-3 py-2 rounded mt-1 mb-4"
+              />
+
+              <label className="font-medium">Email Address</label>
               <input
                 type="text"
                 value={editData.address}
