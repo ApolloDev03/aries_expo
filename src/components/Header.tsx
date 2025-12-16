@@ -206,13 +206,13 @@ export default function Header() {
                 Profile
               </Link>
 
-              <Link
+              {/* <Link
                 to="/admin/edit-profile"
                 className="block px-4 py-2 hover:bg-gray-100"
                 onClick={() => setOpenProfile(false)}
               >
                 Change Password
-              </Link>
+              </Link> */}
 
               <button
                 onClick={handleLogout}

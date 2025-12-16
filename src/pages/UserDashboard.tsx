@@ -73,8 +73,7 @@ export default function UserDashboard() {
 
                     {loadingCounts ? (
                         <div className="mt-3 flex items-center gap-2 text-gray-500">
-                            <span className="w-5 h-5 rounded-full border-2 border-gray-400 border-t-transparent animate-spin" />
-                            Loading...
+                            0
                         </div>
                     ) : (
                         <p className="text-3xl font-bold text-gray-800 mt-2">{totalVisitors}</p>
@@ -89,8 +88,7 @@ export default function UserDashboard() {
 
                     {loadingCounts ? (
                         <div className="mt-3 flex items-center gap-2 text-gray-500">
-                            <span className="w-5 h-5 rounded-full border-2 border-gray-400 border-t-transparent animate-spin" />
-                            Loading...
+                            0
                         </div>
                     ) : (
                         <p className="text-3xl font-bold text-gray-800 mt-2">{todayVisitors}</p>
