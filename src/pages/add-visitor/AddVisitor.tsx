@@ -27,6 +27,7 @@ function getApiErrorMessage(data: any, fallback = "Something went wrong") {
 
 export default function AddVisitor() {
   const location = useLocation();
+  // const navigate = useNavigate();
 
   const expoName = location.state?.expo_name || "Expo";
   const expoId = String(location.state?.expoid || location.state?.assign_id || "");
