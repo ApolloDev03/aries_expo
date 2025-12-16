@@ -144,7 +144,7 @@ export default function AdminProfile() {
             className="px-6 py-3 bg-[#2e56a6] text-white rounded-lg transition disabled:opacity-60"
             disabled={loading || !profile}
             onClick={() =>
-              navigate("/admin/edit-profile", { state: profile })
+              navigate("/admin/edit-profile")
             }
           >
             Edit Profile
