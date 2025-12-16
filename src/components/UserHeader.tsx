@@ -49,7 +49,7 @@ export default function UserHeader() {
           {openProfile && (
             <div className="absolute right-0 mt-2 bg-white border shadow-lg rounded-md w-48 py-2 z-50">
               <Link
-                to="/admin/profile"
+                to="/users/profile"
                 className="block px-4 py-2 hover:bg-gray-100"
                 onClick={() => setOpenProfile(false)}
               >
@@ -66,7 +66,7 @@ export default function UserHeader() {
 
               <button
                 onClick={handleLogout}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
               >
                 Logout
               </button>
