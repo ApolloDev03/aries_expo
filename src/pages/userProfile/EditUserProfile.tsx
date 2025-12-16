@@ -442,12 +442,13 @@ import { toast } from "react-toastify";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { apiUrl } from "../../config";
+import { useNavigate } from "react-router-dom";
 
 type Tab = "personal" | "password";
 
 export default function EditUserProfile() {
   const [activeTab, setActiveTab] = useState<Tab>("personal");
-
+  const navigate = useNavigate();
   // 🔒 Personal data
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -555,11 +556,11 @@ export default function EditUserProfile() {
       const res = await axios.post(`${apiUrl}/user/profile/update`, payload);
 
       if (res?.data?.success) {
+        navigate('/users/profile')
         toast.success(res?.data?.message || "Profile updated successfully");
 
         // ✅ update cache (and keep inputs not blank)
         localStorage.setItem("user_profile", JSON.stringify(payload));
-
         // ✅ optional: re-fetch latest from API (if backend changes format)
         // await fetchProfile();
       } else {

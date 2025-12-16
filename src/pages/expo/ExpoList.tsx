@@ -290,15 +290,54 @@ export default function ExpoMaster() {
   };
 
   // ---------------- CRUD ----------------
+  // const handleSave = async () => {
+  //   if (!expoName || !industryId || !stateId || !cityId || !expoDate) {
+  //     return toast.error("Please fill all fields (including date)");
+  //   }
+  //   if (!isValidDDMMYYYYList(expoDate)) {
+  //     return toast.error("Please enter valid date dd-mm-yyyy (comma allowed)");
+  //   }
+
+  //   const apiDateList = convertUIToApiDateList(expoDate);
+
+  //   try {
+  //     setIsSaving(true);
+
+  //     const res = await postJson<{ success: boolean; message: string }>(
+  //       `${apiUrl}/ExpoAdd`,
+  //       {
+  //         name: expoName,
+  //         industry_id: industryId,
+  //         state_id: stateId,
+  //         city_id: cityId,
+  //         date: apiDateList,
+  //         expo_date: apiDateList,
+  //       }
+  //     );
+
+  //     setExpoName("");
+  //     setIndustryId("");
+  //     setStateId("");
+  //     setCityId("");
+  //     setExpoDate("");
+  //     setCities([]);
+
+  //     await fetchExpoList();
+  //     toast.success(res?.message || "Expo Added Successfully");
+  //   } catch (e: any) {
+  //     console.error(e);
+  //     toastApiError(e, "Expo add failed");
+  //   } finally {
+  //     setIsSaving(false);
+  //   }
+  // };
   const handleSave = async () => {
     if (!expoName || !industryId || !stateId || !cityId || !expoDate) {
       return toast.error("Please fill all fields (including date)");
     }
-    if (!isValidDDMMYYYYList(expoDate)) {
-      return toast.error("Please enter valid date dd-mm-yyyy (comma allowed)");
-    }
 
-    const apiDateList = convertUIToApiDateList(expoDate);
+    // ✅ NO DATE VALIDATION
+    const apiDateList = expoDate; // send as-is
 
     try {
       setIsSaving(true);
@@ -325,7 +364,6 @@ export default function ExpoMaster() {
       await fetchExpoList();
       toast.success(res?.message || "Expo Added Successfully");
     } catch (e: any) {
-      console.error(e);
       toastApiError(e, "Expo add failed");
     } finally {
       setIsSaving(false);
@@ -371,6 +409,49 @@ export default function ExpoMaster() {
     }
   };
 
+  // const handleUpdate = async () => {
+  //   if (
+  //     !editData.name ||
+  //     !editData.industryid ||
+  //     !editData.stateid ||
+  //     !editData.cityid ||
+  //     !editData.date
+  //   ) {
+  //     return toast.error("Please fill all fields (including date)");
+  //   }
+
+  //   if (!isValidDDMMYYYYList(editData.date)) {
+  //     return toast.error("Please enter valid date dd-mm-yyyy (comma allowed)");
+  //   }
+
+  //   const apiDateList = convertUIToApiDateList(editData.date);
+
+  //   try {
+  //     setIsUpdating(true);
+
+  //     const res = await postJson<{ success: boolean; message: string }>(
+  //       `${apiUrl}/ExpoUpdate`,
+  //       {
+  //         expo_id: String(editData.Expoid),
+  //         name: editData.name,
+  //         industry_id: String(editData.industryid),
+  //         state_id: String(editData.stateid),
+  //         city_id: String(editData.cityid),
+  //         date: apiDateList,
+  //         expo_date: apiDateList,
+  //       }
+  //     );
+
+  //     setIsEditOpen(false);
+  //     await fetchExpoList();
+  //     toast.success(res?.message || "Expo Updated Successfully");
+  //   } catch (e: any) {
+  //     console.error(e);
+  //     toastApiError(e, "Expo update failed");
+  //   } finally {
+  //     setIsUpdating(false);
+  //   }
+  // };
   const handleUpdate = async () => {
     if (
       !editData.name ||
@@ -382,11 +463,8 @@ export default function ExpoMaster() {
       return toast.error("Please fill all fields (including date)");
     }
 
-    if (!isValidDDMMYYYYList(editData.date)) {
-      return toast.error("Please enter valid date dd-mm-yyyy (comma allowed)");
-    }
-
-    const apiDateList = convertUIToApiDateList(editData.date);
+    // ✅ NO DATE VALIDATION
+    const apiDateList = editData.date;
 
     try {
       setIsUpdating(true);
@@ -408,7 +486,6 @@ export default function ExpoMaster() {
       await fetchExpoList();
       toast.success(res?.message || "Expo Updated Successfully");
     } catch (e: any) {
-      console.error(e);
       toastApiError(e, "Expo update failed");
     } finally {
       setIsUpdating(false);
@@ -542,23 +619,17 @@ export default function ExpoMaster() {
         <input
           type="text"
           inputMode="numeric"
-          disabled={isSaving || isListing}
+          autoComplete="off"
           placeholder="dd-mm-yyyy"
           value={expoDate}
           onChange={(e) => setExpoDate(e.target.value)}
-          className="w-full border px-3 py-2 rounded mt-1 mb-2 disabled:bg-gray-100"
+          className="w-full border px-3 py-2 rounded"
         />
-
-        {expoDate && !isValidDDMMYYYYList(expoDate) && (
-          <p className="text-xs text-red-600 mb-4">
-            Invalid date. Use dd-mm-yyyy (comma allowed).
-          </p>
-        )}
 
         <button
           onClick={handleSave}
           disabled={isSaving || isListing}
-          className="bg-[#2e56a6] text-white px-5 py-2 rounded hover:bg-[#bf7e4e] disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="bg-[#2e56a6] text-white my-2 px-5 py-2 rounded hover:bg-[#bf7e4e] disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           {isSaving ? "Saving..." : "Save"}
         </button>

@@ -4,6 +4,7 @@ import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { toast } from "react-toastify";
 import { apiUrl } from "../../config";
+import { useNavigate } from "react-router-dom";
 
 type Tab = "personal" | "password";
 
@@ -23,7 +24,7 @@ type ProfileRes = {
 
 export default function EditProfile() {
     const [activeTab, setActiveTab] = useState<Tab>("personal");
-
+    const navigate = useNavigate();
     // personal
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -145,6 +146,7 @@ export default function EditProfile() {
             if (res.data?.success) {
                 toast.success(res.data?.message || "Profile updated successfully");
                 await fetchProfile();
+                navigate('/admin/profile')
             } else {
                 toast.error(res.data?.message || res.data?.error || "Failed to update profile");
             }
