@@ -80,13 +80,13 @@ export default function UserHeader() {
                 Profile
               </Link>
 
-              <Link
+              {/* <Link
                 to="/users/edit-profile"
                 className="block px-4 py-2 hover:bg-gray-100"
                 onClick={() => setOpenProfile(false)}
               >
                 Change Password
-              </Link>
+              </Link> */}
 
               <button
                 onClick={handleLogout}
