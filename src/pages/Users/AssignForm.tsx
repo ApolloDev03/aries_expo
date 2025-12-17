@@ -62,17 +62,6 @@ export default function AssignForm() {
   const [saving, setSaving] = useState(false); // save btn
   const [deletingId, setDeletingId] = useState<number | null>(null); // per row delete
 
-  // ✅ OPTIONAL: if you already have username in UserList page, pass it via navigate state.
-  // For now keep demo fallback.
-  useEffect(() => {
-    const demoUsers = [
-      { id: "1", name: "Sweta Panchal" },
-      { id: "2", name: "Priya Patel" },
-      { id: "3", name: "harshita" },
-    ];
-    const selectedUser = demoUsers.find((u) => u.id === userId);
-    if (selectedUser) setUserName(selectedUser.name);
-  }, [userId]);
 
   // ---------------- Fetch Industry List ----------------
   const fetchIndustries = async () => {
@@ -231,7 +220,7 @@ export default function AssignForm() {
       {/* HEADING */}
       <div className="flex justify-between items-center">
       <h1 className="text-2xl font-bold mb-6">
-        Assigning Expo to <span className="text-blue-600">{userName || "-"}</span>
+        Assigning Expo to <span className="text-blue-600 capitalize">{userName}</span>
       </h1>
       <button
         onClick={() => navigate(-1)}

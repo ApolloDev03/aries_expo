@@ -5,12 +5,20 @@ import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { apiUrl } from "../config";
+type User = {
+  id: number;
+  name: string;
+  mobile: string;
+  address?: string;
+};
 
 export default function UserHeader() {
   const [openProfile, setOpenProfile] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
+  const userDetail = JSON.parse(localStorage.getItem("user") || "{}") as User;
+  console.log(userDetail.name);
 
   const handleLogout = async () => {
     try {
@@ -75,7 +83,7 @@ export default function UserHeader() {
           <Link className="hover:text-orange-600" to="/users/my-expo">
             My Expo
           </Link>
-
+          <p>Welcome , <span className="capitalize text-[#2e56a6]">{userDetail.name}</span> </p>
         </nav>
 
         {/* LOGOUT BUTTON */}

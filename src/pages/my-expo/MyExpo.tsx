@@ -14,6 +14,7 @@ interface AssignedExpo {
     expo_date: string;
     city_name: string;
     state_name: string;
+    expo_id: number;
 }
 
 export default function AssignedExpoList() {
@@ -46,6 +47,7 @@ export default function AssignedExpoList() {
                     expo_date: String(x.expo_date ?? ""),
                     city_name: String(x.city_name ?? ""),
                     state_name: String(x.state_name ?? ""),
+                    expo_id: Number(x.expo_id ?? ""),
                 }));
 
                 setExpoList(list);
@@ -140,22 +142,17 @@ export default function AssignedExpoList() {
                                         <td className="p-2 text-center">
                                             <div className="flex justify-center gap-2">
                                                 <button
-                                                title="Add Visitor"
+                                                    title="Add Visitor"
                                                     className="px-3 py-1 text-white rounded-lg shadow bg-gradient-to-r from-blue-500 to-blue-600 hover:opacity-90"
                                                     onClick={() =>
-                                                        navigate("/users/add-visitors", {
-                                                            state: {
-                                                                assign_id: item.assign_id,
-                                                                expo_name: item.expo_name,
-                                                            },
-                                                        })
+                                                        navigate(`/users/add-visitors/${item.expo_id}`)
                                                     }
                                                 >
                                                     <GroupsIcon fontSize="small" />
                                                 </button>
 
                                                 <button
-                                                title="Add Exhibitor"
+                                                    title="Add Exhibitor"
                                                     className="px-3 py-1 text-white rounded-lg shadow bg-gradient-to-r from-blue-500 to-blue-600 hover:opacity-90"
                                                     onClick={() =>
                                                         navigate("/users/stalls", {
