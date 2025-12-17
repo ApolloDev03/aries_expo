@@ -501,9 +501,9 @@ export default function AddVisitor() {
   const expoName = location.state?.expo_name || "Expo";
   const userId = String(localStorage.getItem("User_Id") || "");
   const adminUser = safeJsonParse<{ id?: number; name?: string }>(
-    localStorage.getItem("admin_user")
+    localStorage.getItem("user")
   );
-  const username = String(adminUser?.name || "User");
+  const username = String(adminUser?.name);
 
   const [todayCount, setTodayCount] = useState<number>(0);
 
@@ -702,7 +702,7 @@ export default function AddVisitor() {
 
   // ✅ CHANGE HERE: Save button API changes by mobileExists
   const handleSave = async () => {
-    if (!/^\d{10}$/.test(mobile)) return toast.error("Please Enter Phone mobile");
+    if (!/^\d{10}$/.test(mobile)) return toast.error("Please Enter Mobile mobile");
     if (!expoId) return toast.error("Expo id missing");
     if (!userId) return toast.error("User not logged in (User_Id missing)");
 
