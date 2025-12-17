@@ -804,15 +804,15 @@ export default function VisitorList() {
         {isOpen && (
           <div
             className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-            onClick={() => {
-              if (!updating) {
-                setIsOpen(false);
-                setSelectedVisitor(null);
-                setModalError("");
-                setUpdateError("");
-                setCities([]);
-              }
-            }}
+            // onClick={() => {
+            //   if (!updating) {
+            //     setIsOpen(false);
+            //     setSelectedVisitor(null);
+            //     setModalError("");
+            //     setUpdateError("");
+            //     setCities([]);
+            //   }
+            // }}
           >
             <div
               className="bg-white w-full max-w-lg rounded-lg shadow-lg p-6 relative"
