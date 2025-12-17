@@ -23,7 +23,7 @@ export default function UserLogout() {
 
                 {/* Heading */}
                 <h2 className="text-2xl font-semibold text-gray-800">
-                    You are Logged Out user
+                    You are Logged Out 
                 </h2>
 
                 {/* Subtext */}

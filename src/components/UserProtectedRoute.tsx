@@ -10,7 +10,7 @@ export default function UserProtectedRoute({ children }: ProtectedRouteProps) {
 
     // ✅ get from localStorage
     const adminId = localStorage.getItem("User_Id");
-    const token = localStorage.getItem("user_token"); // (optional but recommended)
+    const token = localStorage.getItem("usertoken"); // (optional but recommended)
 
     // ✅ if not logged in -> redirect
     if (!adminId || !token) {
