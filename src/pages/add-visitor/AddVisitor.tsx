@@ -517,7 +517,7 @@ export default function AddVisitor() {
 
   const [states, setStates] = useState<StateItem[]>([]);
   const [cities, setCities] = useState<CityItem[]>([]);
-
+  const [address, setAddress] = useState("");
   const [loadingInit, setLoadingInit] = useState(false);
   const [loadingMobile, setLoadingMobile] = useState(false);
   const [loadingCity, setLoadingCity] = useState(false);
@@ -538,6 +538,7 @@ export default function AddVisitor() {
     setCompanyName("");
     setName("");
     setEmail("");
+    setAddress("");
     setStateId("");
     setCityId("");
     setCities([]);
@@ -674,6 +675,8 @@ export default function AddVisitor() {
         setCompanyName(String(v.companyname ?? ""));
         setName(String(v.name ?? ""));
         setEmail(String(v.email ?? ""));
+        setAddress(String(v.address ?? ""));
+
 
         const sid = v.stateid != null ? String(v.stateid) : "";
         const cid = v.cityid != null ? String(v.cityid) : "";
@@ -891,6 +894,20 @@ export default function AddVisitor() {
                   )}
                 </div>
               </div>
+
+              {/* Address */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Address</label>
+                <textarea
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  rows={3}
+                  className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300 resize-none"
+                  disabled={loadingMobile}
+                  placeholder="Enter address"
+                />
+              </div>
+
             </div>
 
             <div className="pt-3 text-end">
