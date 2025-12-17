@@ -24,6 +24,7 @@ import UserProfile from "./pages/userProfile/UserProfile";
 import EditUserProfile from "./pages/userProfile/EditUserProfile";
 import UserLogout from "./pages/UserLogout";
 import VisitorList from "./pages/add-visitor/VisitorList";
+import UserProtectedRoute from "./components/UserProtectedRoute";
 
 
 
@@ -43,8 +44,9 @@ export default function App() {
         <Route
           path="/users"
           element={
-            
-            <UserLayout />
+            <UserProtectedRoute >
+              <UserLayout />
+            </UserProtectedRoute>
           }
         >
           <Route index element={<UserDashboard />} />
