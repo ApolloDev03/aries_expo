@@ -19,51 +19,54 @@ export default function UserHeader() {
   const navigate = useNavigate();
   const userDetail = JSON.parse(localStorage.getItem("user") || "{}") as User;
 
+
   const handleLogout = async () => {
     try {
-      const userId = localStorage.getItem("user_id"); // or admin_id based on your app
+      const userId =
+        localStorage.getItem("User_Id") ||
+        localStorage.getItem("user_id") ||
+        "";
 
-      if (!userId) {
-        navigate("/logout");
-        return;
-      }
+      // even if api fails, we still clear local keys
+      await axios.post(`${apiUrl}/user/logout`, { user_id: userId }).catch(() => { });
 
-      const res = await axios.post(`${apiUrl}/user/logout`, {
-        user_id: userId,
-      });
+      // ✅ remove only specific auth keys
+      localStorage.removeItem("usertoken");
+      localStorage.removeItem("user");
+      localStorage.removeItem("User_Id");
+      localStorage.removeItem("user_id"); // optional if exists in your app
 
-      if (res.data?.success) {
-        // ✅ Clear auth data
-        localStorage.removeItem("artoken");
-        localStorage.removeItem("user");
-        localStorage.removeItem("user_id");
-
-        toast.success("Logged out successfully");
-
-        // ✅ Redirect to login
-        navigate("/logout");
-      }
-    } catch (error: any) {
+      toast.success("Logged out successfully");
+      navigate("/logout");
+    } catch (error) {
       console.error("Logout error:", error);
-      toast.error("Logout failed");
+
+      // ✅ still clear local keys
+      localStorage.removeItem("usertoken");
+      localStorage.removeItem("user");
+      localStorage.removeItem("User_Id");
+      localStorage.removeItem("user_id");
+
+      toast.error("Logout failed, but local session cleared");
+      navigate("/logout");
     }
   };
 
   useEffect(() => {
-      const handleClickOutside = (e: MouseEvent) => {
-        
-  
-        if (
-          profileRef.current &&
-          !profileRef.current.contains(e.target as Node)
-        ) {
-          setOpenProfile(false);
-        }
-      };
-  
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    const handleClickOutside = (e: MouseEvent) => {
+
+
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(e.target as Node)
+      ) {
+        setOpenProfile(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header className="flex justify-between items-center px-6 py-4 bg-white shadow">

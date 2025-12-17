@@ -25,87 +25,90 @@ import EditUserProfile from "./pages/userProfile/EditUserProfile";
 import UserLogout from "./pages/UserLogout";
 import VisitorList from "./pages/add-visitor/VisitorList";
 import UserProtectedRoute from "./components/UserProtectedRoute";
+import { Suspense } from "react";
 
 
 
 export default function App() {
   return (
     <>
-      <Routes>
-        {/* admin login */}
-        <Route path="/" element={<UserLogin />} />
-        <Route path="/logout" element={<UserLogout />} />
+      <Suspense fallback={<div>Loading...</div>}>
+        <Routes>
+          {/* admin login */}
+          <Route path="/" element={<UserLogin />} />
+          <Route path="/logout" element={<UserLogout />} />
 
-        {/* admin login */}
-        <Route path="/admin/login" element={<Login />} />
-        <Route path="/admin/logout" element={<Logout />} />
+          {/* admin login */}
+          <Route path="/admin/login" element={<Login />} />
+          <Route path="/admin/logout" element={<Logout />} />
 
-        {/* users */}
-        <Route
-          path="/users"
-          element={
-            <UserProtectedRoute >
-              <UserLayout />
-            </UserProtectedRoute>
-          }
-        >
-          <Route index element={<UserDashboard />} />
+          {/* users */}
+          <Route
+            path="/users"
+            element={
+              <UserProtectedRoute >
+                <UserLayout />
+              </UserProtectedRoute>
+            }
+          >
+            <Route index element={<UserDashboard />} />
 
-          <Route path="my-expo" element={<AssignedExpoList />} />
+            <Route path="my-expo" element={<AssignedExpoList />} />
 
-          <Route path="add-visitors/:expoId" element={<AddVisitor />} />
-          <Route path="/users/visitors-list/:label" element={<VisitorList />} />
-          <Route path="profile" element={<UserProfile />} />
-          <Route path="edit-profile" element={<EditUserProfile />} />
-
-
-        </Route>
-
-        {/* admin */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          {/* DASHBOARD */}
-          <Route index element={<Dashboard />} />
-
-          {/* CITY ROUTES */}
-          <Route path="city" element={<CityList />} />
-
-          {/* INDUSTRY ROUTES */}
-          <Route path="industry" element={<IndustryList />} />
-
-          <Route path="expo" element={<ExpoMaster />} />
-
-          <Route path="department" element={<DepartmentMaster />} />
-
-          <Route path="profile" element={<AdminProfile />} />
-          <Route path="edit-profile" element={<EditProfile />} />
+            <Route path="add-visitors/:expoId" element={<AddVisitor />} />
+            <Route path="/users/visitors-list/:label" element={<VisitorList />} />
+            <Route path="profile" element={<UserProfile />} />
+            <Route path="edit-profile" element={<EditUserProfile />} />
 
 
-          {/* USERS ROUTES */}
-          <Route path="users" element={<UserList />} />
-          <Route path="users/assign/:id" element={<UserForm />} />
-          <Route path="users/edit/:id" element={<UserForm />} />;
+          </Route>
 
-          <Route path="form2" element={<DummyAdminPage />} />
+          {/* admin */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            {/* DASHBOARD */}
+            <Route index element={<Dashboard />} />
 
-        </Route>
-      </Routes>
-      <ToastContainer
-        position="top-right"
-        autoClose={1000}         // ✅ 1 second
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        pauseOnHover={false}     // ✅ optional: don't pause
-        draggable
-        theme="light"
-      />
+            {/* CITY ROUTES */}
+            <Route path="city" element={<CityList />} />
+
+            {/* INDUSTRY ROUTES */}
+            <Route path="industry" element={<IndustryList />} />
+
+            <Route path="expo" element={<ExpoMaster />} />
+
+            <Route path="department" element={<DepartmentMaster />} />
+
+            <Route path="profile" element={<AdminProfile />} />
+            <Route path="edit-profile" element={<EditProfile />} />
+
+
+            {/* USERS ROUTES */}
+            <Route path="users" element={<UserList />} />
+            <Route path="users/assign/:id" element={<UserForm />} />
+            <Route path="users/edit/:id" element={<UserForm />} />;
+
+            <Route path="form2" element={<DummyAdminPage />} />
+
+          </Route>
+        </Routes>
+        <ToastContainer
+          position="top-right"
+          autoClose={1000}         // ✅ 1 second
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          pauseOnHover={false}     // ✅ optional: don't pause
+          draggable
+          theme="light"
+        />
+      </Suspense>
 
     </>
   );
