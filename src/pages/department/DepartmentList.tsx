@@ -125,7 +125,7 @@ export default function DepartmentMaster() {
           item.id === editData.id ? { ...item, name: editData.name } : item
         )
       );
-      toast.success("Department updated (frontend only)");
+      toast.success("Department updated ");
       setIsEditOpen(false);
 
       // 🔻 When you have backend API:
