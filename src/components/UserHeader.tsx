@@ -82,6 +82,9 @@ export default function UserHeader() {
           <Link className="hover:text-orange-600" to="/users/my-expo">
             My Expo
           </Link>
+          <Link className="hover:text-orange-600" to="/users">
+            Upload Visitor
+          </Link>
           <p>Welcome , <span className="capitalize text-[#2e56a6]">{userDetail.name}</span> </p>
         </nav>
 

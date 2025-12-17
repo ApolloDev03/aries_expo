@@ -506,7 +506,7 @@ type VisitorRow = {
 
   stateid?: number; // ✅ use id for dropdown + update
   cityid?: number; // ✅ use id for dropdown + update
-
+  address?: string;
   stateName?: string;
   cityName?: string;
 };
@@ -701,6 +701,8 @@ export default function VisitorList() {
         state_id: String(selectedVisitor.stateid),
         city_id: String(selectedVisitor.cityid),
         visitorid: String(selectedVisitor.id),
+        address: selectedVisitor.address,
+
       };
 
       const res = await axios.post(`${apiUrl}/Visitor/Update`, payload);
@@ -759,6 +761,7 @@ export default function VisitorList() {
                 <th className="p-2 border">Email</th>
                 <th className="p-2 border">State</th>
                 <th className="p-2 border">City</th>
+                <th className="p-2 border">Address</th>
                 <th className="p-2 border text-center">Action</th>
               </tr>
             </thead>
@@ -773,6 +776,7 @@ export default function VisitorList() {
                   <td className="p-2 border">{v.email}</td>
                   <td className="p-2 border">{v.stateName || "-"}</td>
                   <td className="p-2 border">{v.cityName || "-"}</td>
+                  <td className="p-2 border">1 - Anurag Flat, Bhairavnath Cross Road, Maninagar, Ahmedabad - 380008, Gujarat - India.</td>
                   <td className="p-2 border text-center">
                     <button
                       className="text-blue-600 hover:text-blue-800"
@@ -804,15 +808,15 @@ export default function VisitorList() {
         {isOpen && (
           <div
             className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-            // onClick={() => {
-            //   if (!updating) {
-            //     setIsOpen(false);
-            //     setSelectedVisitor(null);
-            //     setModalError("");
-            //     setUpdateError("");
-            //     setCities([]);
-            //   }
-            // }}
+          // onClick={() => {
+          //   if (!updating) {
+          //     setIsOpen(false);
+          //     setSelectedVisitor(null);
+          //     setModalError("");
+          //     setUpdateError("");
+          //     setCities([]);
+          //   }
+          // }}
           >
             <div
               className="bg-white w-full max-w-lg rounded-lg shadow-lg p-6 relative"
@@ -976,6 +980,25 @@ export default function VisitorList() {
                         ))}
                       </select>
                     </div>
+
+                    {/* ✅ Address */}
+                    <div className="col-span-2">
+                      <label className="font-medium">Address</label>
+                      <textarea
+                        className="border p-2 rounded w-full mt-1 resize-none"
+                        rows={3}
+                        value={selectedVisitor.address || ""}
+                        onChange={(e) =>
+                          setSelectedVisitor({
+                            ...selectedVisitor,
+                            address: e.target.value,
+                          })
+                        }
+                        disabled={updating}
+                        placeholder="Enter address"
+                      />
+                    </div>
+
                   </div>
 
                   <div className="flex justify-end gap-3 mt-6">
