@@ -15,6 +15,23 @@ interface EditDepartment {
   name: string;
 }
 
+function getApiErrorMessage(data: any, fallback = "Something went wrong") {
+  if (!data) return fallback;
+  if (typeof data === "string") return data;
+  if (data.message) return data.message;
+  if (data.error) return data.error;
+
+  if (data.errors && typeof data.errors === "object") {
+    const msgs: string[] = [];
+    Object.values(data.errors).forEach((v: any) => {
+      if (Array.isArray(v)) msgs.push(...v.map(String));
+      else if (typeof v === "string") msgs.push(v);
+    });
+    if (msgs.length) return msgs.join(" | ");
+  }
+  return fallback;
+}
+
 export default function DepartmentMaster() {
   const [name, setName] = useState("");
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -37,22 +54,14 @@ export default function DepartmentMaster() {
   // ---------- Helper: Auth Header ----------
   const getAuthHeaders = () => {
     const token = localStorage.getItem("artoken");
-    return token
-      ? {
-        Authorization: `Bearer ${token}`,
-      }
-      : {};
+    return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
   // ---------- Fetch Department List ----------
   const fetchDepartments = async () => {
     try {
       setIsListing(true);
-      const res = await axios.post(
-        `${apiUrl}/DepartList`,
-        {},
-        { headers: getAuthHeaders() }
-      );
+      const res = await axios.post(`${apiUrl}/DepartList`, {}, { headers: getAuthHeaders() });
 
       if (res.data?.success) {
         setDepartments(res.data.data || []);
@@ -61,7 +70,7 @@ export default function DepartmentMaster() {
       }
     } catch (error: any) {
       console.error(error);
-      toast.error("Error fetching departments");
+      toast.error(getApiErrorMessage(error?.response?.data, "Error fetching departments"));
     } finally {
       setIsListing(false);
     }
@@ -70,9 +79,6 @@ export default function DepartmentMaster() {
   useEffect(() => {
     fetchDepartments();
   }, []);
-
-  // (Optional) Fetch single department by id via Departshow
-
 
   // ---------- Add Department ----------
   const handleSave = async () => {
@@ -99,13 +105,13 @@ export default function DepartmentMaster() {
       }
     } catch (error: any) {
       console.error(error);
-      toast.error("Error adding department");
+      toast.error(getApiErrorMessage(error?.response?.data, "Error adding department"));
     } finally {
       setIsSaving(false);
     }
   };
 
-  // ---------- Update Department (currently frontend-only) ----------
+  // ✅ ---------- Update Department (BACKEND API) ----------
   const handleUpdate = async () => {
     if (!editData.id) {
       toast.error("Invalid department selected");
@@ -119,25 +125,36 @@ export default function DepartmentMaster() {
     try {
       setIsUpdating(true);
 
-      // Frontend-only update for now
-      setDepartments((prev) =>
-        prev.map((item) =>
-          item.id === editData.id ? { ...item, name: editData.name } : item
-        )
+      const res = await axios.post(
+        `${apiUrl}/DepartUpdate`,
+        {
+          department_id: String(editData.id),
+          name: editData.name.trim(),
+        },
+        { headers: getAuthHeaders() }
       );
-      toast.success("Department updated ");
-      setIsEditOpen(false);
 
-      // 🔻 When you have backend API:
-      // const res = await axios.post(
-      //   `${apiUrl}/DepartmentUpdate`,
-      //   { department_id: String(editData.id), name: editData.name.trim() },
-      //   { headers: getAuthHeaders() }
-      // );
-      // then update based on res.data.data
+      if (res.data?.success) {
+        toast.success(res.data?.message || "Department updated successfully");
+
+        const updated = res.data?.data; // { id, name, ... }
+
+        // ✅ update row in table
+        setDepartments((prev) =>
+          prev.map((item) =>
+            item.id === Number(updated?.id ?? editData.id)
+              ? { ...item, name: String(updated?.name ?? editData.name.trim()) }
+              : item
+          )
+        );
+
+        setIsEditOpen(false);
+      } else {
+        toast.error(getApiErrorMessage(res.data, "Failed to update department"));
+      }
     } catch (error: any) {
       console.error(error);
-      toast.error("Error updating department");
+      toast.error(getApiErrorMessage(error?.response?.data, "Error updating department"));
     } finally {
       setIsUpdating(false);
     }
@@ -162,7 +179,7 @@ export default function DepartmentMaster() {
       }
     } catch (error: any) {
       console.error(error);
-      toast.error("Error deleting department");
+      toast.error(getApiErrorMessage(error?.response?.data, "Error deleting department"));
     } finally {
       setIsDeleting(false);
       setIsDeleteOpen(false);
@@ -176,16 +193,10 @@ export default function DepartmentMaster() {
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
 
-  const currentRecords = departments.slice(
-    indexOfFirstRecord,
-    indexOfLastRecord
-  );
-
+  const currentRecords = departments.slice(indexOfFirstRecord, indexOfLastRecord);
   const totalPages = Math.ceil(departments.length / recordsPerPage) || 1;
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  const handlePageChange = (page: number) => setCurrentPage(page);
 
   return (
     <div className="flex gap-8 p-6">
@@ -246,7 +257,7 @@ export default function DepartmentMaster() {
 
               {currentRecords.map((item, index) => (
                 <tr key={item.id} className="border-b hover:bg-gray-50">
-                  <td className="p-3">{index + 1}</td>
+                  <td className="p-3">{indexOfFirstRecord + index + 1}</td>
                   <td className="p-1">{item.name}</td>
 
                   <td className="p-1 flex gap-3">
@@ -255,8 +266,6 @@ export default function DepartmentMaster() {
                       className="text-blue-600 hover:text-blue-800 disabled:text-gray-400"
                       disabled={isListing || isUpdating}
                       onClick={() => {
-                        // If you prefer always fresh data:
-                        // fetchDepartmentById(item.id);
                         setEditData({ id: item.id, name: item.name });
                         setIsEditOpen(true);
                       }}
@@ -303,9 +312,7 @@ export default function DepartmentMaster() {
                   key={page}
                   disabled={isListing}
                   onClick={() => handlePageChange(page)}
-                  className={`px-3 py-1 rounded border ${currentPage === page
-                    ? "bg-[#2e56a6] text-white"
-                    : "bg-white hover:bg-gray-100"
+                  className={`px-3 py-1 rounded border ${currentPage === page ? "bg-[#2e56a6] text-white" : "bg-white hover:bg-gray-100"
                     }`}
                 >
                   {page}
@@ -328,35 +335,28 @@ export default function DepartmentMaster() {
 
         {/* Edit Modal */}
         {isEditOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40"
-            // onClick={() => setIsEditOpen(false)}  
-          >
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40">
             <div
               className="bg-white p-6 rounded-lg shadow-lg w-96 relative"
-              onClick={(e) => e.stopPropagation()} // ❌ prevent inside click close
+              onClick={(e) => e.stopPropagation()}
             >
-              {/* ❌ Cross (X) icon */}
               <button
                 onClick={() => setIsEditOpen(false)}
                 className="absolute top-4 right-5 text-gray-500 hover:text-gray-700 text-2xl font-bold"
                 aria-label="Close"
+                disabled={isUpdating}
               >
                 ×
               </button>
 
-              <h2 className="text-xl font-semibold mb-4">
-                Edit Department
-              </h2>
+              <h2 className="text-xl font-semibold mb-4">Edit Department</h2>
 
               <label className="font-medium">Department</label>
               <input
                 type="text"
                 value={editData.name}
                 disabled={isUpdating}
-                onChange={(e) =>
-                  setEditData({ ...editData, name: e.target.value })
-                }
+                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
                 className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
               />
 
@@ -381,29 +381,23 @@ export default function DepartmentMaster() {
           </div>
         )}
 
-
         {/* Delete Modal */}
         {isDeleteOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40"
-            // onClick={() => setIsDeleteOpen(false)}
-          >
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40">
             <div
               className="bg-white p-6 rounded-2xl shadow-xl w-[380px] relative"
-              onClick={(e) => e.stopPropagation()}  // ❌ prevent inside click from closing
+              onClick={(e) => e.stopPropagation()}
             >
-              {/* ❌ Cross icon */}
               <button
                 onClick={() => setIsDeleteOpen(false)}
                 className="absolute top-4 right-5 text-gray-500 hover:text-gray-700 text-2xl font-bold"
                 aria-label="Close"
+                disabled={isDeleting}
               >
                 ×
               </button>
 
-              <h2 className="text-xl font-semibold text-red-600 mb-2">
-                Delete Record
-              </h2>
+              <h2 className="text-xl font-semibold text-red-600 mb-2">Delete Record</h2>
 
               <p className="text-gray-600 mb-6">
                 Are you sure you want to delete this department?
@@ -431,7 +425,6 @@ export default function DepartmentMaster() {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

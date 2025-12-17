@@ -18,7 +18,6 @@ export default function UserHeader() {
 
   const navigate = useNavigate();
   const userDetail = JSON.parse(localStorage.getItem("user") || "{}") as User;
-  console.log(userDetail.name);
 
   const handleLogout = async () => {
     try {

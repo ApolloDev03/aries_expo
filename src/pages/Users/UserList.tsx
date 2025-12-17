@@ -309,7 +309,6 @@ export default function UserMaster() {
 
     try {
       setUpdating(true);
-      console.log(editData?.email, "edittdatatat")
       const payload: any = {
         user_id: String(editData.id),
         name: editData.name,
@@ -494,7 +493,7 @@ export default function UserMaster() {
           className="w-full border px-3 py-2 rounded mt-1 mb-4"
         />
 
-        
+
 
         <label className="font-medium">Department</label>
         <select
@@ -701,10 +700,10 @@ export default function UserMaster() {
         {isEditOpen && editData && (
           <div
             className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
-            // onClick={() => {
-            //   setIsEditOpen(false);
-            //   setEditData(null);
-            // }} 
+          // onClick={() => {
+          //   setIsEditOpen(false);
+          //   setEditData(null);
+          // }} 
           >
             <div
               className="bg-white p-6 rounded-lg shadow-lg w-96 relative"
@@ -758,7 +757,7 @@ export default function UserMaster() {
                 className="w-full border px-3 py-2 rounded mt-1 mb-4"
               />
 
-              
+
 
               <label className="font-medium">Address</label>
               <input
@@ -820,7 +819,7 @@ export default function UserMaster() {
         {isDeleteOpen && (
           <div
             className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
-            // onClick={() => setIsDeleteOpen(false)}   
+          // onClick={() => setIsDeleteOpen(false)}   
           >
             <div
               className="bg-white p-6 rounded-2xl shadow-xl w-[380px] relative"
@@ -871,7 +870,7 @@ export default function UserMaster() {
         {isPasswordOpen && (
           <div
             className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
-            // onClick={() => setIsPasswordOpen(false)}  
+          // onClick={() => setIsPasswordOpen(false)}  
           >
             <div
               className="bg-white p-6 rounded-2xl shadow-xl w-[380px] relative"
