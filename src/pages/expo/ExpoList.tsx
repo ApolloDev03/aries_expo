@@ -671,7 +671,7 @@ export default function ExpoMaster() {
       {isEditOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
-          onClick={() => setIsEditOpen(false)}   // ✅ outside click close
+          // onClick={() => setIsEditOpen(false)}   
         >
           <div
             className="bg-white p-6 rounded-lg shadow-lg w-96 relative"
@@ -800,7 +800,7 @@ export default function ExpoMaster() {
       {isDeleteOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
-          onClick={() => setIsDeleteOpen(false)} // ✅ outside click close
+          // onClick={() => setIsDeleteOpen(false)} 
         >
           <div
             className="bg-white p-6 rounded-2xl shadow-xl w-[380px] relative"

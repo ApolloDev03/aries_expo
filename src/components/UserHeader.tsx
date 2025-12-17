@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import ariesLogo from "../assets/logo.png";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { apiUrl } from "../config";
 
 export default function UserHeader() {
   const [openProfile, setOpenProfile] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
 
@@ -40,6 +41,23 @@ export default function UserHeader() {
       toast.error("Logout failed");
     }
   };
+
+  useEffect(() => {
+      const handleClickOutside = (e: MouseEvent) => {
+        
+  
+        if (
+          profileRef.current &&
+          !profileRef.current.contains(e.target as Node)
+        ) {
+          setOpenProfile(false);
+        }
+      };
+  
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
   return (
     <header className="flex justify-between items-center px-6 py-4 bg-white shadow">
       {/* LEFT SIDE LOGO */}
@@ -62,7 +80,7 @@ export default function UserHeader() {
 
         {/* LOGOUT BUTTON */}
         {/* PROFILE DROPDOWN */}
-        <div className="relative">
+        <div className="relative" ref={profileRef}>
           <button
             onClick={() => setOpenProfile(!openProfile)}
             className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"

@@ -331,7 +331,7 @@ export default function IndustryMaster() {
         {isEditOpen && (
           <div
             className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40"
-            onClick={() => setIsEditOpen(false)} // ✅ outside click close
+            // onClick={() => setIsEditOpen(false)} 
           >
             <div
               className="bg-white p-6 rounded-lg shadow-lg w-96 relative"
@@ -386,7 +386,7 @@ export default function IndustryMaster() {
         {isDeleteOpen && (
           <div
             className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40"
-            onClick={() => setIsDeleteOpen(false)}   // ✅ outside click close
+            // onClick={() => setIsDeleteOpen(false)}   
           >
             <div
               className="bg-white p-6 rounded-2xl shadow-xl w-[380px] relative"
