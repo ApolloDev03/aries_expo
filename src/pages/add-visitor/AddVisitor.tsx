@@ -773,7 +773,7 @@ export default function AddVisitor() {
           <div className="grid grid-cols-1 gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Mobile Number</label>
+                <label className="block text-sm font-medium mb-1">Mobile Number <span className="text-red-600">*</span></label>
 
                 <div className="relative">
                   <input
@@ -794,6 +794,7 @@ export default function AddVisitor() {
                     onBlur={() => fetchVisitorByMobile(mobile)}
                     placeholder="Enter mobile number"
                     className="w-full border rounded-lg px-3 py-2 pr-10 focus:ring focus:ring-blue-300"
+                    required
                   />
 
                   {loadingMobile && (

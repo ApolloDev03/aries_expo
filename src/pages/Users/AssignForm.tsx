@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { apiUrl } from "../../config";
+import { useNavigate } from "react-router-dom";
 
 
 interface IndustryItem {
@@ -53,6 +55,7 @@ export default function AssignForm() {
   // Modals
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const navigate = useNavigate()
 
   // Loaders
   const [loading, setLoading] = useState(false); // page fetch
@@ -215,9 +218,18 @@ export default function AssignForm() {
   return (
     <div className="p-6">
       {/* HEADING */}
+      <div className="flex justify-between items-center">
       <h1 className="text-2xl font-bold mb-6">
         Assigning Expo to <span className="text-blue-600 capitalize">{userName}</span>
       </h1>
+      <button
+        onClick={() => navigate(-1)}
+        className="mb-4 flex items-center gap-2 border rounded-md p-2 border-[#2e56a6] text-[#2e56a6] font-medium"
+      >
+        <ArrowBackIcon fontSize="small" />
+        Back
+      </button>
+      </div>
 
       <div className="flex gap-6">
         {/* LEFT SIDE FORM */}

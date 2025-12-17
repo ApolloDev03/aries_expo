@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { toast } from "react-toastify";
 import { apiUrl } from "../../config";
 import { useNavigate } from "react-router-dom";
@@ -210,6 +211,13 @@ export default function EditProfile() {
 
     return (
         <div className="max-w-3xl mx-auto p-6">
+            <button
+                onClick={() => navigate(-1)}
+                className="mb-4 flex items-center gap-2 border rounded-md  p-2 border-[#2e56a6] text-[#2e56a6] font-medium"
+            >
+                <ArrowBackIcon fontSize="small" />
+                Back to Profile
+            </button>
             <div className="bg-white shadow-lg rounded-2xl p-6">
                 {/* Tabs */}
                 <div className="flex border-b mb-6">
