@@ -145,7 +145,12 @@ export default function AssignedExpoList() {
                                                     title="Add Visitor"
                                                     className="px-3 py-1 text-white rounded-lg shadow bg-gradient-to-r from-blue-500 to-blue-600 hover:opacity-90"
                                                     onClick={() =>
-                                                        navigate(`/users/add-visitors/${item.expo_id}`)
+                                                        navigate(`/users/add-visitors/${item.expo_id}`, {
+                                                            state: {
+                                                                assign_id: item.assign_id,
+                                                                expo_name: item.expo_name,
+                                                            },
+                                                        })
                                                     }
                                                 >
                                                     <GroupsIcon fontSize="small" />
