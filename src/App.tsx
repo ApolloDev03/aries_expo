@@ -56,7 +56,7 @@ export default function App() {
 
             <Route path="my-expo" element={<AssignedExpoList />} />
 
-            <Route path="add-visitors/:expoId" element={<AddVisitor />} />
+            <Route path="add-visitors/:slug" element={<AddVisitor />} />
             <Route path="/users/visitors-list/:label" element={<VisitorList />} />
             <Route path="profile" element={<UserProfile />} />
             <Route path="edit-profile" element={<EditUserProfile />} />

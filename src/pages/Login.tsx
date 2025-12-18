@@ -60,8 +60,7 @@ export default function Login() {
       const msg =
         err?.response?.data?.message ||
         err?.response?.data?.error ||
-        err?.message ||
-        "Invalid credentials or server error";
+        err?.message;
 
       toast.error(msg);
     } finally {
