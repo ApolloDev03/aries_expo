@@ -26,6 +26,7 @@ import UserLogout from "./pages/UserLogout";
 import VisitorList from "./pages/add-visitor/VisitorList";
 import UserProtectedRoute from "./components/UserProtectedRoute";
 import { Suspense } from "react";
+import UploadVisitor from "./pages/upload-visitor/UploadVisitor";
 
 
 
@@ -59,6 +60,7 @@ export default function App() {
             <Route path="/users/visitors-list/:label" element={<VisitorList />} />
             <Route path="profile" element={<UserProfile />} />
             <Route path="edit-profile" element={<EditUserProfile />} />
+            <Route path="upload-visitor" element={<UploadVisitor />} />
 
 
           </Route>
