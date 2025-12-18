@@ -83,28 +83,6 @@ export default function ExpoMaster() {
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
 
-  // ---------------- DATE HELPERS ----------------
-  const isValidDDMMYYYY = (v: string) => {
-    const m = v.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-    if (!m) return false;
-
-    const dd = Number(m[1]);
-    const mm = Number(m[2]);
-    const yyyy = Number(m[3]);
-
-    if (mm < 1 || mm > 12) return false;
-    const maxDay = new Date(yyyy, mm, 0).getDate();
-    return dd >= 1 && dd <= maxDay;
-  };
-
-  const isValidDDMMYYYYList = (v: string) => {
-    const parts = v
-      .split(",")
-      .map((x) => x.trim())
-      .filter(Boolean);
-    if (parts.length === 0) return false;
-    return parts.every(isValidDDMMYYYY);
-  };
 
 
   const ymdToDmy = (v: string) => {
@@ -355,7 +333,7 @@ export default function ExpoMaster() {
     }
   };
 
- 
+
   const handleUpdate = async () => {
     if (
       !editData.name ||
@@ -671,7 +649,7 @@ export default function ExpoMaster() {
       {isEditOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
-          // onClick={() => setIsEditOpen(false)}   
+        // onClick={() => setIsEditOpen(false)}   
         >
           <div
             className="bg-white p-6 rounded-lg shadow-lg w-96 relative"
@@ -768,11 +746,6 @@ export default function ExpoMaster() {
               className="w-full border px-3 py-2 rounded mt-1 mb-2 disabled:bg-gray-100"
             />
 
-            {editData.date && !isValidDDMMYYYYList(editData.date) && (
-              <p className="text-xs text-red-600 mb-4">
-                Invalid date. Use dd-mm-yyyy (comma allowed).
-              </p>
-            )}
 
             <div className="flex justify-end gap-3">
               <button
@@ -800,7 +773,7 @@ export default function ExpoMaster() {
       {isDeleteOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
-          // onClick={() => setIsDeleteOpen(false)} 
+        // onClick={() => setIsDeleteOpen(false)} 
         >
           <div
             className="bg-white p-6 rounded-2xl shadow-xl w-[380px] relative"

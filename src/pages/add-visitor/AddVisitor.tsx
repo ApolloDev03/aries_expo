@@ -497,7 +497,7 @@ function safeJsonParse<T = any>(value: string | null): T | null {
 
 export default function AddVisitor() {
   const location = useLocation();
-  const { expoId } = useParams<{ expoId: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const expoName = location.state?.expo_name || "Expo";
   const userId = String(localStorage.getItem("User_Id") || "");
   const adminUser = safeJsonParse<{ id?: number; name?: string }>(
@@ -550,7 +550,7 @@ export default function AddVisitor() {
       setLoadingCount(true);
       const res = await axios.post(`${apiUrl}/Expowise/count`, {
         user_id: String(userId),
-        expo_id: String(expoId),
+        expo_slugname: String(slug),
       });
 
       if (res.data?.success) {
@@ -633,7 +633,7 @@ export default function AddVisitor() {
   useEffect(() => {
     const init = async () => {
       if (!userId) toast.error("User not logged in (User_Id missing)");
-      if (!expoId) toast.error("Expo id missing");
+      if (!slug) toast.error("Expo id missing");
 
       try {
         setLoadingInit(true);
@@ -665,7 +665,7 @@ export default function AddVisitor() {
 
       const res = await axios.post(`${apiUrl}/visitor/by-mobile`, {
         mobileno: String(m),
-        expoid: String(expoId),
+        expo_slugname: String(slug),
         userid: String(userId),
       });
 
@@ -706,8 +706,6 @@ export default function AddVisitor() {
   // ✅ CHANGE HERE: Save button API changes by mobileExists
   const handleSave = async () => {
     if (!/^\d{10}$/.test(mobile)) return toast.error("Please Enter Mobile mobile");
-    if (!expoId) return toast.error("Expo id missing");
-    if (!userId) return toast.error("User not logged in (User_Id missing)");
 
     try {
       setSaving(true);
@@ -719,7 +717,7 @@ export default function AddVisitor() {
         email,
         stateid: String(stateId),
         cityid: String(cityId),
-        expoid: String(expoId),
+        expo_slugname: String(slug),
         username: String(username),
         userid: String(userId),
       };
