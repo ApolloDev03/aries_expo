@@ -142,7 +142,9 @@ export default function Header() {
               </div>
             )}
           </div>
-
+          <Link className="hover:text-orange-600" to="/admin/report">
+            Report
+          </Link>
           {/* OTHERS */}
           {/* <div className="relative">
             <button

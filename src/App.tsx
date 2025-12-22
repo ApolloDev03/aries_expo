@@ -27,6 +27,7 @@ import VisitorList from "./pages/add-visitor/VisitorList";
 import UserProtectedRoute from "./components/UserProtectedRoute";
 import { Suspense } from "react";
 import UploadVisitor from "./pages/upload-visitor/UploadVisitor";
+import VisitorReportPage from "./pages/report/ReportVisitor";
 
 
 
@@ -95,6 +96,7 @@ export default function App() {
             <Route path="users" element={<UserList />} />
             <Route path="users/assign/:id" element={<UserForm />} />
             <Route path="users/edit/:id" element={<UserForm />} />;
+            <Route path="report" element={<VisitorReportPage />} />;
 
             <Route path="form2" element={<DummyAdminPage />} />
 
