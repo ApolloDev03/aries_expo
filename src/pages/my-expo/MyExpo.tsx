@@ -162,7 +162,7 @@ export default function AssignedExpoList() {
                                                     title="Add Exhibitor"
                                                     className="px-3 py-1 text-white rounded-lg shadow bg-gradient-to-r from-blue-500 to-blue-600 hover:opacity-90"
                                                     onClick={() =>
-                                                        navigate("/users/stalls", {
+                                                        navigate(`/users/add-exhivitor/exhivitor1`, {
                                                             state: {
                                                                 assign_id: item.assign_id,
                                                                 expo_name: item.expo_name,

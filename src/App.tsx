@@ -28,6 +28,7 @@ import UserProtectedRoute from "./components/UserProtectedRoute";
 import { Suspense } from "react";
 import UploadVisitor from "./pages/upload-visitor/UploadVisitor";
 import VisitorReportPage from "./pages/report/ReportVisitor";
+import AddExhivitor from "./pages/add-exhivitor/AddExhivitor";
 
 
 
@@ -62,7 +63,7 @@ export default function App() {
             <Route path="profile" element={<UserProfile />} />
             <Route path="edit-profile" element={<EditUserProfile />} />
             <Route path="upload-visitor" element={<UploadVisitor />} />
-
+            <Route path="add-exhivitor/:slug" element={<AddExhivitor />} />
 
           </Route>
 
@@ -104,7 +105,7 @@ export default function App() {
         </Routes>
         <ToastContainer
           position="top-right"
-          autoClose={1000}         // ✅ 1 second
+          autoClose={2000}         // ✅ 1 second
           hideProgressBar={false}
           newestOnTop
           closeOnClick
