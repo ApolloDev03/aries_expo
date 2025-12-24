@@ -644,8 +644,6 @@ export default function UploadVisitor() {
 
       if (res.data?.success) {
         toast.success(res.data?.message || "Visitor Excel uploaded successfully");
-
-        // ✅ IMPORTANT: keep selections, only reset file
         resetFileInput();
       } else {
         toast.error(res.data?.message || "Upload failed");
@@ -654,8 +652,7 @@ export default function UploadVisitor() {
       console.error(err);
       toast.error(
         err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        "Error uploading Excel"
+        err?.response?.data?.error
       );
     } finally {
       setIsUploading(false);
