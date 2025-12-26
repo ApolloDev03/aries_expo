@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import {  useParams } from "react-router-dom";
 import { apiUrl } from "../../config";
 
 type StateItem = { stateId: number; stateName: string };
@@ -33,14 +32,13 @@ function safeJsonParse<T = any>(value: string | null): T | null {
   }
 }
 
-export default function AddVisitor() {
-  const { slug } = useParams<{ slug: string }>();
+export default function ExpectedVisitor() {
   const userId = String(localStorage.getItem("User_Id") || "");
   const adminUser = safeJsonParse<{ id?: number; name?: string }>(
     localStorage.getItem("user")
   );
   const username = String(adminUser?.name);
-  const [expo_name, setExpo_Name] = useState<string>("");
+
   const [todayCount, setTodayCount] = useState<number>(0);
 
   const [mobile, setMobile] = useState("");
@@ -86,7 +84,7 @@ export default function AddVisitor() {
       setLoadingCount(true);
       const res = await axios.post(`${apiUrl}/Expowise/count`, {
         user_id: String(userId),
-        expo_slugname: String(slug),
+        expo_slugname: "",
       });
 
       if (res.data?.success) {
@@ -108,9 +106,9 @@ export default function AddVisitor() {
     let lastPage = 1;
 
     while (page <= lastPage) {
-      const res = await axios.post(`${apiUrl}/statelist`, { page: String(page), expo_slugname: slug });
+      const res = await axios.post(`${apiUrl}/statelist`, { page: String(page) });
       if (!res.data?.success) throw new Error(getApiErrorMessage(res.data, "State fetch failed"));
-      setExpo_Name(res?.data?.expo_name)
+
       const data: StateItem[] = (res.data?.data || []).map((s: any) => ({
         stateId: Number(s.stateId),
         stateName: String(s.stateName),
@@ -169,7 +167,6 @@ export default function AddVisitor() {
   useEffect(() => {
     const init = async () => {
       if (!userId) toast.error("User not logged in (User_Id missing)");
-      if (!slug) toast.error("Expo slug missing");
 
       try {
         setLoadingInit(true);
@@ -201,7 +198,7 @@ export default function AddVisitor() {
 
       const res = await axios.post(`${apiUrl}/visitor/by-mobile`, {
         mobileno: String(m),
-        expo_slugname: String(slug),
+        expo_slugname: "",
         userid: String(userId),
       });
 
@@ -253,7 +250,7 @@ export default function AddVisitor() {
         email,
         stateid: String(stateId),
         cityid: String(cityId),
-        expo_slugname: String(slug),
+        expo_slugname: "",
         username: String(username),
         userid: String(userId),
         address: address,
@@ -289,7 +286,6 @@ export default function AddVisitor() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">{expo_name}</h1>
 
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-500">Today Visitors </span>
@@ -301,7 +297,7 @@ export default function AddVisitor() {
       </div>
 
       <div className="bg-white p-6 rounded-xl shadow-md border">
-        <h2 className="text-lg font-semibold text-gray-700 mb-4">Add Visitor</h2>
+        <h2 className="text-lg font-semibold text-gray-700 mb-4">Expected Visitor</h2>
 
         {loadingInit ? (
           <div className="flex items-center gap-3 text-gray-600 py-6">
@@ -430,6 +426,8 @@ export default function AddVisitor() {
                   )}
                 </div>
               </div>
+
+              {/* Address */}
               <div>
                 <label className="block text-sm font-medium mb-1">Address</label>
                 <textarea
@@ -441,8 +439,6 @@ export default function AddVisitor() {
                   placeholder="Enter address"
                 />
               </div>
-
-              {/* Address */}
 
             </div>
 
