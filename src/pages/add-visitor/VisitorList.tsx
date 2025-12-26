@@ -495,6 +495,7 @@ type ApiVisitor = {
   cityid: number;
   stateName: string;
   cityName: string;
+  address: string;
 };
 
 type VisitorRow = {
@@ -555,6 +556,7 @@ export default function VisitorList() {
     cityid: v.cityid,
     stateName: v.stateName,
     cityName: v.cityName,
+    address: v.address
   });
 
   // ✅ Fetch ALL states (paginated statelist)
@@ -776,7 +778,7 @@ export default function VisitorList() {
                   <td className="p-2 border">{v.email}</td>
                   <td className="p-2 border">{v.stateName || "-"}</td>
                   <td className="p-2 border">{v.cityName || "-"}</td>
-                  <td className="p-2 border">1 - Anurag Flat, Bhairavnath Cross Road, Maninagar, Ahmedabad - 380008, Gujarat - India.</td>
+                  <td className="p-2 border">{v.address || "-"}</td>
                   <td className="p-2 border text-center">
                     <button
                       className="text-blue-600 hover:text-blue-800"

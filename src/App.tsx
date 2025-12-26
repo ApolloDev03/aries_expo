@@ -28,7 +28,12 @@ import UserProtectedRoute from "./components/UserProtectedRoute";
 import { Suspense } from "react";
 import UploadVisitor from "./pages/upload-visitor/UploadVisitor";
 import VisitorReportPage from "./pages/report/ReportVisitor";
-import AddExhivitor from "./pages/add-exhivitor/AddExhivitor";
+import AddExhivitor from "./pages/add-exhibitor/AddExhibitor";
+import ExhibitorListDesign from "./pages/add-exhibitor/ExhibitorList";
+import ExhibitorEditDesign from "./pages/add-exhibitor/EditExhibitor";
+import ExpectedVisitor from "./pages/add-visitor/ExpectedVisitor";
+import CategoryMaster from "./pages/Cat/Category";
+import SubCategoryMaster from "./pages/Subcategory/SubCategory";
 
 
 
@@ -59,11 +64,14 @@ export default function App() {
             <Route path="my-expo" element={<AssignedExpoList />} />
 
             <Route path="add-visitors/:slug" element={<AddVisitor />} />
+            <Route path="expectedvisitor" element={<ExpectedVisitor />} />
             <Route path="/users/visitors-list/:label" element={<VisitorList />} />
             <Route path="profile" element={<UserProfile />} />
             <Route path="edit-profile" element={<EditUserProfile />} />
             <Route path="upload-visitor" element={<UploadVisitor />} />
             <Route path="add-exhivitor/:slug" element={<AddExhivitor />} />
+            <Route path="/users/exhibitors-list/:label" element={<ExhibitorListDesign />} />
+            <Route path="/users/exhibitor/edit/:id" element={<ExhibitorEditDesign />} />
 
           </Route>
 
@@ -97,6 +105,9 @@ export default function App() {
             <Route path="users" element={<UserList />} />
             <Route path="users/assign/:id" element={<UserForm />} />
             <Route path="users/edit/:id" element={<UserForm />} />;
+             <Route path="category" element={<CategoryMaster />} />
+             <Route path="subcategory" element={<SubCategoryMaster />} />
+              <Route path="users" element={<UserList />} />
             <Route path="report" element={<VisitorReportPage />} />;
 
             <Route path="form2" element={<DummyAdminPage />} />

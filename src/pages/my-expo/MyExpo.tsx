@@ -16,6 +16,7 @@ interface AssignedExpo {
     state_name: string;
     expo_id: number;
     slugname: string;
+    industry_name: string;
 }
 
 export default function AssignedExpoList() {
@@ -50,6 +51,7 @@ export default function AssignedExpoList() {
                     state_name: String(x.state_name ?? ""),
                     expo_id: Number(x.expo_id ?? ""),
                     slugname: String(x.slugname ?? ""),
+                    industry_name: String(x.industry_name ?? ""),
                 }));
 
                 setExpoList(list);
@@ -88,6 +90,7 @@ export default function AssignedExpoList() {
                 <div className="overflow-x-auto relative">
                     <table className="min-w-full border-collapse">
                         <thead>
+                            <th className="p-2 text-left">Industry Name</th>
                             <tr className="bg-gray-100 text-gray-700 text-lg">
                                 <th className="p-2 text-left">Expo Name</th>
                                 <th className="p-2 text-left">State</th>
@@ -104,6 +107,9 @@ export default function AssignedExpoList() {
                                     <tr key={i} className="animate-pulse">
                                         <td className="p-2">
                                             <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                                        </td>
+                                        <td className="p-2">
+                                            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
                                         </td>
                                         <td className="p-2">
                                             <div className="h-4 bg-gray-200 rounded w-1/2"></div>
@@ -136,6 +142,7 @@ export default function AssignedExpoList() {
                                         key={item.assign_id}
                                         className="border-b text-gray-700 hover:bg-gray-50 transition text-sm"
                                     >
+                                        <td className="p-2 font-medium">{item.industry_name}</td>
                                         <td className="p-2 font-medium">{item.expo_name}</td>
                                         <td className="p-2">{item.state_name}</td>
                                         <td className="p-2">{item.city_name}</td>
@@ -162,7 +169,7 @@ export default function AssignedExpoList() {
                                                     title="Add Exhibitor"
                                                     className="px-3 py-1 text-white rounded-lg shadow bg-gradient-to-r from-blue-500 to-blue-600 hover:opacity-90"
                                                     onClick={() =>
-                                                        navigate(`/users/add-exhivitor/exhivitor1`, {
+                                                        navigate(`/users/add-exhivitor/${item.slugname}`, {
                                                             state: {
                                                                 assign_id: item.assign_id,
                                                                 expo_name: item.expo_name,

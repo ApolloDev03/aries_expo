@@ -64,12 +64,12 @@ export default function UserDashboard() {
             </div>
 
             {/* TOP USER STATS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Card 1 */}
                 <div
                     onClick={() => navigate("/users/visitors-list/TotalVisitors")}
                     className="bg-white shadow rounded-xl p-6 border-l-4 cursor-pointer border-blue-500">
-                    <h2 className="text-sm text-gray-500">Total Visiters</h2>
+                    <h2 className="text-sm text-gray-500">Total Visitors</h2>
 
                     {loadingCounts ? (
                         <div className="mt-3 flex items-center gap-2 text-gray-500">
@@ -84,7 +84,7 @@ export default function UserDashboard() {
                 <div
                     onClick={() => navigate("/users/visitors-list/TodayTotalVisitors")}
                     className="bg-white shadow rounded-xl p-6 border-l-4 border-green-500 cursor-pointer">
-                    <h2 className="text-sm text-gray-500">Today Total Visiters</h2>
+                    <h2 className="text-sm text-gray-500">Today  Visitors</h2>
 
                     {loadingCounts ? (
                         <div className="mt-3 flex items-center gap-2 text-gray-500">
@@ -96,8 +96,12 @@ export default function UserDashboard() {
                 </div>
 
                 {/* Card 3 (static for now) */}
-                <div className="bg-white shadow rounded-xl p-6 border-l-4 border-purple-500">
-                    <h2 className="text-sm text-gray-500">Upcoming Events</h2>
+                <div onClick={() => navigate("/users/exhibitors-list/TotalVisitors")} className="bg-white shadow rounded-xl p-6 border-l-4 border-purple-500">
+                    <h2 className="text-sm text-gray-500">Total Exhibitors</h2>
+                    <p className="text-3xl font-bold text-gray-800 mt-2">2</p>
+                </div>
+                <div onClick={() => navigate("/users/exhibitors-list/TodayTotalVisitors")} className="bg-white shadow rounded-xl p-6 border-l-4 border-[#F54C54]">
+                    <h2 className="text-sm text-gray-500">Today Exhibitors</h2>
                     <p className="text-3xl font-bold text-gray-800 mt-2">2</p>
                 </div>
             </div>

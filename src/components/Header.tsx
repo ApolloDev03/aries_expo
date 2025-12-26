@@ -128,6 +128,8 @@ export default function Header() {
                   { to: "/admin/industry", label: "Industry" },
                   { to: "/admin/expo", label: "Expo" },
                   { to: "/admin/users", label: "User" },
+                  { to: "/admin/category", label: "Category" },
+                  { to: "/admin/subcategory", label: "Subcategory" },
                   { to: "/admin/department", label: "Department" },
                 ].map((m) => (
                   <Link

@@ -85,6 +85,9 @@ export default function UserHeader() {
           <Link className="hover:text-orange-600" to="/users/my-expo">
             My Expo
           </Link>
+          <Link className="hover:text-orange-600" to="/users/expectedvisitor">
+            Expected Visitor
+          </Link>
           <Link className="hover:text-orange-600" to="/users/upload-visitor">
             Upload Visitor
           </Link>
