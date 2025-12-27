@@ -83,7 +83,7 @@ export default function AddExhivitor() {
     const [expo_name, setExpo_Name] = useState<string>("");
     const userId = String(localStorage.getItem("User_Id") || "");
 
- 
+
     /** ✅ for update existing record */
     const [primaryContactDbId, setPrimaryContactDbId] = useState<number | null>(null);
     const [companyDbId, setCompanyDbId] = useState<number | null>(null);
@@ -119,6 +119,8 @@ export default function AddExhivitor() {
     const [loadingIndustry, setLoadingIndustry] = useState(false);
     const [loadingCategory, setLoadingCategory] = useState(false);
     const [loadingSubcategory, setLoadingSubcategory] = useState(false);
+    const [todayExhibitors, setTodayExhibitors] = useState<number>(0);
+    const [loadingCount, setLoadingCount] = useState(false);
 
     /** extra contacts (optional - Third) */
     const [contacts, setContacts] = useState<ContactRow[]>([
@@ -374,6 +376,70 @@ export default function AddExhivitor() {
             setContacts([{ id: newId(), db_id: null, mobile: "", name: "", designation: "", email: "" }]);
         }
     };
+    const fetchExpoWiseCount = async () => {
+        try {
+            setLoadingCount(true);
+
+            const res = await axios.post(
+                `${apiUrl}/exhibitors/Expowise/count`,
+                {
+                    user_id: Number(userId),
+                    expo_slugname: String(slug || ""),
+                },
+                { headers: { ...authHeaders() } }
+            );
+
+            if (res.data?.success) {
+                setTodayExhibitors(Number(res.data?.todayExhibitors ?? 0));
+            } else {
+                setTodayExhibitors(0);
+                // toast.error(res.data?.message || "Failed to fetch exhibitor count");
+            }
+        } catch (e: any) {
+            setTodayExhibitors(0);
+            // toast.error("Error while fetching exhibitor count");
+        } finally {
+            setLoadingCount(false);
+        }
+    };
+
+    const resetAllFieldsForNew = () => {
+        // ✅ stop pending auto-apply values
+        pendingCityIdRef.current = "";
+        pendingCategoryIdRef.current = "";
+        pendingSubcategoryIdRef.current = "";
+
+        // ✅ reset update ids
+        setPrimaryContactDbId(null);
+        setCompanyDbId(null);
+
+        // ✅ exhibitor fields (keep mobile as user typed)
+        setExhibitorName("");
+        setExhibitorDesignation("");
+        setExhibitorEmail("");
+
+        // ✅ company fields
+        setCompanyName("");
+        setGst("");
+        setAddress("");
+        setStoreSize("");
+
+        // ✅ location dropdowns
+        setStateId("");
+        setCityId("");
+        setCities([]);
+
+        // ✅ industry dropdowns
+        setIndustryId("");
+        setCategoryId("");
+        setSubcategoryId("");
+        setCategoryOptions([]);
+        setSubcategoryOptions([]);
+
+        // ✅ other contacts
+        setContacts([{ id: newId(), db_id: null, mobile: "", name: "", designation: "", email: "" }]);
+    };
+
 
     const searchExhibitorByMobile = async (mobile: string) => {
         try {
@@ -392,11 +458,13 @@ export default function AddExhivitor() {
                 fillFromSearchResponse(res.data);
                 toast.success("Exhibitor found. Details filled.");
             } else {
+                resetAllFieldsForNew();
                 // if backend returns success=false for not found:
                 // toast.info("No exhibitor found for this mobile.");
             }
         } catch (e: any) {
             lastSearchedMobileRef.current = ""; // allow retry
+            resetAllFieldsForNew();
             // optional: toast.error(e?.response?.data?.message || "Search failed");
         } finally {
             // allow next user typing to search again
@@ -419,6 +487,9 @@ export default function AddExhivitor() {
         setCities([]);
 
         if (stateId) fetchCitiesByState(stateId);
+        if (userId && slug) {
+            fetchExpoWiseCount(); // ✅ added
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [stateId]);
 
@@ -511,7 +582,7 @@ export default function AddExhivitor() {
             // ✅ payload: send company_id + primary_contact_id to update existing company
             const payload: any = {
                 expo_slug: slug,
-
+                user_id: Number(userId),
                 ...(companyDbId ? { company_id: companyDbId } : {}),
                 ...(primaryContactDbId ? { primary_contact_id: primaryContactDbId } : {}),
 
@@ -529,7 +600,7 @@ export default function AddExhivitor() {
                 state_id: stateId ? Number(stateId) : null,
                 city_id: cityId ? Number(cityId) : null,
                 address: address.trim(),
-
+                store_size_sq_meter: storeSize,
                 other_contacts: otherContacts,
             };
 
@@ -539,6 +610,7 @@ export default function AddExhivitor() {
             });
 
             if (res.data?.success) {
+                await fetchExpoWiseCount();
                 toast.success(res.data?.message || "Exhibitor saved successfully");
 
                 // reset form
@@ -584,7 +656,7 @@ export default function AddExhivitor() {
                 <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-500">Today Exhibitors</span>
                     <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-sm font-semibold">
-                        {0}
+                        {loadingCount ? "---" : todayExhibitors}
                     </span>
                 </div>
             </div>
