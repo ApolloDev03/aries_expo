@@ -979,7 +979,8 @@ export default function ExhibitorEdit() {
 
   // ✅ expo name (usually passed from list page state)
   const [expo_name, setExpo_Name] = useState<string>(
-    String(location.state?.expo_name ?? location.state?.expoName ?? "Expo")
+  );
+  const [slug_name, setSlug_name] = useState<string>(
   );
 
   const expoIdFromState = Number(
@@ -1053,8 +1054,10 @@ export default function ExhibitorEdit() {
       if (!data) return;
 
       // expo name (if backend ever sends)
-      const maybeExpoName = res.data?.expo_name ?? data?.expo_name ?? data?.expoName;
-      if (maybeExpoName) setExpo_Name(String(maybeExpoName));
+      const ExpoName = res.data?.expo_name;
+      if (ExpoName) setExpo_Name(String(ExpoName));
+      const ExpoSlug = res.data?.expo_slug;
+      if (ExpoSlug) setSlug_name(String(ExpoSlug));
 
       // ids
       setCompanyInfoId(Number(data.id || id));
@@ -1070,6 +1073,7 @@ export default function ExhibitorEdit() {
       // company
       setCompanyName(String(data.company_name || ""));
       setGst(String(data.gst || ""));
+      setStoreSize(String(data.store_size_sq_meter || ""))
       setAddress(String(data.address || ""));
 
       // ✅ STATE -> CITY (ID wise)
@@ -1347,8 +1351,7 @@ export default function ExhibitorEdit() {
 
       const payload: any = {
         id: Number(companyInfoId),
-        expo_id: Number(expoId),
-
+        expo_slug: slug_name,
         primary_contact_name: exhibitorName.trim(),
         primary_contact_mobile: exhibitorMobile.trim(),
         primary_contact_email: exhibitorEmail.trim(),
@@ -1358,7 +1361,7 @@ export default function ExhibitorEdit() {
         industry_id: Number(industryId),
         category_id: Number(categoryId),
         subcategory_id: Number(subcategoryId),
-
+        store_size_sq_meter: storeSize,
         gst: gst.trim(),
         state_id: Number(stateId),
         city_id: Number(cityId),

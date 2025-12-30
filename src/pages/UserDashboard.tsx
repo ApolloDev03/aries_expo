@@ -7,6 +7,8 @@ type CountRes = {
     user_id: string;
     total_visitors: number;
     today_visitors: number;
+    total_exhibitors: number;
+    today_exhibitors: number;
 };
 
 export default function UserDashboard() {
@@ -15,12 +17,16 @@ export default function UserDashboard() {
     const [loadingCounts, setLoadingCounts] = useState(false);
     const [totalVisitors, setTotalVisitors] = useState(0);
     const [todayVisitors, setTodayVisitors] = useState(0);
+    const [totalExhibitors, setTotalExhibitors] = useState(0);
+    const [todayExhibitors, setTodayExhibitors] = useState(0);
 
     const fetchVisitorCounts = async () => {
         if (!userId) {
             toast.error("User_Id not found in localStorage");
             setTotalVisitors(0);
             setTodayVisitors(0);
+            setTotalExhibitors(0);
+            setTodayExhibitors(0);
             return;
         }
 
@@ -35,16 +41,22 @@ export default function UserDashboard() {
                 const d: CountRes = res.data.data;
                 setTotalVisitors(Number(d.total_visitors || 0));
                 setTodayVisitors(Number(d.today_visitors || 0));
+                setTotalExhibitors(Number(d.total_exhibitors || 0));
+                setTodayExhibitors(Number(d.today_exhibitors || 0));
             } else {
                 toast.error(res.data?.message || "Visitor count fetch failed");
                 setTotalVisitors(0);
                 setTodayVisitors(0);
+                setTodayExhibitors(0);
+                setTotalExhibitors(0);
             }
         } catch (err: any) {
             console.error(err);
             toast.error(err?.response?.data?.message || "Visitor count fetch failed");
             setTotalVisitors(0);
             setTodayVisitors(0);
+            setTodayExhibitors(0);
+            setTotalExhibitors(0);
         } finally {
             setLoadingCounts(false);
         }
@@ -98,11 +110,23 @@ export default function UserDashboard() {
                 {/* Card 3 (static for now) */}
                 <div onClick={() => navigate("/users/exhibitors-list/TotalVisitors")} className="bg-white shadow rounded-xl p-6 border-l-4 border-purple-500">
                     <h2 className="text-sm text-gray-500">Total Exhibitors</h2>
-                    <p className="text-3xl font-bold text-gray-800 mt-2">2</p>
+                    {loadingCounts ? (
+                        <div className="mt-3 flex items-center gap-2 text-gray-500">
+                            0
+                        </div>
+                    ) : (
+                        <p className="text-3xl font-bold text-gray-800 mt-2">{totalExhibitors}</p>
+                    )}
                 </div>
                 <div onClick={() => navigate("/users/exhibitors-list/TodayTotalVisitors")} className="bg-white shadow rounded-xl p-6 border-l-4 border-[#F54C54]">
                     <h2 className="text-sm text-gray-500">Today Exhibitors</h2>
-                    <p className="text-3xl font-bold text-gray-800 mt-2">2</p>
+                    {loadingCounts ? (
+                        <div className="mt-3 flex items-center gap-2 text-gray-500">
+                            0
+                        </div>
+                    ) : (
+                        <p className="text-3xl font-bold text-gray-800 mt-2">{todayExhibitors}</p>
+                    )}
                 </div>
             </div>
 
