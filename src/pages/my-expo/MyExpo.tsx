@@ -90,8 +90,8 @@ export default function AssignedExpoList() {
                 <div className="overflow-x-auto relative">
                     <table className="min-w-full border-collapse">
                         <thead>
-                            <th className="p-2 text-left">Industry Name</th>
                             <tr className="bg-gray-100 text-gray-700 text-lg">
+                            <th className="p-2 text-left">Industry Name</th>
                                 <th className="p-2 text-left">Expo Name</th>
                                 <th className="p-2 text-left">State</th>
                                 <th className="p-2 text-left">City</th>
