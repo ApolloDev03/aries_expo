@@ -131,6 +131,7 @@ export default function Header() {
                   { to: "/admin/category", label: "Category" },
                   { to: "/admin/subcategory", label: "Subcategory" },
                   { to: "/admin/department", label: "Department" },
+                  { to: "/admin/visitor-category", label: "Visitor Category" }
                 ].map((m) => (
                   <Link
                     key={m.to}

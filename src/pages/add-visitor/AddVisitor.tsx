@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import {  useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { apiUrl } from "../../config";
 
 type StateItem = { stateId: number; stateName: string };
 type CityItem = { id: number; name: string; stateid?: number };
+type VisitorCategoryItem = { id: number; name: string };
 
 function getApiErrorMessage(data: any, fallback = "Something went wrong") {
   if (!data) return fallback;
@@ -66,6 +67,9 @@ export default function AddVisitor() {
 
   const mobileRef = useRef<HTMLInputElement | null>(null);
   const companyRef = useRef<HTMLInputElement | null>(null);
+  const [visitorCategories, setVisitorCategories] = useState<VisitorCategoryItem[]>([]);
+  const [visitorCategoryId, setVisitorCategoryId] = useState<string>("0");
+  const [loadingVisitorCategory, setLoadingVisitorCategory] = useState(false);
 
   const focusMobile = () => requestAnimationFrame(() => mobileRef.current?.focus());
   const focusCompany = () => requestAnimationFrame(() => companyRef.current?.focus());
@@ -78,6 +82,7 @@ export default function AddVisitor() {
     setStateId("");
     setCityId("");
     setCities([]);
+    setVisitorCategoryId("0");
   };
 
   const fetchTodayVisitorCount = async () => {
@@ -176,6 +181,7 @@ export default function AddVisitor() {
         const stateList = await fetchAllStates();
         setStates(stateList);
         await fetchTodayVisitorCount();
+        await fetchVisitorCategories();
         focusMobile();
       } catch (err: any) {
         toast.error(err?.message || "Init failed");
@@ -222,6 +228,16 @@ export default function AddVisitor() {
 
         setMobileExists(true);
         setLastFetchedMobile(m);
+        // ✅ optional: set category if backend returns it
+        const catId =
+          v.visitor_category_id != null
+            ? String(v.visitor_category_id)
+            : v.visitorCategoryId != null
+              ? String(v.visitorCategoryId)
+              : "0";
+
+        setVisitorCategoryId(catId);
+
       } else {
         clearVisitorFields();
         setMobileExists(false);
@@ -236,6 +252,33 @@ export default function AddVisitor() {
     } finally {
       setLoadingMobile(false);
       focusCompany();
+    }
+  };
+  const fetchVisitorCategories = async () => {
+    try {
+      setLoadingVisitorCategory(true);
+
+      const res = await axios.post(
+        `https://rsw-laravel.ariesevents.in/api/visitor-category/index`,
+        {}
+      );
+
+      if (res.data?.status) {
+        const list: VisitorCategoryItem[] = (res.data?.data || []).map((x: any) => ({
+          id: Number(x.id),
+          name: String(x.strVisitorCategory ?? ""),
+        }));
+
+        setVisitorCategories(list);
+      } else {
+        toast.error(res.data?.message || "Visitor category fetch failed");
+        setVisitorCategories([]);
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data || "Visitor category fetch failed");
+      setVisitorCategories([]);
+    } finally {
+      setLoadingVisitorCategory(false);
     }
   };
 
@@ -257,6 +300,7 @@ export default function AddVisitor() {
         username: String(username),
         userid: String(userId),
         address: address,
+        visitor_category_id: Number(visitorCategoryId || "0"),
       };
 
       // ✅ if exists → call by-mobile (your update flow), else → call Add
@@ -444,6 +488,36 @@ export default function AddVisitor() {
 
               {/* Address */}
 
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Visitor Category
+                </label>
+
+                <div className="relative">
+                  <select
+                    value={visitorCategoryId}
+                    onChange={(e) => setVisitorCategoryId(e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2 pr-10 focus:ring focus:ring-blue-300"
+                    disabled={loadingMobile || loadingVisitorCategory}
+                  >
+                    <option value="0">
+                      {loadingVisitorCategory ? "Loading categories..." : "Select Category"}
+                    </option>
+
+                    {visitorCategories.map((c) => (
+                      <option key={c.id} value={String(c.id)}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  {loadingVisitorCategory && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-gray-500 border-t-transparent animate-spin" />
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="pt-3 text-end">
