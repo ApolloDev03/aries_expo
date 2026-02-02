@@ -34,6 +34,7 @@ import ExhibitorEditDesign from "./pages/add-exhibitor/EditExhibitor";
 import ExpectedVisitor from "./pages/add-visitor/ExpectedVisitor";
 import CategoryMaster from "./pages/Cat/Category";
 import SubCategoryMaster from "./pages/Subcategory/SubCategory";
+import VisitorCategoryMaster from "./pages/visitor-category/page";
 
 
 
@@ -105,11 +106,11 @@ export default function App() {
             <Route path="users" element={<UserList />} />
             <Route path="users/assign/:id" element={<UserForm />} />
             <Route path="users/edit/:id" element={<UserForm />} />;
-             <Route path="category" element={<CategoryMaster />} />
-             <Route path="subcategory" element={<SubCategoryMaster />} />
-              <Route path="users" element={<UserList />} />
+            <Route path="category" element={<CategoryMaster />} />
+            <Route path="subcategory" element={<SubCategoryMaster />} />
+            <Route path="users" element={<UserList />} />
             <Route path="report" element={<VisitorReportPage />} />;
-
+            <Route path="visitor-category" element={<VisitorCategoryMaster />} />
             <Route path="form2" element={<DummyAdminPage />} />
 
           </Route>
