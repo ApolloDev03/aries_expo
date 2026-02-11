@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
 import { apiUrl } from "../../config";
 
 function isValidEmail(email: string) {
@@ -79,10 +78,7 @@ type ApiCity = {
 };
 
 export default function AddExhivitor() {
-    const { slug } = useParams<{ slug: string }>();
-    const [expo_name, setExpo_Name] = useState<string>("");
     const userId = String(localStorage.getItem("User_Id") || "");
-
 
     /** ✅ for update existing record */
     const [primaryContactDbId, setPrimaryContactDbId] = useState<number | null>(null);
@@ -98,7 +94,6 @@ export default function AddExhivitor() {
     const [companyName, setCompanyName] = useState("");
     const [gst, setGst] = useState("");
     const [address, setAddress] = useState("");
-    const [storeSize, setStoreSize] = useState(""); // UI only (not in store payload)
 
     const [stateId, setStateId] = useState("");
     const [cityId, setCityId] = useState("");
@@ -108,7 +103,7 @@ export default function AddExhivitor() {
     const [subcategoryId, setSubcategoryId] = useState("");
 
     // ✅ Dropdown options from API
-    // const [industryOptions, setIndustryOptions] = useState<OptionItem[]>([]);
+    const [industryOptions, setIndustryOptions] = useState<OptionItem[]>([]);
     const [categoryOptions, setCategoryOptions] = useState<OptionItem[]>([]);
     const [subcategoryOptions, setSubcategoryOptions] = useState<OptionItem[]>([]);
     const [states, setStates] = useState<ApiState[]>([]);
@@ -116,7 +111,7 @@ export default function AddExhivitor() {
 
     const [loadingStates, setLoadingStates] = useState(false);
     const [loadingCities, setLoadingCities] = useState(false);
-    // const [loadingIndustry, setLoadingIndustry] = useState(false);
+    const [loadingIndustry, setLoadingIndustry] = useState(false);
     const [loadingCategory, setLoadingCategory] = useState(false);
     const [loadingSubcategory, setLoadingSubcategory] = useState(false);
     const [todayExhibitors, setTodayExhibitors] = useState<number>(0);
@@ -169,10 +164,9 @@ export default function AddExhivitor() {
             const allStates: ApiState[] = [];
 
             while (page <= lastPage) {
-                const res = await axios.post(`${apiUrl}/statelist`, { page: String(page), expo_slugname: slug });
+                const res = await axios.post(`${apiUrl}/statelist`, { page: String(page) });
 
                 if (res.data?.success) {
-                    setExpo_Name(res?.data?.expo_name)
                     const { data, last_page } = res.data;
                     allStates.push(...((data || []) as ApiState[]));
                     lastPage = last_page ?? page;
@@ -227,31 +221,10 @@ export default function AddExhivitor() {
         }
     };
 
-    // // 1) Industry list
-    // const fetchIndustries = async () => {
-    //     try {
-    //         setLoadingIndustry(true);
-
-    //         const res = await axios.post(`${apiUrl}/IndustryList`, {}, { headers: { ...authHeaders() } });
-
-    //         const rows = res.data?.data || res.data?.result || res.data?.industries || [];
-    //         const list: OptionItem[] = (Array.isArray(rows) ? rows : [])
-    //             .map((r: any) => ({ id: pickId(r), name: pickName(r) }))
-    //             .filter((x) => x.id && x.name);
-
-    //         setIndustryOptions(list);
-    //     } catch (e: any) {
-    //         toast.error(e?.response?.data?.message || "Failed to load industries");
-    //         setIndustryOptions([]);
-    //     } finally {
-    //         setLoadingIndustry(false);
-    //     }
-    // };
-
     // 1) Industry list
     const fetchIndustries = async () => {
         try {
-            // setLoadingIndustry(true);
+            setLoadingIndustry(true);
 
             const res = await axios.post(`${apiUrl}/IndustryList`, {}, { headers: { ...authHeaders() } });
 
@@ -260,22 +233,14 @@ export default function AddExhivitor() {
                 .map((r: any) => ({ id: pickId(r), name: pickName(r) }))
                 .filter((x) => x.id && x.name);
 
-            // setIndustryOptions(list);
-
-            // ✅ AUTO SELECT FIRST INDUSTRY (when industry dropdown removed)
-            // - do not override if industryId already set (ex: from search)
-            // - this will trigger category API via useEffect([industryId])
-            if (!industryId && list.length) {
-                setIndustryId(String(list[0].id));
-            }
+            setIndustryOptions(list);
         } catch (e: any) {
             toast.error(e?.response?.data?.message || "Failed to load industries");
-            // setIndustryOptions([]);
+            setIndustryOptions([]);
         } finally {
-            // setLoadingIndustry(false);
+            setLoadingIndustry(false);
         }
     };
-
 
     // 2) Category by Industry
     const fetchCategoriesByIndustry = async (indId: string) => {
@@ -413,7 +378,7 @@ export default function AddExhivitor() {
                 `${apiUrl}/exhibitors/Expowise/count`,
                 {
                     user_id: Number(userId),
-                    expo_slugname: String(slug || ""),
+                    expo_slugname: null,
                 },
                 { headers: { ...authHeaders() } }
             );
@@ -451,8 +416,6 @@ export default function AddExhivitor() {
         setCompanyName("");
         setGst("");
         setAddress("");
-        setStoreSize("");
-
         // ✅ location dropdowns
         setStateId("");
         setCityId("");
@@ -516,7 +479,7 @@ export default function AddExhivitor() {
         setCities([]);
 
         if (stateId) fetchCitiesByState(stateId);
-        if (userId && slug) {
+        if (userId) {
             fetchExpoWiseCount(); // ✅ added
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -529,16 +492,9 @@ export default function AddExhivitor() {
         setCategoryOptions([]);
         setSubcategoryOptions([]);
 
-        const valid =
-            industryId &&
-            industryId !== "null" &&
-            industryId !== "undefined" &&
-            industryId !== "0";
-
-        if (valid) fetchCategoriesByIndustry(industryId);
+        if (industryId) fetchCategoriesByIndustry(industryId);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [industryId]);
-
 
     // ✅ When category changes → reset subcategory and load subcategories
     useEffect(() => {
@@ -617,7 +573,7 @@ export default function AddExhivitor() {
 
             // ✅ payload: send company_id + primary_contact_id to update existing company
             const payload: any = {
-                expo_slug: slug,
+                expo_slug: null,
                 user_id: Number(userId),
                 ...(companyDbId ? { company_id: companyDbId } : {}),
                 ...(primaryContactDbId ? { primary_contact_id: primaryContactDbId } : {}),
@@ -636,7 +592,7 @@ export default function AddExhivitor() {
                 state_id: stateId ? Number(stateId) : null,
                 city_id: cityId ? Number(cityId) : null,
                 address: address.trim(),
-                store_size_sq_meter: storeSize,
+                store_size_sq_meter: null,
                 other_contacts: otherContacts,
             };
 
@@ -658,7 +614,6 @@ export default function AddExhivitor() {
                 setCompanyName("");
                 setGst("");
                 setAddress("");
-                setStoreSize("");
 
                 setStateId("");
                 setCityId("");
@@ -682,13 +637,12 @@ export default function AddExhivitor() {
             setSaving(false);
         }
     };
-    console.log(industryId, "industryidddd")
 
     return (
         <div className="p-6 space-y-6">
             {/* Header */}
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-gray-800">{expo_name}</h1>
+                <h1 className="text-2xl font-bold text-gray-800">Expected Exhibitors</h1>
 
                 <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-500">Today Exhibitors</span>
@@ -788,18 +742,7 @@ export default function AddExhivitor() {
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Store Size (Sq. Meter)</label>
-                        <input
-                            value={storeSize}
-                            onChange={(e) => {
-                                const v = e.target.value;
-                                if (/^\d*\.?\d{0,2}$/.test(v)) setStoreSize(v);
-                            }}
-                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
-                            placeholder="e.g. 10 or 10.5"
-                        />
-                    </div>
+                    
 
                     {/* State */}
                     <div>
@@ -850,7 +793,25 @@ export default function AddExhivitor() {
                         />
                     </div>
 
-
+                    {/* Industry */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            Industry <span className="text-red-600">*</span>
+                        </label>
+                        <select
+                            value={industryId}
+                            onChange={(e) => setIndustryId(e.target.value)}
+                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+                            disabled={loadingIndustry}
+                        >
+                            <option value="">{loadingIndustry ? "Loading..." : "Select Industry"}</option>
+                            {industryOptions.map((x) => (
+                                <option key={x.id} value={x.id}>
+                                    {x.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
                     {/* Category */}
                     <div>

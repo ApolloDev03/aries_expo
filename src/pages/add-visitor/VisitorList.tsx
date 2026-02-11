@@ -1,1039 +1,9 @@
-// // import EditIcon from "@mui/icons-material/Edit";
-// // import axios from "axios";
-// // import { useEffect, useMemo, useState } from "react";
-// // import { useParams } from "react-router-dom";
-// // import { apiUrl } from "../../config";
-
-// // type ApiVisitor = {
-// //   visitorid: number;
-// //   mobileno: string;
-// //   companyname: string;
-// //   name: string;
-// //   email: string;
-// //   stateid: number;
-// //   cityid: number;
-// //   stateName: string;
-// //   cityName: string;
-// // };
-
-// // type VisitorRow = {
-// //   id: number;
-// //   mobile: string;
-// //   company: string;
-// //   name: string;
-// //   email: string;
-
-// //   stateid?: number; // ✅ use id for dropdown + update
-// //   cityid?: number;  // ✅ use id for dropdown + update
-
-// //   stateName?: string;
-// //   cityName?: string;
-// // };
-
-// // type CityItem = { id: number; name: string; stateid: number };
-
-// // export default function VisitorList() {
-// //   const { label } = useParams<{ label: string }>();
-
-// //   const [loading, setLoading] = useState(false);
-// //   const [rows, setRows] = useState<VisitorRow[]>([]);
-// //   const [errorMsg, setErrorMsg] = useState("");
-
-// //   const [isOpen, setIsOpen] = useState(false);
-// //   const [selectedVisitor, setSelectedVisitor] = useState<VisitorRow | null>(null);
-
-// //   const [modalLoading, setModalLoading] = useState(false);
-// //   const [modalError, setModalError] = useState("");
-
-// //   const [updating, setUpdating] = useState(false);
-// //   const [updateError, setUpdateError] = useState("");
-
-// //   // ✅ Cities dropdown data (based on selected stateid)
-// //   const [cities, setCities] = useState<CityItem[]>([]);
-// //   const [cityLoading, setCityLoading] = useState(false);
-// //   const [cityError, setCityError] = useState("");
-
-// //   // ✅ userid
-// //   const userId = useMemo(() => localStorage.getItem("User_Id"), []);
-
-// //   // ✅ TEMP state master (replace with your State API if you have)
-// //   const states = useMemo(
-// //     () => [
-// //       { id: 1, name: "Gujarat" },
-// //       { id: 2, name: "Kerala" },
-// //       { id: 3, name: "Maharashtra" },
-// //       { id: 4, name: "Rajasthan" },
-// //     ],
-// //     []
-// //   );
-
-// //   const mapApiToRow = (v: ApiVisitor): VisitorRow => ({
-// //     id: v.visitorid,
-// //     mobile: v.mobileno,
-// //     company: v.companyname,
-// //     name: v.name,
-// //     email: v.email,
-// //     stateid: v.stateid,
-// //     cityid: v.cityid,
-// //     stateName: v.stateName,
-// //     cityName: v.cityName,
-// //   });
-
-// //   // ✅ Visitor list (label from URL)
-// //   const fetchVisitors = async (lbl?: string) => {
-// //     setLoading(true);
-// //     setErrorMsg("");
-// //     try {
-// //       const res = await axios.post(`${apiUrl}/Visitor/list`, {
-// //         user_id: userId, // ✅ your API uses "userid"
-// //         label: lbl || label || "TotalVisitors",
-// //       });
-
-// //       if (res.data?.success) {
-// //         const data: ApiVisitor[] = res.data?.data || [];
-// //         setRows(data.map(mapApiToRow));
-// //       } else {
-// //         setRows([]);
-// //         setErrorMsg(res.data?.message || "Visitor not found");
-// //       }
-// //     } catch (err: any) {
-// //       setRows([]);
-// //       setErrorMsg(err?.response?.data?.message || "API error");
-// //     } finally {
-// //       setLoading(false);
-// //     }
-// //   };
-
-// //   // ✅ City list by stateid
-// //   const fetchCitiesByState = async (stateid: number) => {
-// //     setCityLoading(true);
-// //     setCityError("");
-// //     try {
-// //       const res = await axios.post(`${apiUrl}/CityByState`, {
-// //         stateid: String(stateid),
-// //       });
-
-// //       if (res.data?.success) {
-// //         setCities(res.data?.data || []);
-// //       } else {
-// //         setCities([]);
-// //         setCityError(res.data?.message || "City not found");
-// //       }
-// //     } catch (err: any) {
-// //       setCities([]);
-// //       setCityError(err?.response?.data?.message || "City API error");
-// //     } finally {
-// //       setCityLoading(false);
-// //     }
-// //   };
-
-// //   // ✅ Visitor detail show (for edit)
-// //   const fetchVisitorDetail = async (visitorId: number) => {
-// //     setModalLoading(true);
-// //     setModalError("");
-// //     setUpdateError("");
-// //     setCityError("");
-// //     setCities([]);
-
-// //     try {
-// //       const res = await axios.post(`${apiUrl}/Visitor/show`, {
-// //         visitorid: String(visitorId),
-// //       });
-
-// //       if (res.data?.success && Array.isArray(res.data?.data) && res.data.data.length) {
-// //         const v: ApiVisitor = res.data.data[0];
-// //         const mapped = mapApiToRow(v);
-// //         setSelectedVisitor(mapped);
-
-// //         // ✅ load cities based on visitor stateid so city dropdown shows & selects
-// //         if (mapped.stateid) {
-// //           await fetchCitiesByState(mapped.stateid);
-// //         }
-// //       } else {
-// //         setModalError(res.data?.message || "Visitor detail not found");
-// //       }
-// //     } catch (err: any) {
-// //       setModalError(err?.response?.data?.message || "Visitor show API error");
-// //     } finally {
-// //       setModalLoading(false);
-// //     }
-// //   };
-
-// //   // ✅ UPDATE API CALL
-// //   const updateVisitor = async () => {
-// //     if (!selectedVisitor) return;
-
-// //     setUpdating(true);
-// //     setUpdateError("");
-
-// //     try {
-// //       if (!selectedVisitor.name?.trim()) return setUpdateError("Name is required"), setUpdating(false);
-// //       if (!selectedVisitor.mobile?.trim()) return setUpdateError("Mobile is required"), setUpdating(false);
-// //       if (!selectedVisitor.email?.trim()) return setUpdateError("Email is required"), setUpdating(false);
-// //       if (!selectedVisitor.company?.trim()) return setUpdateError("Company is required"), setUpdating(false);
-
-// //       if (!selectedVisitor.stateid) return setUpdateError("Please select State"), setUpdating(false);
-// //       if (!selectedVisitor.cityid) return setUpdateError("Please select City"), setUpdating(false);
-
-// //       const payload = {
-// //         name: selectedVisitor.name,
-// //         mobile: selectedVisitor.mobile,
-// //         email: selectedVisitor.email,
-// //         companyname: selectedVisitor.company,
-// //         state_id: String(selectedVisitor.stateid),
-// //         city_id: String(selectedVisitor.cityid),
-// //         visitorid: String(selectedVisitor.id),
-// //       };
-
-// //       const res = await axios.post(`${apiUrl}/Visitor/Update`, payload);
-
-// //       if (res.data?.success) {
-// //         await fetchVisitors(label);
-// //         setIsOpen(false);
-// //         setSelectedVisitor(null);
-// //       } else {
-// //         setUpdateError(res.data?.message || "Update failed");
-// //       }
-// //     } catch (err: any) {
-// //       setUpdateError(err?.response?.data?.message || "Update API error");
-// //     } finally {
-// //       setUpdating(false);
-// //     }
-// //   };
-
-// //   useEffect(() => {
-// //     fetchVisitors(label);
-// //     // eslint-disable-next-line react-hooks/exhaustive-deps
-// //   }, [label, userId]);
-
-// //   return (
-// //     <div className="p-6">
-// //       <div className="flex items-center justify-between mb-4">
-// //         <div>
-// //           <h1 className="text-2xl font-semibold">Visitor List</h1>
-// //         </div>
-
-
-// //       </div>
-
-// //       <div className="overflow-x-auto border rounded-lg bg-white">
-// //         {loading && (
-// //           <div className="p-4 text-gray-600 flex items-center gap-2">
-// //             <span className="w-5 h-5 rounded-full border-2 border-gray-400 border-t-transparent animate-spin" />
-// //             Loading visitors...
-// //           </div>
-// //         )}
-
-// //         {!loading && errorMsg && <div className="p-4 text-red-600 font-medium">{errorMsg}</div>}
-
-// //         {!loading && !errorMsg && (
-// //           <table className="w-full border-collapse text-md">
-// //             <thead>
-// //               <tr className="bg-gray-100 text-left">
-// //                 <th className="p-2 border w-16 text-center">Sr. No.</th>
-// //                 <th className="p-2 border">Mobile</th>
-// //                 <th className="p-2 border">Company Name</th>
-// //                 <th className="p-2 border">Name</th>
-// //                 <th className="p-2 border">Email</th>
-// //                 <th className="p-2 border">State</th>
-// //                 <th className="p-2 border">City</th>
-// //                 <th className="p-2 border text-center">Action</th>
-// //               </tr>
-// //             </thead>
-
-// //             <tbody>
-// //               {rows.map((v, index) => (
-// //                 <tr key={v.id} className="hover:bg-gray-50">
-// //                   <td className="p-2 border text-center font-medium">{index + 1}</td>
-// //                   <td className="p-2 border">{v.mobile}</td>
-// //                   <td className="p-2 border">{v.company}</td>
-// //                   <td className="p-2 border">{v.name}</td>
-// //                   <td className="p-2 border">{v.email}</td>
-// //                   <td className="p-2 border">{v.stateName || "-"}</td>
-// //                   <td className="p-2 border">{v.cityName || "-"}</td>
-// //                   <td className="p-2 border text-center">
-// //                     <button
-// //                       className="text-blue-600 hover:text-blue-800"
-// //                       title="Edit"
-// //                       onClick={() => {
-// //                         setIsOpen(true);
-// //                         setSelectedVisitor(v); // quick fill from list
-// //                         fetchVisitorDetail(v.id); // latest detail (and city list)
-// //                       }}
-// //                     >
-// //                       <EditIcon fontSize="small" />
-// //                     </button>
-// //                   </td>
-// //                 </tr>
-// //               ))}
-
-// //               {rows.length === 0 && (
-// //                 <tr>
-// //                   <td colSpan={8} className="p-4 text-center text-gray-600">
-// //                     No visitors found
-// //                   </td>
-// //                 </tr>
-// //               )}
-// //             </tbody>
-// //           </table>
-// //         )}
-
-// //         {/* ✅ Edit Modal */}
-// //         {isOpen && (
-// //           <div
-// //             className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-// //             onClick={() => {
-// //               if (!updating) {
-// //                 setIsOpen(false);
-// //                 setSelectedVisitor(null);
-// //                 setModalError("");
-// //                 setUpdateError("");
-// //                 setCities([]);
-// //               }
-// //             }}
-// //           >
-// //             <div
-// //               className="bg-white w-full max-w-lg rounded-lg shadow-lg p-6 relative"
-// //               onClick={(e) => e.stopPropagation()}
-// //             >
-// //               <div className="flex justify-between items-center mb-2">
-// //                 <h2 className="text-lg font-semibold">Edit Visitor</h2>
-// //                 <button
-// //                   onClick={() => {
-// //                     if (!updating) {
-// //                       setIsOpen(false);
-// //                       setSelectedVisitor(null);
-// //                       setModalError("");
-// //                       setUpdateError("");
-// //                       setCities([]);
-// //                     }
-// //                   }}
-// //                   className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-// //                   aria-label="Close"
-// //                 >
-// //                   ×
-// //                 </button>
-// //               </div>
-
-
-// //               {!modalLoading && modalError && (
-// //                 <div className="p-3 mb-3 rounded bg-red-50 text-red-700">{modalError}</div>
-// //               )}
-
-// //               {!!updateError && (
-// //                 <div className="p-3 mb-3 rounded bg-red-50 text-red-700">{updateError}</div>
-// //               )}
-
-// //               {!!cityError && (
-// //                 <div className="p-3 mb-3 rounded bg-red-50 text-red-700">{cityError}</div>
-// //               )}
-
-// //               {!modalError && selectedVisitor && (
-// //                 <>
-// //                   <div className="grid grid-cols-2 gap-4 text-md mt-3">
-// //                     <div>
-// //                       <label className="font-medium">Mobile Number</label>
-// //                       <input
-// //                         className="border p-2 rounded w-full"
-// //                         value={selectedVisitor.mobile || ""}
-// //                         onChange={(e) =>
-// //                           setSelectedVisitor({ ...selectedVisitor, mobile: e.target.value })
-// //                         }
-// //                         disabled={updating}
-// //                       />
-// //                     </div>
-
-// //                     <div>
-// //                       <label className="font-medium">Company Name</label>
-// //                       <input
-// //                         className="border p-2 rounded w-full"
-// //                         value={selectedVisitor.company || ""}
-// //                         onChange={(e) =>
-// //                           setSelectedVisitor({ ...selectedVisitor, company: e.target.value })
-// //                         }
-// //                         disabled={updating}
-// //                       />
-// //                     </div>
-
-// //                     <div>
-// //                       <label className="font-medium">Name</label>
-// //                       <input
-// //                         className="border p-2 rounded w-full"
-// //                         value={selectedVisitor.name || ""}
-// //                         onChange={(e) =>
-// //                           setSelectedVisitor({ ...selectedVisitor, name: e.target.value })
-// //                         }
-// //                         disabled={updating}
-// //                       />
-// //                     </div>
-
-// //                     <div>
-// //                       <label className="font-medium">Email</label>
-// //                       <input
-// //                         type="email"
-// //                         className="border p-2 rounded w-full"
-// //                         value={selectedVisitor.email || ""}
-// //                         onChange={(e) =>
-// //                           setSelectedVisitor({ ...selectedVisitor, email: e.target.value })
-// //                         }
-// //                         disabled={updating}
-// //                       />
-// //                     </div>
-
-// //                     {/* ✅ State (ID) */}
-// //                     <div>
-// //                       <label className="font-medium">State</label>
-// //                       <select
-// //                         className="border p-2 rounded w-full"
-// //                         value={selectedVisitor.stateid ?? ""}
-// //                         onChange={async (e) => {
-// //                           const newStateId = Number(e.target.value) || 0;
-
-// //                           // reset city when state changes
-// //                           const next = {
-// //                             ...selectedVisitor,
-// //                             stateid: newStateId || undefined,
-// //                             cityid: undefined,
-// //                           };
-// //                           setSelectedVisitor(next);
-
-// //                           if (newStateId) {
-// //                             await fetchCitiesByState(newStateId);
-// //                           } else {
-// //                             setCities([]);
-// //                           }
-// //                         }}
-// //                         disabled={updating || modalLoading}
-// //                       >
-// //                         <option value="">Select State</option>
-// //                         {states.map((s) => (
-// //                           <option key={s.id} value={s.id}>
-// //                             {s.name}
-// //                           </option>
-// //                         ))}
-// //                       </select>
-// //                     </div>
-
-// //                     {/* ✅ City (ID) */}
-// //                     <div>
-// //                       <label className="font-medium">City</label>
-// //                       <select
-// //                         className="border p-2 rounded w-full"
-// //                         value={selectedVisitor.cityid ?? ""}
-// //                         onChange={(e) => {
-// //                           const newCityId = Number(e.target.value) || 0;
-// //                           setSelectedVisitor({
-// //                             ...selectedVisitor,
-// //                             cityid: newCityId || undefined,
-// //                           });
-// //                         }}
-// //                         disabled={!selectedVisitor.stateid || updating || modalLoading || cityLoading}
-// //                       >
-// //                         <option value="">
-// //                           {cityLoading ? "Loading cities..." : "Select City"}
-// //                         </option>
-
-// //                         {cities.map((c) => (
-// //                           <option key={c.id} value={c.id}>
-// //                             {c.name}
-// //                           </option>
-// //                         ))}
-// //                       </select>
-// //                     </div>
-// //                   </div>
-
-// //                   <div className="flex justify-end gap-3 mt-6">
-// //                     <button
-// //                       onClick={() => {
-// //                         if (!updating) {
-// //                           setIsOpen(false);
-// //                           setSelectedVisitor(null);
-// //                           setModalError("");
-// //                           setUpdateError("");
-// //                           setCities([]);
-// //                         }
-// //                       }}
-// //                       className="px-4 py-2 border rounded hover:bg-gray-100 disabled:opacity-60"
-// //                       disabled={updating}
-// //                     >
-// //                       Cancel
-// //                     </button>
-
-// //                     <button
-// //                       onClick={updateVisitor}
-// //                       className="px-4 py-2 bg-[#2e56a6] text-white rounded disabled:opacity-60"
-// //                       disabled={modalLoading || updating || !!modalError || !selectedVisitor}
-// //                     >
-// //                       {updating ? "Updating..." : "Update"}
-// //                     </button>
-// //                   </div>
-// //                 </>
-// //               )}
-// //             </div>
-// //           </div>
-// //         )}
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-
-
-// import EditIcon from "@mui/icons-material/Edit";
-// import axios from "axios";
-// import { useEffect, useMemo, useState } from "react";
-// import { useParams } from "react-router-dom";
-// import { apiUrl } from "../../config";
-
-// type ApiVisitor = {
-//   visitorid: number;
-//   mobileno: string;
-//   companyname: string;
-//   name: string;
-//   email: string;
-//   stateid: number;
-//   cityid: number;
-//   stateName: string;
-//   cityName: string;
-//   address: string;
-// };
-
-// type VisitorRow = {
-//   id: number;
-//   mobile: string;
-//   company: string;
-//   name: string;
-//   email: string;
-
-//   stateid?: number; // ✅ use id for dropdown + update
-//   cityid?: number; // ✅ use id for dropdown + update
-//   address?: string;
-//   stateName?: string;
-//   cityName?: string;
-// };
-
-// type CityItem = { id: number; name: string; stateid: number };
-
-// // ✅ State API type
-// type ApiState = { stateId: number; stateName: string };
-
-// export default function VisitorList() {
-//   const { label } = useParams<{ label: string }>();
-
-//   const [loading, setLoading] = useState(false);
-//   const [rows, setRows] = useState<VisitorRow[]>([]);
-//   const [errorMsg, setErrorMsg] = useState("");
-
-//   const [isOpen, setIsOpen] = useState(false);
-//   const [selectedVisitor, setSelectedVisitor] = useState<VisitorRow | null>(null);
-
-//   const [modalLoading, setModalLoading] = useState(false);
-//   const [modalError, setModalError] = useState("");
-
-//   const [updating, setUpdating] = useState(false);
-//   const [updateError, setUpdateError] = useState("");
-
-//   // ✅ Cities dropdown data (based on selected stateid)
-//   const [cities, setCities] = useState<CityItem[]>([]);
-//   const [cityLoading, setCityLoading] = useState(false);
-//   const [cityError, setCityError] = useState("");
-
-//   // ✅ States from API
-//   const [states, setStates] = useState<ApiState[]>([]);
-//   const [stateLoading, setStateLoading] = useState(false);
-//   const [stateError, setStateError] = useState("");
-
-//   // ✅ userid
-//   const userId = useMemo(() => localStorage.getItem("User_Id"), []);
-
-//   const mapApiToRow = (v: ApiVisitor): VisitorRow => ({
-//     id: v.visitorid,
-//     mobile: v.mobileno,
-//     company: v.companyname,
-//     name: v.name,
-//     email: v.email,
-//     stateid: v.stateid,
-//     cityid: v.cityid,
-//     stateName: v.stateName,
-//     cityName: v.cityName,
-//     address: v.address
-//   });
-
-//   // ✅ Fetch ALL states (paginated statelist)
-//   const fetchAllStates = async () => {
-//     setStateLoading(true);
-//     setStateError("");
-//     try {
-//       const first = await axios.post(`${apiUrl}/statelist`, { page: "1" });
-//       if (!first.data?.success) {
-//         setStates([]);
-//         setStateError(first.data?.message || "State not found");
-//         return;
-//       }
-
-//       const lastPage = Number(first.data?.last_page ?? 1);
-//       const all: ApiState[] = [...(first.data?.data ?? [])];
-
-//       if (lastPage > 1) {
-//         const rest = await Promise.all(
-//           Array.from({ length: lastPage - 1 }, (_, i) => i + 2).map((p) =>
-//             axios.post(`${apiUrl}/statelist`, { page: String(p) })
-//           )
-//         );
-
-//         rest.forEach((r) => {
-//           if (r.data?.success && Array.isArray(r.data?.data)) {
-//             all.push(...r.data.data);
-//           }
-//         });
-//       }
-
-//       // Optional: sort by name
-//       all.sort((a, b) => (a.stateName || "").localeCompare(b.stateName || ""));
-//       setStates(all);
-//     } catch (err: any) {
-//       setStates([]);
-//       setStateError(err?.response?.data?.message || "State API error");
-//     } finally {
-//       setStateLoading(false);
-//     }
-//   };
-
-//   // ✅ Visitor list (label from URL)
-//   const fetchVisitors = async (lbl?: string) => {
-//     setLoading(true);
-//     setErrorMsg("");
-//     try {
-//       const res = await axios.post(`${apiUrl}/Visitor/list`, {
-//         user_id: userId,
-//         label: lbl || label || "TotalVisitors",
-//       });
-
-//       if (res.data?.success) {
-//         const data: ApiVisitor[] = res.data?.data || [];
-//         setRows(data.map(mapApiToRow));
-//       } else {
-//         setRows([]);
-//         setErrorMsg(res.data?.message || "Visitor not found");
-//       }
-//     } catch (err: any) {
-//       setRows([]);
-//       setErrorMsg(err?.response?.data?.message || "API error");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   // ✅ City list by stateid
-//   const fetchCitiesByState = async (stateid: number) => {
-//     setCityLoading(true);
-//     setCityError("");
-//     try {
-//       const res = await axios.post(`${apiUrl}/CityByState`, {
-//         stateid: String(stateid),
-//       });
-
-//       if (res.data?.success) {
-//         setCities(res.data?.data || []);
-//       } else {
-//         setCities([]);
-//         setCityError(res.data?.message || "City not found");
-//       }
-//     } catch (err: any) {
-//       setCities([]);
-//       setCityError(err?.response?.data?.message || "City API error");
-//     } finally {
-//       setCityLoading(false);
-//     }
-//   };
-
-//   // ✅ Visitor detail show (for edit)
-//   const fetchVisitorDetail = async (visitorId: number) => {
-//     setModalLoading(true);
-//     setModalError("");
-//     setUpdateError("");
-//     setCityError("");
-//     setCities([]);
-
-//     try {
-//       const res = await axios.post(`${apiUrl}/Visitor/show`, {
-//         visitorid: String(visitorId),
-//       });
-
-//       if (res.data?.success && Array.isArray(res.data?.data) && res.data.data.length) {
-//         const v: ApiVisitor = res.data.data[0];
-//         const mapped = mapApiToRow(v);
-//         setSelectedVisitor(mapped);
-
-//         // ✅ load cities based on visitor stateid so city dropdown shows & selects
-//         if (mapped.stateid) {
-//           await fetchCitiesByState(mapped.stateid);
-//         }
-//       } else {
-//         setModalError(res.data?.message || "Visitor detail not found");
-//       }
-//     } catch (err: any) {
-//       setModalError(err?.response?.data?.message || "Visitor show API error");
-//     } finally {
-//       setModalLoading(false);
-//     }
-//   };
-
-//   // ✅ UPDATE API CALL
-//   const updateVisitor = async () => {
-//     if (!selectedVisitor) return;
-
-//     setUpdating(true);
-//     setUpdateError("");
-
-//     try {
-//       if (!selectedVisitor.name?.trim()) return setUpdateError("Name is required"), setUpdating(false);
-//       if (!selectedVisitor.mobile?.trim()) return setUpdateError("Mobile is required"), setUpdating(false);
-//       if (!selectedVisitor.email?.trim()) return setUpdateError("Email is required"), setUpdating(false);
-//       if (!selectedVisitor.company?.trim()) return setUpdateError("Company is required"), setUpdating(false);
-
-//       if (!selectedVisitor.stateid) return setUpdateError("Please select State"), setUpdating(false);
-//       if (!selectedVisitor.cityid) return setUpdateError("Please select City"), setUpdating(false);
-
-//       const payload = {
-//         name: selectedVisitor.name,
-//         mobile: selectedVisitor.mobile,
-//         email: selectedVisitor.email,
-//         companyname: selectedVisitor.company,
-//         state_id: String(selectedVisitor.stateid),
-//         city_id: String(selectedVisitor.cityid),
-//         visitorid: String(selectedVisitor.id),
-//         address: selectedVisitor.address,
-
-//       };
-
-//       const res = await axios.post(`${apiUrl}/Visitor/Update`, payload);
-
-//       if (res.data?.success) {
-//         await fetchVisitors(label);
-//         setIsOpen(false);
-//         setSelectedVisitor(null);
-//       } else {
-//         setUpdateError(res.data?.message || "Update failed");
-//       }
-//     } catch (err: any) {
-//       setUpdateError(err?.response?.data?.message || "Update API error");
-//     } finally {
-//       setUpdating(false);
-//     }
-//   };
-
-//   // ✅ Init: load states once
-//   useEffect(() => {
-//     fetchAllStates();
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, []);
-
-//   useEffect(() => {
-//     fetchVisitors(label);
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, [label, userId]);
-
-//   return (
-//     <div className="p-6">
-//       <div className="flex items-center justify-between mb-4">
-//         <div>
-//           <h1 className="text-2xl font-semibold">Visitor List</h1>
-//         </div>
-//       </div>
-
-//       <div className="overflow-x-auto border rounded-lg bg-white">
-//         {loading && (
-//           <div className="p-4 text-gray-600 flex items-center gap-2">
-//             <span className="w-5 h-5 rounded-full border-2 border-gray-400 border-t-transparent animate-spin" />
-//             Loading visitors...
-//           </div>
-//         )}
-
-//         {!loading && errorMsg && <div className="p-4 text-red-600 font-medium">{errorMsg}</div>}
-
-//         {!loading && !errorMsg && (
-//           <table className="w-full border-collapse text-md">
-//             <thead>
-//               <tr className="bg-gray-100 text-left">
-//                 <th className="p-2 border w-16 text-center">Sr. No.</th>
-//                 <th className="p-2 border">Mobile</th>
-//                 <th className="p-2 border">Company Name</th>
-//                 <th className="p-2 border">Name</th>
-//                 <th className="p-2 border">Email</th>
-//                 <th className="p-2 border">State</th>
-//                 <th className="p-2 border">City</th>
-//                 <th className="p-2 border">Address</th>
-//                 <th className="p-2 border text-center">Action</th>
-//               </tr>
-//             </thead>
-
-//             <tbody>
-//               {rows.map((v, index) => (
-//                 <tr key={v.id} className="hover:bg-gray-50">
-//                   <td className="p-2 border text-center font-medium">{index + 1}</td>
-//                   <td className="p-2 border">{v.mobile}</td>
-//                   <td className="p-2 border">{v.company}</td>
-//                   <td className="p-2 border">{v.name}</td>
-//                   <td className="p-2 border">{v.email}</td>
-//                   <td className="p-2 border">{v.stateName || "-"}</td>
-//                   <td className="p-2 border">{v.cityName || "-"}</td>
-//                   <td className="p-2 border">{v.address || "-"}</td>
-//                   <td className="p-2 border text-center">
-//                     <button
-//                       className="text-blue-600 hover:text-blue-800"
-//                       title="Edit"
-//                       onClick={() => {
-//                         setIsOpen(true);
-//                         setSelectedVisitor(v); // quick fill from list
-//                         fetchVisitorDetail(v.id); // latest detail (and city list)
-//                       }}
-//                     >
-//                       <EditIcon fontSize="small" />
-//                     </button>
-//                   </td>
-//                 </tr>
-//               ))}
-
-//               {rows.length === 0 && (
-//                 <tr>
-//                   <td colSpan={8} className="p-4 text-center text-gray-600">
-//                     No visitors found
-//                   </td>
-//                 </tr>
-//               )}
-//             </tbody>
-//           </table>
-//         )}
-
-//         {/* ✅ Edit Modal */}
-//         {isOpen && (
-//           <div
-//             className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"       
-//           >
-//             <div
-//               className="bg-white w-full max-w-lg rounded-lg shadow-lg p-6 relative"
-//               onClick={(e) => e.stopPropagation()}
-//             >
-//               <div className="flex justify-between items-center mb-2">
-//                 <h2 className="text-lg font-semibold">Edit Visitor</h2>
-//                 <button
-//                   onClick={() => {
-//                     if (!updating) {
-//                       setIsOpen(false);
-//                       setSelectedVisitor(null);
-//                       setModalError("");
-//                       setUpdateError("");
-//                       setCities([]);
-//                     }
-//                   }}
-//                   className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-//                   aria-label="Close"
-//                 >
-//                   ×
-//                 </button>
-//               </div>
-
-//               {stateLoading && (
-//                 <div className="p-3 mb-3 rounded bg-blue-50 text-blue-700">
-//                   Loading states...
-//                 </div>
-//               )}
-//               {!!stateError && (
-//                 <div className="p-3 mb-3 rounded bg-red-50 text-red-700">{stateError}</div>
-//               )}
-
-//               {!modalLoading && modalError && (
-//                 <div className="p-3 mb-3 rounded bg-red-50 text-red-700">{modalError}</div>
-//               )}
-
-//               {!!updateError && (
-//                 <div className="p-3 mb-3 rounded bg-red-50 text-red-700">{updateError}</div>
-//               )}
-
-//               {!!cityError && (
-//                 <div className="p-3 mb-3 rounded bg-red-50 text-red-700">{cityError}</div>
-//               )}
-
-//               {modalLoading && (
-//                 <div className="p-3 mb-3 rounded bg-gray-50 text-gray-700">
-//                   Loading visitor details...
-//                 </div>
-//               )}
-
-//               {!modalError && selectedVisitor && (
-//                 <>
-//                   <div className="grid grid-cols-2 gap-4 text-md mt-3">
-//                     <div>
-//                       <label className="font-medium">Mobile Number</label>
-//                       <input
-//                         className="border p-2 rounded w-full"
-//                         value={selectedVisitor.mobile || ""}
-//                         onChange={(e) =>
-//                           setSelectedVisitor({ ...selectedVisitor, mobile: e.target.value })
-//                         }
-//                         disabled={updating}
-//                       />
-//                     </div>
-
-//                     <div>
-//                       <label className="font-medium">Company Name</label>
-//                       <input
-//                         className="border p-2 rounded w-full"
-//                         value={selectedVisitor.company || ""}
-//                         onChange={(e) =>
-//                           setSelectedVisitor({ ...selectedVisitor, company: e.target.value })
-//                         }
-//                         disabled={updating}
-//                       />
-//                     </div>
-
-//                     <div>
-//                       <label className="font-medium">Name</label>
-//                       <input
-//                         className="border p-2 rounded w-full"
-//                         value={selectedVisitor.name || ""}
-//                         onChange={(e) =>
-//                           setSelectedVisitor({ ...selectedVisitor, name: e.target.value })
-//                         }
-//                         disabled={updating}
-//                       />
-//                     </div>
-
-//                     <div>
-//                       <label className="font-medium">Email</label>
-//                       <input
-//                         type="email"
-//                         className="border p-2 rounded w-full"
-//                         value={selectedVisitor.email || ""}
-//                         onChange={(e) =>
-//                           setSelectedVisitor({ ...selectedVisitor, email: e.target.value })
-//                         }
-//                         disabled={updating}
-//                       />
-//                     </div>
-
-//                     {/* ✅ State (API) */}
-//                     <div>
-//                       <label className="font-medium">State</label>
-//                       <select
-//                         className="border p-2 rounded w-full"
-//                         value={selectedVisitor.stateid ?? ""}
-//                         onChange={async (e) => {
-//                           const newStateId = Number(e.target.value) || 0;
-
-//                           // reset city when state changes
-//                           const next = {
-//                             ...selectedVisitor,
-//                             stateid: newStateId || undefined,
-//                             cityid: undefined,
-//                           };
-//                           setSelectedVisitor(next);
-
-//                           if (newStateId) {
-//                             await fetchCitiesByState(newStateId);
-//                           } else {
-//                             setCities([]);
-//                           }
-//                         }}
-//                         disabled={updating || modalLoading || stateLoading}
-//                       >
-//                         <option value="">Select State</option>
-//                         {states.map((s) => (
-//                           <option key={s.stateId} value={s.stateId}>
-//                             {s.stateName}
-//                           </option>
-//                         ))}
-//                       </select>
-//                     </div>
-
-//                     {/* ✅ City (ID) */}
-//                     <div>
-//                       <label className="font-medium">City</label>
-//                       <select
-//                         className="border p-2 rounded w-full"
-//                         value={selectedVisitor.cityid ?? ""}
-//                         onChange={(e) => {
-//                           const newCityId = Number(e.target.value) || 0;
-//                           setSelectedVisitor({
-//                             ...selectedVisitor,
-//                             cityid: newCityId || undefined,
-//                           });
-//                         }}
-//                         disabled={!selectedVisitor.stateid || updating || modalLoading || cityLoading}
-//                       >
-//                         <option value="">
-//                           {cityLoading ? "Loading cities..." : "Select City"}
-//                         </option>
-
-//                         {cities.map((c) => (
-//                           <option key={c.id} value={c.id}>
-//                             {c.name}
-//                           </option>
-//                         ))}
-//                       </select>
-//                     </div>
-
-//                     {/* ✅ Address */}
-//                     <div className="col-span-2">
-//                       <label className="font-medium">Address</label>
-//                       <textarea
-//                         className="border p-2 rounded w-full mt-1 resize-none"
-//                         rows={3}
-//                         value={selectedVisitor.address || ""}
-//                         onChange={(e) =>
-//                           setSelectedVisitor({
-//                             ...selectedVisitor,
-//                             address: e.target.value,
-//                           })
-//                         }
-//                         disabled={updating}
-//                         placeholder="Enter address"
-//                       />
-//                     </div>
-
-//                   </div>
-
-//                   <div className="flex justify-end gap-3 mt-6">
-//                     <button
-//                       onClick={() => {
-//                         if (!updating) {
-//                           setIsOpen(false);
-//                           setSelectedVisitor(null);
-//                           setModalError("");
-//                           setUpdateError("");
-//                           setCities([]);
-//                         }
-//                       }}
-//                       className="px-4 py-2 border rounded hover:bg-gray-100 disabled:opacity-60"
-//                       disabled={updating}
-//                     >
-//                       Cancel
-//                     </button>
-
-//                     <button
-//                       onClick={updateVisitor}
-//                       className="px-4 py-2 bg-[#2e56a6] text-white rounded disabled:opacity-60"
-//                       disabled={modalLoading || updating || !!modalError || !selectedVisitor}
-//                     >
-//                       {updating ? "Updating..." : "Update"}
-//                     </button>
-//                   </div>
-//                 </>
-//               )}
-//             </div>
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
 import EditIcon from "@mui/icons-material/Edit";
 import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { apiUrl } from "../../config";
-
+import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 type ApiVisitor = {
   visitorid: number;
   mobileno: string;
@@ -1049,6 +19,7 @@ type ApiVisitor = {
   // ✅ NEW (if your Visitor/show & list returns it)
   visitor_category_id?: number;
   strVisitorCategory?: string;
+  created_at?: string;
 };
 
 type VisitorRow = {
@@ -1068,6 +39,7 @@ type VisitorRow = {
   // ✅ NEW
   visitorCategoryId?: number;
   visitorCategoryName?: string;
+  created_at?: string;
 };
 
 type CityItem = { id: number; name: string; stateid: number };
@@ -1112,6 +84,12 @@ export default function VisitorList() {
   const [visitorCategories, setVisitorCategories] = useState<VisitorCategoryItem[]>([]);
   const [vcLoading, setVcLoading] = useState(false);
   const [vcError, setVcError] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
 
   // ✅ userid
   const userId = useMemo(() => localStorage.getItem("User_Id"), []);
@@ -1132,6 +110,7 @@ export default function VisitorList() {
     visitorCategoryId:
       v.visitor_category_id != null ? Number(v.visitor_category_id) : undefined,
     visitorCategoryName: v.strVisitorCategory ? String(v.strVisitorCategory) : undefined,
+    created_at: v.created_at,
   });
 
   // ✅ Fetch ALL states (paginated statelist)
@@ -1180,7 +159,7 @@ export default function VisitorList() {
     try {
       // your LIVE API url
       const res = await axios.post(
-        `https://rsw-laravel.ariesevents.in/api/visitor-category/index`,
+        `${apiUrl}/visitor-category/index`,
         {}
       );
 
@@ -1352,6 +331,35 @@ export default function VisitorList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label, userId]);
 
+  const deleteVisitor = async () => {
+    if (!deleteId) return;
+
+    setDeleting(true);
+    setDeleteError("");
+
+    try {
+      const res = await axios.post(`${apiUrl}/Visitor/delete`, {
+        visitorid: deleteId,
+        user_id: Number(userId),
+      });
+
+      if (res.data?.success) {
+        await fetchVisitors(label);
+
+        // close popup
+        setDeleteOpen(false);
+        setDeleteId(null);
+      } else {
+        setDeleteError(res.data?.message || "Delete failed");
+      }
+    } catch (err: any) {
+      setDeleteError(err?.response?.data?.message || "Delete API error");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
@@ -1388,6 +396,7 @@ export default function VisitorList() {
                 <th className="p-2 border">Category</th>
 
                 <th className="p-2 border">Address</th>
+                <th className="p-2 border">Created At</th>
                 <th className="p-2 border text-center">Action</th>
               </tr>
             </thead>
@@ -1409,7 +418,16 @@ export default function VisitorList() {
                   <td className="p-2 border">{v.visitorCategoryName || "-"}</td>
 
                   <td className="p-2 border">{v.address || "-"}</td>
-                  <td className="p-2 border text-center">
+                  <td className="p-2 border">
+                    {v.created_at
+                      ? new Date(v.created_at).toLocaleDateString("en-GB")
+                      : "-"}
+                  </td>
+
+
+
+
+                  <td className="p-2 flex gap-2 border text-center">
                     <button
                       className="text-blue-600 hover:text-blue-800"
                       title="Edit"
@@ -1421,7 +439,20 @@ export default function VisitorList() {
                     >
                       <EditIcon fontSize="small" />
                     </button>
+                    <button
+                      className="text-red-600 hover:text-red-800"
+                      title="Delete"
+                      onClick={() => {
+                        setDeleteId(v.id);
+                        setDeleteError("");
+                        setDeleteOpen(true);
+                      }}
+                    >
+                      <DeleteRoundedIcon fontSize="small" />
+                    </button>
+
                   </td>
+
                 </tr>
               ))}
 
@@ -1713,6 +744,51 @@ export default function VisitorList() {
                   </div>
                 </>
               )}
+              {/* ✅ Delete Confirm Modal */}
+
+            </div>
+          </div>
+        )}
+        {deleteOpen && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <div className="bg-white w-full max-w-md rounded-lg shadow-lg p-6">
+              <h2 className="text-lg font-semibold text-gray-800">
+                Confirm Delete
+              </h2>
+
+              <p className="text-gray-600 mt-2">
+                Are you sure you want to delete this visitor?
+              </p>
+
+              {!!deleteError && (
+                <div className="p-3 mt-3 rounded bg-red-50 text-red-700">
+                  {deleteError}
+                </div>
+              )}
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  className="px-4 py-2 border rounded hover:bg-gray-100 disabled:opacity-60"
+                  onClick={() => {
+                    if (!deleting) {
+                      setDeleteOpen(false);
+                      setDeleteId(null);
+                      setDeleteError("");
+                    }
+                  }}
+                  disabled={deleting}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-60"
+                  onClick={deleteVisitor}
+                  disabled={deleting}
+                >
+                  {deleting ? "Deleting..." : "Yes, Delete"}
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -35,6 +35,9 @@ import ExpectedVisitor from "./pages/add-visitor/ExpectedVisitor";
 import CategoryMaster from "./pages/Cat/Category";
 import SubCategoryMaster from "./pages/Subcategory/SubCategory";
 import VisitorCategoryMaster from "./pages/visitor-category/page";
+import ExpectedExhivitor from "./pages/add-exhibitor/ExpectedExhibitor";
+import ExpectedExhibitorListDesign from "./pages/add-exhibitor/ExpectedExhibitorList";
+import ExpectedExhibitorEdit from "./pages/add-exhibitor/EditExpectedExhibitor";
 
 
 
@@ -71,9 +74,12 @@ export default function App() {
             <Route path="edit-profile" element={<EditUserProfile />} />
             <Route path="upload-visitor" element={<UploadVisitor />} />
             <Route path="add-exhivitor/:slug" element={<AddExhivitor />} />
+            <Route path="expectedexhibitor" element={<ExpectedExhivitor />} />
+
             <Route path="/users/exhibitors-list/:label" element={<ExhibitorListDesign />} />
             <Route path="/users/exhibitor/edit/:id" element={<ExhibitorEditDesign />} />
-
+            <Route path="/users/expectedexhibitors-list/:label" element={<ExpectedExhibitorListDesign />} />
+            <Route path="/users/expectedexhibitor/edit/:id" element={<ExpectedExhibitorEdit />} />
           </Route>
 
           {/* admin */}

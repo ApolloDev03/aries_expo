@@ -1,10 +1,10 @@
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import axios from "axios";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../../config";
-import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 
 /** ---------------- helpers ---------------- */
 function authHeaders() {
@@ -38,11 +38,14 @@ function pickId(row: any) {
         row?.iIndustryId ??
         row?.industryCategoryId ??
         row?.industry_category_id ??
+        row?.category_id ??
         row?.subcategoryid ??
+        row?.subcategory_id ??
         row?.sub_category_id ??
         ""
     );
 }
+
 function pickName(row: any) {
     return String(
         row?.name ??
@@ -61,6 +64,7 @@ function pickName(row: any) {
 /** ---------------- types ---------------- */
 type ApiOtherContact = {
     id: number;
+    exhibitor_company_information_id: number;
     other_contact_mobile: string;
     other_contact_name: string;
     other_contact_designation?: string;
@@ -68,38 +72,23 @@ type ApiOtherContact = {
     iSDelete?: number;
 };
 
-type ApiExpoDetail = {
+type ApiExpectedExhibitor = {
     id: number;
-    exhibitor_company_information_id: number;
-    expo_id: number;
-    industry_id?: number;
-    category_id?: number;
-    subcategory_id?: number;
-    store_size_sq_meter?: number;
-};
-
-type ApiExhibitorCompany = {
-    id: number;
-    expo_id?: number;
-
     company_name: string;
     gst?: string;
     state_id?: number;
     city_id?: number;
     address?: string;
 
-    // ✅ root ids (may exist)
     industry_id?: number;
     category_id?: number;
     subcategory_id?: number;
 
-    // ✅ root contact fields (as per your response)
     primary_contact_mobile?: string;
     primary_contact_name?: string;
     primary_contact_designation?: string | null;
     primary_contact_email?: string | null;
 
-    expo_details?: ApiExpoDetail[];
     other_contacts?: ApiOtherContact[];
 };
 
@@ -120,58 +109,47 @@ type ApiCity = {
 
 type OptionItem = { id: string; name: string };
 
-/** Normalized row (what UI uses internally) */
-type NormalizedCompany = {
+type ExpectedRow = {
     id: number;
-    expoId: number;
-
     companyName: string;
     contactPerson: string;
 
     stateId?: number;
     cityId?: number;
-
     industryId?: number;
     categoryId?: number;
     subcategoryId?: number;
 
-    raw: ApiExhibitorCompany;
-};
-
-/** UI row with mapped display names */
-type ExhibitorRow = NormalizedCompany & {
     stateName: string;
     cityName: string;
     industry: string;
     category: string;
     subcategory: string;
+
+    raw: ApiExpectedExhibitor;
 };
 
-export default function ExhibitorListDesign() {
+export default function ExpectedExhibitorListDesign() {
     const navigate = useNavigate();
-    const location = useLocation();
-    const { slug } = useParams<{ slug: string }>();
 
-    // ✅ expo_id (from navigation state OR numeric slug)
-    const expoId = useMemo(() => {
-        const fromState = Number(
-            location.state?.expo_id ??
-            location.state?.expoid ??
-            location.state?.expoId ??
-            0
-        );
-        if (fromState) return fromState;
-
-        const n = Number(slug ?? 0);
+    // ✅ user_id from localStorage
+    const userId = useMemo(() => {
+        const v = localStorage.getItem("User_Id");
+        const n = Number(v || 0);
         return Number.isFinite(n) && n > 0 ? n : 0;
-    }, [location.state, slug]);
+    }, []);
 
-    /** list state */
-    const [rowsRaw, setRowsRaw] = useState<ApiExhibitorCompany[]>([]);
+    /** data */
+    const [rowsRaw, setRowsRaw] = useState<ApiExpectedExhibitor[]>([]);
     const [loading, setLoading] = useState(false);
-
-    /** search */
     const [search, setSearch] = useState("");
+
+    /** delete modal state */
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [deleteName, setDeleteName] = useState<string>("");
+    const [deleteBusy, setDeleteBusy] = useState(false);
+    const [deleteError, setDeleteError] = useState("");
 
     /** lookup maps */
     const [stateMap, setStateMap] = useState<Record<string, string>>({});
@@ -180,7 +158,7 @@ export default function ExhibitorListDesign() {
     const [categoryMap, setCategoryMap] = useState<Record<string, string>>({});
     const [subcategoryMap, setSubcategoryMap] = useState<Record<string, string>>({});
 
-    // prevent repeated fetch (caches)
+    // caching fetches
     const fetchedCityStatesRef = useRef<Set<string>>(new Set());
     const fetchedIndustryCatsRef = useRef<Set<string>>(new Set());
     const fetchedCatSubsRef = useRef<Set<string>>(new Set());
@@ -192,68 +170,69 @@ export default function ExhibitorListDesign() {
         return String(s?.name ?? s?.stateName ?? s?.statename ?? "");
     }
 
-    /** ✅ IMPORTANT: normalize ids from expo_details OR root */
-    const normalizeCompany = (r: ApiExhibitorCompany, currentExpoId: number): NormalizedCompany => {
-        // find expo_details entry matching this expoId (if provided)
-        const matchedExpoDetail =
-            (currentExpoId
-                ? (r.expo_details || []).find((x) => Number(x.expo_id) === Number(currentExpoId))
-                : undefined) || (r.expo_details || [])[0];
-
-        const industryId =
-            matchedExpoDetail?.industry_id ?? r.industry_id ?? undefined;
-        const categoryId =
-            matchedExpoDetail?.category_id ?? r.category_id ?? undefined;
-        const subcategoryId =
-            matchedExpoDetail?.subcategory_id ?? r.subcategory_id ?? undefined;
-
-        const contactPerson =
-            r.primary_contact_name ||
-            (r as any)?.primary_contact?.primary_contact_name ||
-            (r as any)?.primary_contact?.name ||
-            "-";
-
-        return {
-            id: r.id,
-            expoId: currentExpoId || matchedExpoDetail?.expo_id || r.expo_id || 0,
-            companyName: r.company_name || "-",
-            contactPerson: contactPerson || "-",
-            stateId: r.state_id,
-            cityId: r.city_id,
-            industryId,
-            categoryId,
-            subcategoryId,
-            raw: r,
-        };
-    };
-
-    /** ---------------- API: exhibitors list ---------------- */
-    const fetchExhibitors = async () => {
+    /** ---------------- API: expected exhibitors ---------------- */
+    const fetchExpectedExhibitors = async () => {
         try {
             setLoading(true);
 
-            const body: any = {};
-            // API says expo_id and industry_id optional
-            body.expo_id = expoId ? String(expoId) : "";
-            body.industry_id = ""; // you can keep filter here if needed
-
-            const res = await axios.post(`${apiUrl}/exhibitors`, body, {
-                headers: { ...authHeaders() },
-            });
+            const res = await axios.post(
+                `${apiUrl}/exhibitors/expected`,
+                { user_id: String(userId) },
+                { headers: { ...authHeaders() } }
+            );
 
             if (!res.data?.success) {
-                toast.error(res.data?.message || "Failed to load exhibitors");
+                toast.error(res.data?.message || "Failed to load expected exhibitors");
                 setRowsRaw([]);
                 return;
             }
 
-            const list = (res.data?.data || []) as ApiExhibitorCompany[];
+            const list = (res.data?.data || []) as ApiExpectedExhibitor[];
             setRowsRaw(Array.isArray(list) ? list : []);
         } catch (err: any) {
-            toast.error(getApiErrorMessage(err, "Failed to load exhibitors"));
+            toast.error(getApiErrorMessage(err, "Failed to load expected exhibitors"));
             setRowsRaw([]);
         } finally {
             setLoading(false);
+        }
+    };
+
+    /** ✅ delete exhibitor API */
+    const deleteExhibitor = async () => {
+        if (!deleteId) return;
+        if (!userId) {
+            setDeleteError("User id not found");
+            return;
+        }
+
+        try {
+            setDeleteBusy(true);
+            setDeleteError("");
+
+            const res = await axios.post(
+                `${apiUrl}/exhibitors/delete`,
+                { id: deleteId, user_id: userId },
+                { headers: { ...authHeaders() } }
+            );
+
+            if (!res.data?.success) {
+                setDeleteError(res.data?.message || "Delete failed");
+                return;
+            }
+
+            toast.success(res.data?.message || "Exhibitor deleted successfully");
+
+            // ✅ remove from list instantly
+            setRowsRaw((prev) => prev.filter((x) => x.id !== deleteId));
+
+            // close modal
+            setDeleteOpen(false);
+            setDeleteId(null);
+            setDeleteName("");
+        } catch (err: any) {
+            setDeleteError(getApiErrorMessage(err, "Delete failed"));
+        } finally {
+            setDeleteBusy(false);
         }
     };
 
@@ -282,7 +261,6 @@ export default function ExhibitorListDesign() {
                 const name = pickStateName(s);
                 if (id && name) map[id] = name;
             });
-
             setStateMap(map);
         } catch {
             // ignore
@@ -347,10 +325,7 @@ export default function ExhibitorListDesign() {
 
             const rows = res.data?.data || res.data?.result || [];
             const list: OptionItem[] = (Array.isArray(rows) ? rows : [])
-                .map((r: any) => ({
-                    id: pickId(r),
-                    name: pickName(r) || String(r?.industry_category_name || ""),
-                }))
+                .map((r: any) => ({ id: pickId(r), name: pickName(r) || String(r?.industry_category_name || "") }))
                 .filter((x) => x.id && x.name);
 
             setCategoryMap((prev) => {
@@ -393,60 +368,57 @@ export default function ExhibitorListDesign() {
 
     /** initial load */
     useEffect(() => {
-        fetchExhibitors();
+        fetchExpectedExhibitors();
         fetchAllStates();
         fetchIndustries();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [expoId]);
+    }, [userId]);
 
-    /** ✅ whenever rowsRaw changes, fetch lookup data using NORMALIZED ids */
-    const normalizedRows: NormalizedCompany[] = useMemo(() => {
-        return rowsRaw.map((r) => normalizeCompany(r, expoId));
-    }, [rowsRaw, expoId]);
-
+    /** when rowsRaw changes, fetch needed cities/categories/subcategories */
     useEffect(() => {
-        if (!normalizedRows.length) return;
+        if (!rowsRaw.length) return;
 
-        // cities by state ids
-        const stateIds = Array.from(
-            new Set(normalizedRows.map((r) => (r.stateId ? String(r.stateId) : "")).filter(Boolean))
-        );
+        const stateIds = Array.from(new Set(rowsRaw.map((r) => (r.state_id ? String(r.state_id) : "")).filter(Boolean)));
         stateIds.forEach((sid) => fetchCitiesForState(sid));
 
-        // categories by industry ids
-        const industryIds = Array.from(
-            new Set(normalizedRows.map((r) => (r.industryId ? String(r.industryId) : "")).filter(Boolean))
-        );
+        const industryIds = Array.from(new Set(rowsRaw.map((r) => (r.industry_id ? String(r.industry_id) : "")).filter(Boolean)));
         industryIds.forEach((iid) => fetchCategoriesByIndustry(iid));
 
-        // subcategories by category ids
-        const categoryIds = Array.from(
-            new Set(normalizedRows.map((r) => (r.categoryId ? String(r.categoryId) : "")).filter(Boolean))
-        );
+        const categoryIds = Array.from(new Set(rowsRaw.map((r) => (r.category_id ? String(r.category_id) : "")).filter(Boolean)));
         categoryIds.forEach((cid) => fetchSubcategoriesByCategory(cid));
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [normalizedRows]);
+    }, [rowsRaw]);
 
-    /** build UI rows with mapped names */
-    const rows: ExhibitorRow[] = useMemo(() => {
-        return normalizedRows.map((r) => {
-            const stId = r.stateId ? String(r.stateId) : "";
-            const ctId = r.cityId ? String(r.cityId) : "";
-            const indId = r.industryId ? String(r.industryId) : "";
-            const catId = r.categoryId ? String(r.categoryId) : "";
-            const subId = r.subcategoryId ? String(r.subcategoryId) : "";
+    /** build rows with names */
+    const rows: ExpectedRow[] = useMemo(() => {
+        return rowsRaw.map((r) => {
+            const stId = r.state_id ? String(r.state_id) : "";
+            const ctId = r.city_id ? String(r.city_id) : "";
+            const indId = r.industry_id ? String(r.industry_id) : "";
+            const catId = r.category_id ? String(r.category_id) : "";
+            const subId = r.subcategory_id ? String(r.subcategory_id) : "";
 
             return {
-                ...r,
-                stateName: stId ? stateMap[stId] || `#${stId}` : "-",
-                cityName: ctId ? cityMap[ctId] || `#${ctId}` : "-",
-                industry: indId ? industryMap[indId] || `#${indId}` : "-",
-                category: catId ? categoryMap[catId] || `#${catId}` : "-",
-                subcategory: subId ? subcategoryMap[subId] || `#${subId}` : "-",
+                id: r.id,
+                companyName: r.company_name || "-",
+                contactPerson: r.primary_contact_name || "-",
+
+                stateId: r.state_id,
+                cityId: r.city_id,
+                industryId: r.industry_id,
+                categoryId: r.category_id,
+                subcategoryId: r.subcategory_id,
+
+                stateName: stId ? stateMap[stId]  : "-",
+                cityName: ctId ? cityMap[ctId]  : "-",
+                industry: indId ? industryMap[indId]  : "-",
+                category: catId ? categoryMap[catId]  : "-",
+                subcategory: subId ? subcategoryMap[subId]  : "-",
+
+                raw: r,
             };
         });
-    }, [normalizedRows, stateMap, cityMap, industryMap, categoryMap, subcategoryMap]);
+    }, [rowsRaw, stateMap, cityMap, industryMap, categoryMap, subcategoryMap]);
 
     /** search filter */
     const filtered = useMemo(() => {
@@ -467,19 +439,23 @@ export default function ExhibitorListDesign() {
         });
     }, [rows, search]);
 
+    const closeDelete = () => {
+        if (deleteBusy) return;
+        setDeleteOpen(false);
+        setDeleteId(null);
+        setDeleteName("");
+        setDeleteError("");
+    };
+
     return (
         <div className="p-6">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
                 <div>
-                    <h1 className="text-2xl font-semibold">Exhibitor List</h1>
-                    <p className="text-sm text-gray-500">
-                        {expoId ? `Expo ID: ${expoId}` : "All Expo"}{" "}
-                        {loading ? "• Loading..." : `• ${filtered.length} records`}
-                    </p>
+                    <h1 className="text-2xl font-semibold">Expected Exhibitor List</h1>
+                
                 </div>
 
-                {/* Search */}
                 <div className="w-full md:w-80">
                     <input
                         value={search}
@@ -521,24 +497,23 @@ export default function ExhibitorListDesign() {
 
                                 <td className="p-2 border text-center">
                                     <button
-                                        className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"
+                                        className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 mr-2"
                                         title="Edit"
                                         onClick={() => {
-                                            navigate(`/users/exhibitor/edit/${r.id}`, {
-                                                state: {
-                                                    expo_id: expoId,
-                                                    exhibitor: r.raw, // ✅ pass full record to edit page
-                                                },
+                                            navigate(`/users/expectedexhibitor/edit/${r.id}`, {
+                                                state: { exhibitor: r.raw },
                                             });
                                         }}
                                     >
                                         <EditIcon fontSize="small" />
                                     </button>
+
                                     <button
-                                        className="text-red-600 hover:text-red-800"
+                                        className="text-red-600 hover:text-red-800 inline-flex items-center gap-1"
                                         title="Delete"
                                         onClick={() => {
-                                            setDeleteId(v.id);
+                                            setDeleteId(r.id); // ✅ fixed (was v.id)
+                                            setDeleteName(r.companyName);
                                             setDeleteError("");
                                             setDeleteOpen(true);
                                         }}
@@ -552,7 +527,7 @@ export default function ExhibitorListDesign() {
                         {!loading && filtered.length === 0 && (
                             <tr>
                                 <td colSpan={9} className="p-6 text-center text-gray-600">
-                                    No exhibitors found
+                                    No expected exhibitors found
                                 </td>
                             </tr>
                         )}
@@ -560,7 +535,7 @@ export default function ExhibitorListDesign() {
                         {loading && (
                             <tr>
                                 <td colSpan={9} className="p-6 text-center text-gray-600">
-                                    Loading exhibitors...
+                                    Loading expected exhibitors...
                                 </td>
                             </tr>
                         )}
@@ -568,7 +543,56 @@ export default function ExhibitorListDesign() {
                 </table>
             </div>
 
-            {/* Footer info */}
+            {/* Delete Confirm Popup */}
+            {deleteOpen && (
+                <div
+                    className="fixed inset-0 z-[999] bg-black/40 flex items-center justify-center p-3"
+                    onClick={(e) => {
+                        // click outside to close
+                        if (e.target === e.currentTarget) closeDelete();
+                    }}
+                >
+                    <div className="w-full max-w-md bg-white rounded-xl shadow-xl border">
+                        <div className="p-4 border-b">
+                            <h2 className="text-lg font-semibold text-gray-900">Confirm Delete</h2>
+                            <p className="text-sm text-gray-600 mt-1">
+                                Are you sure you want to delete{" "}
+                                <span className="font-semibold">{deleteName || "this exhibitor"}</span>?
+                            </p>
+                        </div>
+
+                        <div className="p-4">
+                            {deleteError && (
+                                <div className="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-2">
+                                    {deleteError}
+                                </div>
+                            )}
+
+                            <div className="flex items-center justify-end gap-2">
+                                <button
+                                    type="button"
+                                    className="px-4 py-2 rounded-lg border hover:bg-gray-50"
+                                    onClick={closeDelete}
+                                    disabled={deleteBusy}
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+                                    onClick={deleteExhibitor}
+                                    disabled={deleteBusy}
+                                >
+                                    {deleteBusy ? "Deleting..." : "Delete"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Footer */}
             <div className="mt-3 text-sm text-gray-500 flex items-center justify-between">
                 <div>
                     Showing <span className="font-medium text-gray-700">{filtered.length}</span> records

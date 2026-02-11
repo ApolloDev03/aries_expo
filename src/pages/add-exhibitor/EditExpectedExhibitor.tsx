@@ -1,37 +1,39 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../../config";
 
+/** ---------- helpers ---------- */
 function isValidEmail(email: string) {
     if (!email) return true; // optional
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
-
 function isValidMobile(m: string) {
     return /^\d{10}$/.test(m);
 }
-
 function newId() {
     return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
-
-/** ---------- types ---------- */
-type ContactRow = {
-    id: string; // UI id
-    db_id?: number | null; // ✅ database id (from search API)
-    mobile: string;
-    name: string;
-    designation: string;
-    email: string;
-};
-
-type OptionItem = { id: string; name: string };
-
 function authHeaders() {
     const token = localStorage.getItem("usertoken");
     return token ? { Authorization: `Bearer ${token}` } : {};
+}
+function getApiErrorMessage(err: any, fallback = "Something went wrong") {
+    const d = err?.response?.data;
+    if (!d) return fallback;
+    if (typeof d === "string") return d;
+    if (d.message) return d.message;
+
+    if (d.errors && typeof d.errors === "object") {
+        const msgs: string[] = [];
+        Object.values(d.errors).forEach((v: any) => {
+            if (Array.isArray(v)) msgs.push(...v.map(String));
+            else if (typeof v === "string") msgs.push(v);
+        });
+        if (msgs.length) return msgs.join(" | ");
+    }
+    return fallback;
 }
 
 /** Robust mapper (handles different API key names) */
@@ -63,6 +65,18 @@ function pickName(row: any) {
     );
 }
 
+/** ---------- types ---------- */
+type ContactRow = {
+    id: string; // UI id
+    other_contact_id?: number; // API id (optional)
+    mobile: string;
+    name: string;
+    designation: string;
+    email: string;
+};
+
+type OptionItem = { id: string; name: string };
+
 type ApiState = {
     id?: number;
     stateId?: number;
@@ -78,27 +92,87 @@ type ApiCity = {
     stateid: number;
 };
 
-export default function AddExhivitor() {
-    const { slug } = useParams<{ slug: string }>();
+function pickStateId(s: ApiState) {
+    return String(s?.id ?? s?.stateId ?? s?.iStateId ?? "");
+}
+function pickStateName(s: ApiState) {
+    return String(s?.name ?? s?.stateName ?? s?.statename ?? "");
+}
+
+/** ✅ Solution: normalize SHOW response */
+function normalizeShowResponse(res: any, expoIdFallback: number) {
+    const data = res?.data?.data;
+
+    const expoRow =
+        (Array.isArray(data?.expo_details) &&
+            (data.expo_details.find((x: any) => String(x?.iSDelete ?? "0") !== "1") ||
+                data.expo_details[0])) ||
+        null;
+
+    const out = {
+        expo_name: String(res?.data?.expo_name || ""),
+        expo_slug: String(res?.data?.expo_slug || ""),
+
+        companyInfoId: Number(data?.id || 0),
+        expoId: Number(expoRow?.expo_id ?? data?.expo_id ?? expoIdFallback ?? 0),
+        expoDetailId: expoRow?.id ? Number(expoRow.id) : null,
+
+        // primary
+        exhibitorMobile: String(data?.primary_contact_mobile || ""),
+        exhibitorName: String(data?.primary_contact_name || ""),
+        exhibitorDesignation: String(data?.primary_contact_designation || ""),
+        exhibitorEmail: String(data?.primary_contact_email || ""),
+
+        // company
+        companyName: String(data?.company_name || ""),
+        gst: String(data?.gst || ""),
+        address: String(data?.address || ""),
+
+        stateId: String(data?.state_id || ""),
+        cityId: String(data?.city_id || ""),
+
+        // expo related - from expo_details first
+        industryId: String(expoRow?.industry_id ?? data?.industry_id ?? ""),
+        categoryId: String(expoRow?.category_id ?? data?.category_id ?? ""),
+        subcategoryId: String(expoRow?.subcategory_id ?? data?.subcategory_id ?? ""),
+        storeSize: String(expoRow?.store_size_sq_meter ?? ""),
+        other_contacts: Array.isArray(data?.other_contacts) ? data.other_contacts : [],
+    };
+
+    return out;
+}
+
+export default function ExpectedExhibitorEdit() {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { id: routeId } = useParams<{ id: string }>();
+
+    /** ✅ expo name/slug */
     const [expo_name, setExpo_Name] = useState<string>("");
-    const userId = String(localStorage.getItem("User_Id") || "");
+    const [slug_name, setSlug_name] = useState<string>("");
 
+    const expoIdFromState = Number(
+        location.state?.expo_id ?? location.state?.expoid ?? location.state?.expoId ?? 0
+    );
 
-    /** ✅ for update existing record */
-    const [primaryContactDbId, setPrimaryContactDbId] = useState<number | null>(null);
-    const [companyDbId, setCompanyDbId] = useState<number | null>(null);
-
-    /** ✅ Exhibitor (Mandatory - First) */
+    /** ✅ primary contact */
     const [exhibitorMobile, setExhibitorMobile] = useState("");
     const [exhibitorName, setExhibitorName] = useState("");
     const [exhibitorDesignation, setExhibitorDesignation] = useState("");
     const [exhibitorEmail, setExhibitorEmail] = useState("");
 
-    /** company info (Second) */
+    /** ✅ company */
     const [companyName, setCompanyName] = useState("");
     const [gst, setGst] = useState("");
     const [address, setAddress] = useState("");
-    const [storeSize, setStoreSize] = useState(""); // UI only (not in store payload)
+    const [storeSize, setStoreSize] = useState("");
+
+    /** ✅ ids */
+    const [expoId, setExpoId] = useState<number>(expoIdFromState || 0);
+    const [companyInfoId, setCompanyInfoId] = useState<number>(Number(routeId || 0));
+
+    /** ✅ expo_details row id (optional update support) */
+    const [expoDetailId, setExpoDetailId] = useState<number | null>(null);
 
     const [stateId, setStateId] = useState("");
     const [cityId, setCityId] = useState("");
@@ -107,86 +181,130 @@ export default function AddExhivitor() {
     const [categoryId, setCategoryId] = useState("");
     const [subcategoryId, setSubcategoryId] = useState("");
 
-    // ✅ Dropdown options from API
-    // const [industryOptions, setIndustryOptions] = useState<OptionItem[]>([]);
-    const [categoryOptions, setCategoryOptions] = useState<OptionItem[]>([]);
-    const [subcategoryOptions, setSubcategoryOptions] = useState<OptionItem[]>([]);
+    /** ✅ dropdown options */
     const [states, setStates] = useState<ApiState[]>([]);
     const [cities, setCities] = useState<ApiCity[]>([]);
+    const [industryOptions, setIndustryOptions] = useState<OptionItem[]>([]);
+    const [categoryOptions, setCategoryOptions] = useState<OptionItem[]>([]);
+    const [subcategoryOptions, setSubcategoryOptions] = useState<OptionItem[]>([]);
 
     const [loadingStates, setLoadingStates] = useState(false);
     const [loadingCities, setLoadingCities] = useState(false);
-    // const [loadingIndustry, setLoadingIndustry] = useState(false);
+    const [loadingIndustry, setLoadingIndustry] = useState(false);
     const [loadingCategory, setLoadingCategory] = useState(false);
     const [loadingSubcategory, setLoadingSubcategory] = useState(false);
-    const [todayExhibitors, setTodayExhibitors] = useState<number>(0);
-    const [loadingCount, setLoadingCount] = useState(false);
 
-    /** extra contacts (optional - Third) */
+    /** ✅ other contacts */
     const [contacts, setContacts] = useState<ContactRow[]>([
-        { id: newId(), db_id: null, mobile: "", name: "", designation: "", email: "" },
+        { id: newId(), mobile: "", name: "", designation: "", email: "" },
     ]);
 
     const [saving, setSaving] = useState(false);
+    const [formError, setFormError] = useState("");
 
-    // ✅ refs to control auto-fill dependencies
-    const lastSearchedMobileRef = useRef<string>("");
-    const suppressAutoSearchRef = useRef<boolean>(false);
-
+    /** ✅ pending refs for dependent dropdowns (SHOW -> select by id) */
     const pendingCityIdRef = useRef<string>("");
     const pendingCategoryIdRef = useRef<string>("");
     const pendingSubcategoryIdRef = useRef<string>("");
 
-    const addContactCard = () => {
-        setContacts((prev) => [
-            ...prev,
-            { id: newId(), db_id: null, mobile: "", name: "", designation: "", email: "" },
-        ]);
+    const userId = useMemo(() => {
+        const v = localStorage.getItem("User_Id");
+        const n = Number(v || 0);
+        return Number.isFinite(n) && n > 0 ? n : 0;
+    }, []);
+
+    /** -------------------- API: SHOW (fill all fields) -------------------- */
+    const fetchExhibitorShow = async (id: number) => {
+        try {
+            const res = await axios.post(
+                `${apiUrl}/exhibitors/show`,
+                { id },
+                { headers: { ...authHeaders() } }
+            );
+
+            if (!res.data?.success) {
+                toast.error(res.data?.message || "Failed to load exhibitor");
+                return;
+            }
+
+            const m = normalizeShowResponse(res, expoIdFromState);
+
+            // expo name/slug
+            setExpo_Name(m.expo_name);
+            setSlug_name(m.expo_slug);
+
+            // ids
+            setCompanyInfoId(Number(m.companyInfoId || id));
+            setExpoId(m.expoId);
+            setExpoDetailId(m.expoDetailId);
+
+            // primary
+            setExhibitorMobile(m.exhibitorMobile);
+            setExhibitorName(m.exhibitorName);
+            setExhibitorDesignation(m.exhibitorDesignation);
+            setExhibitorEmail(m.exhibitorEmail);
+
+            // company
+            setCompanyName(m.companyName);
+            setGst(m.gst);
+            setAddress(m.address);
+            setStoreSize(m.storeSize);
+
+            // ✅ state/city (pending city)
+            pendingCityIdRef.current = m.cityId;
+            setStateId(m.stateId);
+
+            // ✅ industry/category/subcategory from expo_details
+            pendingCategoryIdRef.current = m.categoryId;
+            pendingSubcategoryIdRef.current = m.subcategoryId;
+            setIndustryId(m.industryId);
+
+            // other contacts (only active iSDelete=0)
+            const active = m.other_contacts.filter((x: any) => String(x?.iSDelete ?? "0") !== "1");
+
+            if (active.length) {
+                setContacts(
+                    active.map((x: any) => ({
+                        id: newId(),
+                        other_contact_id: Number(x.id || 0) || undefined,
+                        mobile: String(x.other_contact_mobile || ""),
+                        name: String(x.other_contact_name || ""),
+                        designation: String(x.other_contact_designation || ""),
+                        email: String(x.other_contact_email || ""),
+                    }))
+                );
+            } else {
+                setContacts([{ id: newId(), mobile: "", name: "", designation: "", email: "" }]);
+            }
+        } catch (err: any) {
+            toast.error(getApiErrorMessage(err, "Failed to load exhibitor"));
+        }
     };
 
-    const removeContactCard = (id: string) => {
-        setContacts((prev) => prev.filter((x) => x.id !== id));
-    };
-
-    const updateContact = (id: string, patch: Partial<ContactRow>) => {
-        setContacts((prev) => prev.map((x) => (x.id === id ? { ...x, ...patch } : x)));
-    };
-
-    function pickStateId(s: ApiState) {
-        return String(s?.id ?? s?.stateId ?? s?.iStateId ?? "");
-    }
-    function pickStateName(s: ApiState) {
-        return String(s?.name ?? s?.stateName ?? s?.statename ?? "");
-    }
-
-    /** ---------------- API CALLS ---------------- */
+    /** -------------------- API: STATES (paginated) -------------------- */
     const fetchStates = async () => {
         try {
             setLoadingStates(true);
 
             let page = 1;
             let lastPage = 1;
-            const allStates: ApiState[] = [];
+            const all: ApiState[] = [];
 
             while (page <= lastPage) {
-                const res = await axios.post(`${apiUrl}/statelist`, { page: String(page), expo_slugname: slug });
-
+                const res = await axios.post(`${apiUrl}/statelist`, { page: String(page) });
                 if (res.data?.success) {
-                    setExpo_Name(res?.data?.expo_name)
                     const { data, last_page } = res.data;
-                    allStates.push(...((data || []) as ApiState[]));
+                    all.push(...((data || []) as ApiState[]));
                     lastPage = last_page ?? page;
                     page++;
                 } else {
-                    toast.error(res.data?.message || "Failed to load states");
                     break;
                 }
             }
 
-            const clean = allStates.filter((s) => pickStateId(s) && pickStateName(s));
+            const clean = all.filter((s) => pickStateId(s) && pickStateName(s));
             setStates(clean);
-        } catch (error) {
-            console.error("Error fetching states:", error);
+        } catch {
             toast.error("Error while fetching states");
             setStates([]);
         } finally {
@@ -194,32 +312,26 @@ export default function AddExhivitor() {
         }
     };
 
-    /** -------------------- CITY BY STATE API -------------------- */
+    /** -------------------- API: CITIES BY STATE -------------------- */
     const fetchCitiesByState = async (sid: string) => {
         try {
             setLoadingCities(true);
             setCities([]);
 
-            const res = await axios.post(`${apiUrl}/CityByState`, {
-                stateid: String(sid),
-            });
-
+            const res = await axios.post(`${apiUrl}/CityByState`, { stateid: String(sid) });
             if (res.data?.success) {
                 const list = (res.data?.data || []) as ApiCity[];
                 setCities(list);
 
-                // ✅ apply pending city after cities loaded
                 const pending = pendingCityIdRef.current;
                 if (pending && list.some((c) => String(c.id) === String(pending))) {
                     setCityId(String(pending));
+                    pendingCityIdRef.current = "";
                 }
-                pendingCityIdRef.current = "";
             } else {
-                toast.error(res.data?.message || "Failed to load cities");
                 setCities([]);
             }
-        } catch (error) {
-            console.error("Error fetching cities:", error);
+        } catch {
             toast.error("Error while fetching cities");
             setCities([]);
         } finally {
@@ -227,32 +339,10 @@ export default function AddExhivitor() {
         }
     };
 
-    // // 1) Industry list
-    // const fetchIndustries = async () => {
-    //     try {
-    //         setLoadingIndustry(true);
-
-    //         const res = await axios.post(`${apiUrl}/IndustryList`, {}, { headers: { ...authHeaders() } });
-
-    //         const rows = res.data?.data || res.data?.result || res.data?.industries || [];
-    //         const list: OptionItem[] = (Array.isArray(rows) ? rows : [])
-    //             .map((r: any) => ({ id: pickId(r), name: pickName(r) }))
-    //             .filter((x) => x.id && x.name);
-
-    //         setIndustryOptions(list);
-    //     } catch (e: any) {
-    //         toast.error(e?.response?.data?.message || "Failed to load industries");
-    //         setIndustryOptions([]);
-    //     } finally {
-    //         setLoadingIndustry(false);
-    //     }
-    // };
-
-    // 1) Industry list
+    /** -------------------- API: INDUSTRIES -------------------- */
     const fetchIndustries = async () => {
         try {
-            // setLoadingIndustry(true);
-
+            setLoadingIndustry(true);
             const res = await axios.post(`${apiUrl}/IndustryList`, {}, { headers: { ...authHeaders() } });
 
             const rows = res.data?.data || res.data?.result || res.data?.industries || [];
@@ -260,27 +350,20 @@ export default function AddExhivitor() {
                 .map((r: any) => ({ id: pickId(r), name: pickName(r) }))
                 .filter((x) => x.id && x.name);
 
-            // setIndustryOptions(list);
-
-            // ✅ AUTO SELECT FIRST INDUSTRY (when industry dropdown removed)
-            // - do not override if industryId already set (ex: from search)
-            // - this will trigger category API via useEffect([industryId])
-            if (!industryId && list.length) {
-                setIndustryId(String(list[0].id));
-            }
-        } catch (e: any) {
-            toast.error(e?.response?.data?.message || "Failed to load industries");
-            // setIndustryOptions([]);
+            setIndustryOptions(list);
+        } catch (err: any) {
+            toast.error(getApiErrorMessage(err, "Failed to load industries"));
+            setIndustryOptions([]);
         } finally {
-            // setLoadingIndustry(false);
+            setLoadingIndustry(false);
         }
     };
 
-
-    // 2) Category by Industry
+    /** -------------------- API: CATEGORIES BY INDUSTRY -------------------- */
     const fetchCategoriesByIndustry = async (indId: string) => {
         try {
             setLoadingCategory(true);
+
             const res = await axios.post(
                 `${apiUrl}/industry-subcategories/get-by-industry`,
                 { industry_id: indId },
@@ -297,21 +380,20 @@ export default function AddExhivitor() {
 
             setCategoryOptions(list);
 
-            // ✅ apply pending category after categories loaded
             const pending = pendingCategoryIdRef.current;
-            if (pending && list.some((x) => x.id === String(pending))) {
+            if (pending && list.some((x) => String(x.id) === String(pending))) {
                 setCategoryId(String(pending));
+                pendingCategoryIdRef.current = "";
             }
-            pendingCategoryIdRef.current = "";
-        } catch (e: any) {
-            toast.error(e?.response?.data?.message || "Failed to load categories");
+        } catch (err: any) {
+            toast.error(getApiErrorMessage(err, "Failed to load categories"));
             setCategoryOptions([]);
         } finally {
             setLoadingCategory(false);
         }
     };
 
-    // 3) Subcategory by Category
+    /** -------------------- API: SUBCATEGORIES BY CATEGORY -------------------- */
     const fetchSubcategoriesByCategory = async (catId: string) => {
         try {
             setLoadingSubcategory(true);
@@ -329,398 +411,213 @@ export default function AddExhivitor() {
 
             setSubcategoryOptions(list);
 
-            // ✅ apply pending subcategory after subcategories loaded
             const pending = pendingSubcategoryIdRef.current;
-            if (pending && list.some((x) => x.id === String(pending))) {
+            if (pending && list.some((x) => String(x.id) === String(pending))) {
                 setSubcategoryId(String(pending));
+                pendingSubcategoryIdRef.current = "";
             }
-            pendingSubcategoryIdRef.current = "";
-        } catch (e: any) {
-            toast.error(e?.response?.data?.message || "Failed to load subcategories");
+        } catch (err: any) {
+            toast.error(getApiErrorMessage(err, "Failed to load subcategories"));
             setSubcategoryOptions([]);
         } finally {
             setLoadingSubcategory(false);
         }
     };
 
-    /** ✅ SEARCH BY MOBILE (AUTO FILL) */
-    const fillFromSearchResponse = (data: any) => {
-        const primary = data?.primary_and_company?.primary_contact;
-        const company = data?.primary_and_company?.company;
-
-        // prevent auto-search loop if we set mobile from response
-        suppressAutoSearchRef.current = true;
-
-        // ✅ store DB ids for update
-        setPrimaryContactDbId(primary?.id ? Number(primary.id) : null);
-        setCompanyDbId(company?.id ? Number(company.id) : null);
-
-        if (primary) {
-            setExhibitorName(String(primary.name || ""));
-            if (primary.mobile) setExhibitorMobile(String(primary.mobile || ""));
-            setExhibitorEmail(String(primary.email || ""));
-            setExhibitorDesignation(String(primary.designation || ""));
-        }
-
-        if (company) {
-            setCompanyName(String(company.company_name || ""));
-            setGst(String(company.gst || ""));
-            setAddress(String(company.address || ""));
-
-
-            const st = String(company.state_id || "");
-            const ct = String(company.city_id || "");
-
-            if (st) {
-                pendingCityIdRef.current = ct;
-                setStateId(st); // triggers city fetch
-            } else {
-                setStateId("");
-                setCityId("");
-            }
-
-            const ind = String(company.industry_id || "");
-            const cat = String(company.category_id || "");
-            const sub = String(company.subcategory_id || "");
-
-            pendingCategoryIdRef.current = cat;
-            pendingSubcategoryIdRef.current = sub;
-
-            setIndustryId(ind || ""); // triggers category fetch
-        }
-
-        const others = Array.isArray(data?.other_contacts) ? data.other_contacts : [];
-        if (others.length) {
-            setContacts(
-                others.map((x: any) => ({
-                    id: newId(), // UI id
-                    db_id: x?.id ? Number(x.id) : null, // ✅ db id
-                    mobile: String(x.mobile || ""),
-                    name: String(x.name || ""),
-                    designation: String(x.designation || ""),
-                    email: String(x.email || ""),
-                }))
-            );
-        } else {
-            setContacts([{ id: newId(), db_id: null, mobile: "", name: "", designation: "", email: "" }]);
-        }
-    };
-    const fetchExpoWiseCount = async () => {
-        try {
-            setLoadingCount(true);
-
-            const res = await axios.post(
-                `${apiUrl}/exhibitors/Expowise/count`,
-                {
-                    user_id: Number(userId),
-                    expo_slugname: String(slug || ""),
-                },
-                { headers: { ...authHeaders() } }
-            );
-
-            if (res.data?.success) {
-                setTodayExhibitors(Number(res.data?.todayExhibitors ?? 0));
-            } else {
-                setTodayExhibitors(0);
-                // toast.error(res.data?.message || "Failed to fetch exhibitor count");
-            }
-        } catch (e: any) {
-            setTodayExhibitors(0);
-            // toast.error("Error while fetching exhibitor count");
-        } finally {
-            setLoadingCount(false);
-        }
-    };
-
-    const resetAllFieldsForNew = () => {
-        // ✅ stop pending auto-apply values
-        pendingCityIdRef.current = "";
-        pendingCategoryIdRef.current = "";
-        pendingSubcategoryIdRef.current = "";
-
-        // ✅ reset update ids
-        setPrimaryContactDbId(null);
-        setCompanyDbId(null);
-
-        // ✅ exhibitor fields (keep mobile as user typed)
-        setExhibitorName("");
-        setExhibitorDesignation("");
-        setExhibitorEmail("");
-
-        // ✅ company fields
-        setCompanyName("");
-        setGst("");
-        setAddress("");
-        setStoreSize("");
-
-        // ✅ location dropdowns
-        setStateId("");
-        setCityId("");
-        setCities([]);
-
-        // ✅ industry dropdowns
-        setIndustryId("");
-        setCategoryId("");
-        setSubcategoryId("");
-        setCategoryOptions([]);
-        setSubcategoryOptions([]);
-
-        // ✅ other contacts
-        setContacts([{ id: newId(), db_id: null, mobile: "", name: "", designation: "", email: "" }]);
-    };
-
-
-    const searchExhibitorByMobile = async (mobile: string) => {
-        try {
-            if (!/^\d{10}$/.test(mobile)) return;
-
-            if (lastSearchedMobileRef.current === mobile) return;
-            lastSearchedMobileRef.current = mobile;
-
-            const res = await axios.post(
-                `${apiUrl}/exhibitors/search-by-mobile`,
-                { mobile },
-                { headers: { ...authHeaders() } }
-            );
-
-            if (res.data?.success) {
-                fillFromSearchResponse(res.data);
-                toast.success("Exhibitor found. Details filled.");
-            } else {
-                resetAllFieldsForNew();
-                // if backend returns success=false for not found:
-                // toast.info("No exhibitor found for this mobile.");
-            }
-        } catch (e: any) {
-            lastSearchedMobileRef.current = ""; // allow retry
-            resetAllFieldsForNew();
-            // optional: toast.error(e?.response?.data?.message || "Search failed");
-        } finally {
-            // allow next user typing to search again
-            setTimeout(() => {
-                suppressAutoSearchRef.current = false;
-            }, 0);
-        }
-    };
-
-    // ✅ Load states + industries on mount
+    /** -------------------- initial load -------------------- */
     useEffect(() => {
         fetchStates();
         fetchIndustries();
+
+        const idNum = Number(routeId || 0);
+        if (idNum) fetchExhibitorShow(idNum);
+        else toast.error("Exhibitor id missing in route");
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // ✅ When stateId changes => reset city + fetch cities
+    /** ✅ when state changes -> fetch cities */
     useEffect(() => {
-        setCityId("");
-        setCities([]);
-
         if (stateId) fetchCitiesByState(stateId);
-        if (userId && slug) {
-            fetchExpoWiseCount(); // ✅ added
-        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [stateId]);
 
-    // ✅ When industry changes → reset category/subcategory and load categories
+    /** ✅ when industry changes -> fetch categories */
     useEffect(() => {
-        setCategoryId("");
-        setSubcategoryId("");
-        setCategoryOptions([]);
-        setSubcategoryOptions([]);
-
-        const valid =
-            industryId &&
-            industryId !== "null" &&
-            industryId !== "undefined" &&
-            industryId !== "0";
-
-        if (valid) fetchCategoriesByIndustry(industryId);
+        if (industryId) fetchCategoriesByIndustry(industryId);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [industryId]);
 
-
-    // ✅ When category changes → reset subcategory and load subcategories
+    /** ✅ when category changes -> fetch subcategories */
     useEffect(() => {
-        setSubcategoryId("");
-        setSubcategoryOptions([]);
-
         if (categoryId) fetchSubcategoriesByCategory(categoryId);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [categoryId]);
 
-    // ✅ Auto search when 10 digit mobile typed (debounced)
-    useEffect(() => {
-        if (suppressAutoSearchRef.current) return;
-        if (!/^\d{10}$/.test(exhibitorMobile)) return;
+    /** -------------------- contacts helpers -------------------- */
+    const addContactCard = () => {
+        setContacts((prev) => [...prev, { id: newId(), mobile: "", name: "", designation: "", email: "" }]);
+    };
+    const removeContactCard = (cid: string) => {
+        setContacts((prev) => prev.filter((x) => x.id !== cid));
+    };
+    const updateContact = (cid: string, patch: Partial<ContactRow>) => {
+        setContacts((prev) => prev.map((x) => (x.id === cid ? { ...x, ...patch } : x)));
+    };
 
-        const t = setTimeout(() => {
-            searchExhibitorByMobile(exhibitorMobile);
-        }, 400);
+    /** -------------------- validation -------------------- */
+    const validate = () => {
+        setFormError("");
 
-        return () => clearTimeout(t);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [exhibitorMobile]);
+        if (!companyInfoId) return setFormError("Company ID missing"), false;
 
-    /** ---------- validation ---------- */
-    const validateBeforeSave = () => {
-        if (!userId) return toast.error("User not logged in (User_Id missing)"), false;
+        if (!isValidMobile(exhibitorMobile)) return setFormError("Primary Mobile must be 10 digits"), false;
+        if (!exhibitorName.trim()) return setFormError("Primary Name is required"), false;
+        if (!isValidEmail(exhibitorEmail)) return setFormError("Primary Email is invalid"), false;
 
-        if (!isValidMobile(exhibitorMobile))
-            return toast.error("Exhibitor Mobile must be 10 digits"), false;
-        if (!exhibitorName.trim()) return toast.error("Exhibitor Name is required"), false;
-        if (!isValidEmail(exhibitorEmail)) return toast.error("Exhibitor Email is invalid"), false;
+        if (!companyName.trim()) return setFormError("Company Name is required"), false;
 
-        if (!companyName.trim()) return toast.error("Company Name is required"), false;
+        if (!industryId) return setFormError("Industry is required"), false;
+        if (!categoryId) return setFormError("Category is required"), false;
+        if (!subcategoryId) return setFormError("Subcategory is required"), false;
 
-        if (!industryId) return toast.error("Industry is required"), false;
-        if (!categoryId) return toast.error("Category is required"), false;
-        if (!subcategoryId) return toast.error("Subcategory is required"), false;
+        if (!stateId) return setFormError("State is required"), false;
+        if (!cityId) return setFormError("City is required"), false;
 
-        const nonEmptyCards = contacts.filter((c) => {
-            const any = c.mobile.trim() || c.name.trim() || c.designation.trim() || c.email.trim();
-            return Boolean(any);
-        });
-
-        for (let i = 0; i < nonEmptyCards.length; i++) {
-            const c = nonEmptyCards[i];
-            const label = `Extra Contact #${i + 1}`;
-            if (!isValidMobile(c.mobile)) return toast.error(`${label}: Mobile must be 10 digits`), false;
-            if (!c.name.trim()) return toast.error(`${label}: Name is required`), false;
-            if (!isValidEmail(c.email)) return toast.error(`${label}: Email is invalid`), false;
+        const nonEmpty = contacts.filter(
+            (c) => c.mobile.trim() || c.name.trim() || c.designation.trim() || c.email.trim()
+        );
+        for (let i = 0; i < nonEmpty.length; i++) {
+            const c = nonEmpty[i];
+            const label = `Contact #${i + 1}`;
+            if (!isValidMobile(c.mobile)) return setFormError(`${label}: Mobile must be 10 digits`), false;
+            if (!c.name.trim()) return setFormError(`${label}: Name is required`), false;
+            if (!isValidEmail(c.email)) return setFormError(`${label}: Email is invalid`), false;
         }
+
+
 
         return true;
     };
 
-    /** ---------- save (STORE API) ---------- */
-    const handleSave = async () => {
-        if (!validateBeforeSave()) return;
+    /** -------------------- UPDATE (store with id) -------------------- */
+    const handleUpdate = async () => {
+        if (!validate()) return;
 
         try {
             setSaving(true);
 
-            // ✅ other contacts (send id for update if exists)
-            const otherContacts = contacts
+            const other_contacts = contacts
                 .filter((c) => c.mobile.trim() || c.name.trim() || c.designation.trim() || c.email.trim())
-                .map((c) => {
-                    const obj: any = {
-                        other_contact_name: c.name.trim(),
-                        other_contact_mobile: c.mobile.trim(),
-                        other_contact_designation: c.designation.trim(),
-                        other_contact_email: c.email.trim(),
-                    };
+                .map((c) => ({
+                    ...(c.other_contact_id ? { id: c.other_contact_id } : {}),
+                    other_contact_name: c.name.trim(),
+                    other_contact_mobile: c.mobile.trim(),
+                    other_contact_designation: c.designation.trim(),
+                    other_contact_email: c.email.trim(),
+                }));
 
-                    if (c.db_id) obj.id = c.db_id; // ✅ important for update
-                    return obj;
-                });
+            const storeSizeNum = storeSize.trim() ? Number(storeSize) : null;
 
-            // ✅ payload: send company_id + primary_contact_id to update existing company
             const payload: any = {
-                expo_slug: slug,
-                user_id: Number(userId),
-                ...(companyDbId ? { company_id: companyDbId } : {}),
-                ...(primaryContactDbId ? { primary_contact_id: primaryContactDbId } : {}),
+                id: Number(companyInfoId),
 
+                // expo identity
+                expo_slug: slug_name,
+                expo_id: expoId,
+
+                // primary
                 primary_contact_name: exhibitorName.trim(),
                 primary_contact_mobile: exhibitorMobile.trim(),
                 primary_contact_email: exhibitorEmail.trim(),
-                primary_contact_designation: exhibitorDesignation.trim(),
+                primary_contact_designation: (exhibitorDesignation ?? "").trim(),
 
+                // company
                 company_name: companyName.trim(),
-                industry_id: industryId ? Number(industryId) : null,
-                category_id: categoryId ? Number(categoryId) : null,
-                subcategory_id: subcategoryId ? Number(subcategoryId) : null,
-
                 gst: gst.trim(),
-                state_id: stateId ? Number(stateId) : null,
-                city_id: cityId ? Number(cityId) : null,
+                state_id: Number(stateId),
+                city_id: Number(cityId),
                 address: address.trim(),
-                store_size_sq_meter: storeSize,
-                other_contacts: otherContacts,
+
+                // expo related
+                industry_id: Number(industryId),
+                category_id: Number(categoryId),
+                subcategory_id: Number(subcategoryId),
+                store_size_sq_meter: storeSizeNum,
+
+                user_id: userId,
+                other_contacts,
             };
 
-            const endpoint = `${apiUrl}/exhibitors/store`;
-            const res = await axios.post(endpoint, payload, {
+            /** ✅ OPTIONAL: send expo_details also (safe) */
+            payload.expo_details = [
+                {
+                    ...(expoDetailId ? { id: expoDetailId } : {}),
+                    expo_id: expoId,
+                    industry_id: Number(industryId),
+                    category_id: Number(categoryId),
+                    subcategory_id: Number(subcategoryId),
+                    store_size_sq_meter: storeSizeNum,
+                },
+            ];
+
+            const res = await axios.post(`${apiUrl}/exhibitors/store`, payload, {
                 headers: { ...authHeaders() },
             });
 
             if (res.data?.success) {
-                await fetchExpoWiseCount();
-                toast.success(res.data?.message || "Exhibitor saved successfully");
-
-                // reset form
-                setExhibitorMobile("");
-                setExhibitorName("");
-                setExhibitorDesignation("");
-                setExhibitorEmail("");
-
-                setCompanyName("");
-                setGst("");
-                setAddress("");
-                setStoreSize("");
-
-                setStateId("");
-                setCityId("");
-                setIndustryId("");
-                setCategoryId("");
-                setSubcategoryId("");
-
-                setContacts([{ id: newId(), db_id: null, mobile: "", name: "", designation: "", email: "" }]);
-
-                // ✅ reset update ids
-                setPrimaryContactDbId(null);
-                setCompanyDbId(null);
-
-                lastSearchedMobileRef.current = "";
+                toast.success(res.data?.message || "Updated successfully");
+                navigate(-1);
             } else {
-                toast.error(res.data?.message || "Save failed");
+                toast.error(res.data?.message || "Update failed");
             }
         } catch (err: any) {
-            toast.error(err?.response?.data?.message || "Save failed");
+            toast.error(getApiErrorMessage(err, "Update failed"));
         } finally {
             setSaving(false);
         }
     };
-    console.log(industryId, "industryidddd")
 
     return (
         <div className="p-6 space-y-6">
             {/* Header */}
-            <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-gray-800">{expo_name}</h1>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-800">Edit Exhibitor</h1>
+                    {!!expo_name && <div className="text-sm text-gray-500 mt-1">Expo: {expo_name}</div>}
+                </div>
 
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">Today Exhibitors</span>
-                    <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-sm font-semibold">
-                        {loadingCount ? "---" : todayExhibitors}
-                    </span>
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                        disabled={saving}
+                    >
+                        Back
+                    </button>
                 </div>
             </div>
 
-            {/* 1) Exhibitor */}
+            {!!formError && (
+                <div className="p-3 rounded-lg bg-red-50 text-red-700 border border-red-200">{formError}</div>
+            )}
+
+            {/* ✅ 1) Primary Contact */}
             <div className="bg-white p-6 rounded-xl shadow-md border">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">Exhibitor</h2>
+                <h2 className="text-lg font-semibold text-gray-700 mb-4">Primary Contact</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label className="block text-sm font-medium mb-1">
-                            Exhibitor Mobile <span className="text-red-600">*</span>
+                            Mobile <span className="text-red-600">*</span>
                         </label>
                         <input
                             value={exhibitorMobile}
                             maxLength={10}
                             onChange={(e) => {
                                 const v = e.target.value;
-                                if (/^\d*$/.test(v)) {
-                                    lastSearchedMobileRef.current = "";
-
-                                    // ✅ if user changes mobile manually, treat as NEW record
-                                    setPrimaryContactDbId(null);
-                                    setCompanyDbId(null);
-
-                                    setExhibitorMobile(v);
-                                }
+                                if (/^\d*$/.test(v)) setExhibitorMobile(v);
                             }}
                             className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
                             placeholder="10 digit mobile"
@@ -729,13 +626,13 @@ export default function AddExhivitor() {
 
                     <div>
                         <label className="block text-sm font-medium mb-1">
-                            Exhibitor Name <span className="text-red-600">*</span>
+                            Name <span className="text-red-600">*</span>
                         </label>
                         <input
                             value={exhibitorName}
                             onChange={(e) => setExhibitorName(e.target.value)}
                             className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
-                            placeholder="Enter exhibitor name"
+                            placeholder="Enter name"
                         />
                     </div>
 
@@ -761,7 +658,7 @@ export default function AddExhivitor() {
                 </div>
             </div>
 
-            {/* 2) Company Information */}
+            {/* ✅ 2) Company Information */}
             <div className="bg-white p-6 rounded-xl shadow-md border">
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">Company Information</h2>
 
@@ -788,25 +685,22 @@ export default function AddExhivitor() {
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Store Size (Sq. Meter)</label>
-                        <input
-                            value={storeSize}
-                            onChange={(e) => {
-                                const v = e.target.value;
-                                if (/^\d*\.?\d{0,2}$/.test(v)) setStoreSize(v);
-                            }}
-                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
-                            placeholder="e.g. 10 or 10.5"
-                        />
-                    </div>
 
-                    {/* State */}
+
+                    {/* ✅ State */}
                     <div>
-                        <label className="block text-sm font-medium mb-1">State</label>
+                        <label className="block text-sm font-medium mb-1">
+                            State <span className="text-red-600">*</span>
+                        </label>
                         <select
                             value={stateId}
-                            onChange={(e) => setStateId(e.target.value)}
+                            onChange={(e) => {
+                                const v = e.target.value;
+                                pendingCityIdRef.current = "";
+                                setCityId("");
+                                setCities([]);
+                                setStateId(v);
+                            }}
                             className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
                             disabled={loadingStates}
                         >
@@ -819,9 +713,11 @@ export default function AddExhivitor() {
                         </select>
                     </div>
 
-                    {/* City */}
+                    {/* ✅ City */}
                     <div>
-                        <label className="block text-sm font-medium mb-1">City</label>
+                        <label className="block text-sm font-medium mb-1">
+                            City <span className="text-red-600">*</span>
+                        </label>
                         <select
                             value={cityId}
                             onChange={(e) => setCityId(e.target.value)}
@@ -850,16 +746,50 @@ export default function AddExhivitor() {
                         />
                     </div>
 
+                    {/* ✅ Industry */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            Industry <span className="text-red-600">*</span>
+                        </label>
+                        <select
+                            value={industryId}
+                            onChange={(e) => {
+                                const v = e.target.value;
 
+                                pendingCategoryIdRef.current = "";
+                                pendingSubcategoryIdRef.current = "";
+                                setCategoryId("");
+                                setSubcategoryId("");
+                                setCategoryOptions([]);
+                                setSubcategoryOptions([]);
+                                setIndustryId(v);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+                            disabled={loadingIndustry}
+                        >
+                            <option value="">{loadingIndustry ? "Loading..." : "Select Industry"}</option>
+                            {industryOptions.map((x) => (
+                                <option key={x.id} value={x.id}>
+                                    {x.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
-                    {/* Category */}
+                    {/* ✅ Category */}
                     <div>
                         <label className="block text-sm font-medium mb-1">
                             Category <span className="text-red-600">*</span>
                         </label>
                         <select
                             value={categoryId}
-                            onChange={(e) => setCategoryId(e.target.value)}
+                            onChange={(e) => {
+                                const v = e.target.value;
+                                pendingSubcategoryIdRef.current = "";
+                                setSubcategoryId("");
+                                setSubcategoryOptions([]);
+                                setCategoryId(v);
+                            }}
                             className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
                             disabled={!industryId || loadingCategory}
                         >
@@ -878,7 +808,7 @@ export default function AddExhivitor() {
                         </select>
                     </div>
 
-                    {/* Subcategory */}
+                    {/* ✅ Subcategory */}
                     <div>
                         <label className="block text-sm font-medium mb-1">
                             Subcategory <span className="text-red-600">*</span>
@@ -906,10 +836,10 @@ export default function AddExhivitor() {
                 </div>
             </div>
 
-            {/* 3) Exhibitor Contacts */}
+            {/* ✅ 3) Other Contacts */}
             <div className="bg-white p-6 rounded-xl shadow-md border">
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold text-gray-700">Exhibitor Contacts</h2>
+                    <h2 className="text-lg font-semibold text-gray-700">Other Contacts (Optional)</h2>
 
                     <button
                         type="button"
@@ -932,6 +862,7 @@ export default function AddExhivitor() {
                                         type="button"
                                         onClick={() => removeContactCard(c.id)}
                                         className="text-red-600 hover:text-red-700 font-medium"
+                                        disabled={saving}
                                     >
                                         Remove
                                     </button>
@@ -991,16 +922,17 @@ export default function AddExhivitor() {
                     ))}
                 </div>
 
+                {/* Save */}
                 <div className="pt-5 text-end">
                     <button
-                        onClick={handleSave}
+                        onClick={handleUpdate}
                         disabled={saving}
                         className="bg-[#2e56a6] disabled:opacity-60 text-white px-8 py-2 rounded-lg shadow inline-flex items-center gap-2"
                     >
                         {saving && (
                             <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
                         )}
-                        Save Exhibitor
+                        Update Exhibitor
                     </button>
                 </div>
             </div>
