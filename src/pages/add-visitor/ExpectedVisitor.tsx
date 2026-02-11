@@ -400,12 +400,12 @@ export default function ExpectedVisitor() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-800">Expected Visitor</h1>
+
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">Today Visitors </span>
+          <span className="text-sm text-gray-500">Today Expected Visitors</span>
           <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-sm font-semibold">
-            <span className="font-semibold">
-              {loadingCount ? "--" : todayCount}
-            </span>
+            {loadingCount ? "---" : todayCount}
           </span>
         </div>
       </div>

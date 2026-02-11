@@ -9,6 +9,8 @@ type CountRes = {
     today_visitors: number;
     total_exhibitors: number;
     today_exhibitors: number;
+    total_Expected_Exhibitors: number;
+    today_Expected_Exhibitors: number;
 };
 
 export default function UserDashboard() {
@@ -19,6 +21,8 @@ export default function UserDashboard() {
     const [todayVisitors, setTodayVisitors] = useState(0);
     const [totalExhibitors, setTotalExhibitors] = useState(0);
     const [todayExhibitors, setTodayExhibitors] = useState(0);
+    const [expectedTotalExhibitors, setExpectedTotalExhibitors] = useState(0);
+    const [todayExpectedExhibitors, setTodayExpectedExhibitors] = useState(0);
 
     const fetchVisitorCounts = async () => {
         if (!userId) {
@@ -27,6 +31,8 @@ export default function UserDashboard() {
             setTodayVisitors(0);
             setTotalExhibitors(0);
             setTodayExhibitors(0);
+            setExpectedTotalExhibitors(0);
+            setTodayExpectedExhibitors(0);
             return;
         }
 
@@ -43,12 +49,16 @@ export default function UserDashboard() {
                 setTodayVisitors(Number(d.today_visitors || 0));
                 setTotalExhibitors(Number(d.total_exhibitors || 0));
                 setTodayExhibitors(Number(d.today_exhibitors || 0));
+                setExpectedTotalExhibitors(Number(d.total_Expected_Exhibitors));
+                setTodayExpectedExhibitors(Number(d.today_Expected_Exhibitors));
             } else {
                 toast.error(res.data?.message || "Visitor count fetch failed");
                 setTotalVisitors(0);
                 setTodayVisitors(0);
                 setTodayExhibitors(0);
                 setTotalExhibitors(0);
+                setExpectedTotalExhibitors(0);
+                setTodayExpectedExhibitors(0);
             }
         } catch (err: any) {
             console.error(err);
@@ -57,6 +67,8 @@ export default function UserDashboard() {
             setTodayVisitors(0);
             setTodayExhibitors(0);
             setTotalExhibitors(0);
+            setExpectedTotalExhibitors(0);
+            setTodayExpectedExhibitors(0);
         } finally {
             setLoadingCounts(false);
         }
@@ -76,7 +88,7 @@ export default function UserDashboard() {
             </div>
 
             {/* TOP USER STATS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Card 1 */}
                 <div
                     onClick={() => navigate("/users/visitors-list/TotalVisitors")}
@@ -126,6 +138,26 @@ export default function UserDashboard() {
                         </div>
                     ) : (
                         <p className="text-3xl font-bold text-gray-800 mt-2">{todayExhibitors}</p>
+                    )}
+                </div>
+                <div onClick={() => navigate("/users/expectedexhibitors-list/ExpectedTotalVisitors")} className="bg-white shadow rounded-xl p-6 border-l-4 border-[#454C7D]">
+                    <h2 className="text-sm text-gray-500">Total Expected Exhibitors</h2>
+                    {loadingCounts ? (
+                        <div className="mt-3 flex items-center gap-2 text-gray-500">
+                            0
+                        </div>
+                    ) : (
+                        <p className="text-3xl font-bold text-gray-800 mt-2">{expectedTotalExhibitors}</p>
+                    )}
+                </div>
+                <div onClick={() => navigate("/users/expectedexhibitors-list/TodayTotalVisitors")} className="bg-white shadow rounded-xl p-6 border-l-4 border-[#8A6C56]">
+                    <h2 className="text-sm text-gray-500">Today Expected Exhibitors</h2>
+                    {loadingCounts ? (
+                        <div className="mt-3 flex items-center gap-2 text-gray-500">
+                            0
+                        </div>
+                    ) : (
+                        <p className="text-3xl font-bold text-gray-800 mt-2">{todayExpectedExhibitors}</p>
                     )}
                 </div>
             </div>
