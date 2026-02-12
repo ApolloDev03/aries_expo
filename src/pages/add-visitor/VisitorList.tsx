@@ -274,19 +274,19 @@ export default function VisitorList() {
     setUpdateError("");
 
     try {
-      if (!selectedVisitor.name?.trim())
-        return setUpdateError("Name is required"), setUpdating(false);
+      // if (!selectedVisitor.name?.trim())
+      //   return setUpdateError("Name is required"), setUpdating(false);
       if (!selectedVisitor.mobile?.trim())
         return setUpdateError("Mobile is required"), setUpdating(false);
-      if (!selectedVisitor.email?.trim())
-        return setUpdateError("Email is required"), setUpdating(false);
-      if (!selectedVisitor.company?.trim())
-        return setUpdateError("Company is required"), setUpdating(false);
+      // if (!selectedVisitor.email?.trim())
+      //   return setUpdateError("Email is required"), setUpdating(false);
+      // if (!selectedVisitor.company?.trim())
+      //   return setUpdateError("Company is required"), setUpdating(false);
 
-      if (!selectedVisitor.stateid)
-        return setUpdateError("Please select State"), setUpdating(false);
-      if (!selectedVisitor.cityid)
-        return setUpdateError("Please select City"), setUpdating(false);
+      // if (!selectedVisitor.stateid)
+      //   return setUpdateError("Please select State"), setUpdating(false);
+      // if (!selectedVisitor.cityid)
+      //   return setUpdateError("Please select City"), setUpdating(false);
 
       const payload = {
         name: selectedVisitor.name,
