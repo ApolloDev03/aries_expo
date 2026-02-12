@@ -83,7 +83,6 @@ export default function AddExhivitor() {
     const [expo_name, setExpo_Name] = useState<string>("");
     const userId = String(localStorage.getItem("User_Id") || "");
 
-
     /** ✅ for update existing record */
     const [primaryContactDbId, setPrimaryContactDbId] = useState<number | null>(null);
     const [companyDbId, setCompanyDbId] = useState<number | null>(null);
@@ -108,7 +107,7 @@ export default function AddExhivitor() {
     const [subcategoryId, setSubcategoryId] = useState("");
 
     // ✅ Dropdown options from API
-    // const [industryOptions, setIndustryOptions] = useState<OptionItem[]>([]);
+    const [industryOptions, setIndustryOptions] = useState<OptionItem[]>([]); // ✅ NEW (optional but useful)
     const [categoryOptions, setCategoryOptions] = useState<OptionItem[]>([]);
     const [subcategoryOptions, setSubcategoryOptions] = useState<OptionItem[]>([]);
     const [states, setStates] = useState<ApiState[]>([]);
@@ -116,7 +115,6 @@ export default function AddExhivitor() {
 
     const [loadingStates, setLoadingStates] = useState(false);
     const [loadingCities, setLoadingCities] = useState(false);
-    // const [loadingIndustry, setLoadingIndustry] = useState(false);
     const [loadingCategory, setLoadingCategory] = useState(false);
     const [loadingSubcategory, setLoadingSubcategory] = useState(false);
     const [todayExhibitors, setTodayExhibitors] = useState<number>(0);
@@ -134,6 +132,7 @@ export default function AddExhivitor() {
     const suppressAutoSearchRef = useRef<boolean>(false);
 
     const pendingCityIdRef = useRef<string>("");
+    const pendingIndustryIdRef = useRef<string>(""); // ✅ NEW
     const pendingCategoryIdRef = useRef<string>("");
     const pendingSubcategoryIdRef = useRef<string>("");
 
@@ -172,7 +171,7 @@ export default function AddExhivitor() {
                 const res = await axios.post(`${apiUrl}/statelist`, { page: String(page), expo_slugname: slug });
 
                 if (res.data?.success) {
-                    setExpo_Name(res?.data?.expo_name)
+                    setExpo_Name(res?.data?.expo_name);
                     const { data, last_page } = res.data;
                     allStates.push(...((data || []) as ApiState[]));
                     lastPage = last_page ?? page;
@@ -227,32 +226,9 @@ export default function AddExhivitor() {
         }
     };
 
-    // // 1) Industry list
-    // const fetchIndustries = async () => {
-    //     try {
-    //         setLoadingIndustry(true);
-
-    //         const res = await axios.post(`${apiUrl}/IndustryList`, {}, { headers: { ...authHeaders() } });
-
-    //         const rows = res.data?.data || res.data?.result || res.data?.industries || [];
-    //         const list: OptionItem[] = (Array.isArray(rows) ? rows : [])
-    //             .map((r: any) => ({ id: pickId(r), name: pickName(r) }))
-    //             .filter((x) => x.id && x.name);
-
-    //         setIndustryOptions(list);
-    //     } catch (e: any) {
-    //         toast.error(e?.response?.data?.message || "Failed to load industries");
-    //         setIndustryOptions([]);
-    //     } finally {
-    //         setLoadingIndustry(false);
-    //     }
-    // };
-
-    // 1) Industry list
+    // ✅ Industry list (mount + rerender safe)
     const fetchIndustries = async () => {
         try {
-            // setLoadingIndustry(true);
-
             const res = await axios.post(`${apiUrl}/IndustryList`, {}, { headers: { ...authHeaders() } });
 
             const rows = res.data?.data || res.data?.result || res.data?.industries || [];
@@ -260,27 +236,36 @@ export default function AddExhivitor() {
                 .map((r: any) => ({ id: pickId(r), name: pickName(r) }))
                 .filter((x) => x.id && x.name);
 
-            // setIndustryOptions(list);
+            setIndustryOptions(list);
 
-            // ✅ AUTO SELECT FIRST INDUSTRY (when industry dropdown removed)
-            // - do not override if industryId already set (ex: from search)
-            // - this will trigger category API via useEffect([industryId])
+            // ✅ Priority 1: pending industry from search/edit
+            const pendingInd = pendingIndustryIdRef.current;
+            if (pendingInd && list.some((x) => String(x.id) === String(pendingInd))) {
+                setIndustryId(String(pendingInd));
+                pendingIndustryIdRef.current = "";
+                return;
+            }
+
+            // ✅ Priority 2: already selected industryId (do not override)
+            if (industryId && list.some((x) => String(x.id) === String(industryId))) {
+                return;
+            }
+
+            // ✅ Priority 3: default to first (only if nothing selected)
             if (!industryId && list.length) {
                 setIndustryId(String(list[0].id));
             }
         } catch (e: any) {
             toast.error(e?.response?.data?.message || "Failed to load industries");
-            // setIndustryOptions([]);
-        } finally {
-            // setLoadingIndustry(false);
+            setIndustryOptions([]);
         }
     };
-
 
     // 2) Category by Industry
     const fetchCategoriesByIndustry = async (indId: string) => {
         try {
             setLoadingCategory(true);
+
             const res = await axios.post(
                 `${apiUrl}/industry-subcategories/get-by-industry`,
                 { industry_id: indId },
@@ -299,7 +284,7 @@ export default function AddExhivitor() {
 
             // ✅ apply pending category after categories loaded
             const pending = pendingCategoryIdRef.current;
-            if (pending && list.some((x) => x.id === String(pending))) {
+            if (pending && list.some((x) => String(x.id) === String(pending))) {
                 setCategoryId(String(pending));
             }
             pendingCategoryIdRef.current = "";
@@ -331,7 +316,7 @@ export default function AddExhivitor() {
 
             // ✅ apply pending subcategory after subcategories loaded
             const pending = pendingSubcategoryIdRef.current;
-            if (pending && list.some((x) => x.id === String(pending))) {
+            if (pending && list.some((x) => String(x.id) === String(pending))) {
                 setSubcategoryId(String(pending));
             }
             pendingSubcategoryIdRef.current = "";
@@ -367,7 +352,6 @@ export default function AddExhivitor() {
             setGst(String(company.gst || ""));
             setAddress(String(company.address || ""));
 
-
             const st = String(company.state_id || "");
             const ct = String(company.city_id || "");
 
@@ -383,10 +367,18 @@ export default function AddExhivitor() {
             const cat = String(company.category_id || "");
             const sub = String(company.subcategory_id || "");
 
+            // ✅ set pending ids so chain applies after list APIs load
+            pendingIndustryIdRef.current = ind;
             pendingCategoryIdRef.current = cat;
             pendingSubcategoryIdRef.current = sub;
 
-            setIndustryId(ind || ""); // triggers category fetch
+            // ✅ If industries are already loaded, set immediately (validating)
+            if (ind && industryOptions.some((x) => String(x.id) === String(ind))) {
+                setIndustryId(ind);
+            } else {
+                // if not loaded yet, just keep pending; fetchIndustries will apply safely
+                // (do NOT force-set industryId to avoid wrong chain)
+            }
         }
 
         const others = Array.isArray(data?.other_contacts) ? data.other_contacts : [];
@@ -405,6 +397,7 @@ export default function AddExhivitor() {
             setContacts([{ id: newId(), db_id: null, mobile: "", name: "", designation: "", email: "" }]);
         }
     };
+
     const fetchExpoWiseCount = async () => {
         try {
             setLoadingCount(true);
@@ -420,13 +413,12 @@ export default function AddExhivitor() {
 
             if (res.data?.success) {
                 setTodayExhibitors(Number(res.data?.todayExhibitors ?? 0));
+                setIndustryId(String(res.data?.industry_id || ""));
             } else {
                 setTodayExhibitors(0);
-                // toast.error(res.data?.message || "Failed to fetch exhibitor count");
             }
         } catch (e: any) {
             setTodayExhibitors(0);
-            // toast.error("Error while fetching exhibitor count");
         } finally {
             setLoadingCount(false);
         }
@@ -435,6 +427,7 @@ export default function AddExhivitor() {
     const resetAllFieldsForNew = () => {
         // ✅ stop pending auto-apply values
         pendingCityIdRef.current = "";
+        pendingIndustryIdRef.current = ""; // ✅ NEW
         pendingCategoryIdRef.current = "";
         pendingSubcategoryIdRef.current = "";
 
@@ -469,7 +462,6 @@ export default function AddExhivitor() {
         setContacts([{ id: newId(), db_id: null, mobile: "", name: "", designation: "", email: "" }]);
     };
 
-
     const searchExhibitorByMobile = async (mobile: string) => {
         try {
             if (!/^\d{10}$/.test(mobile)) return;
@@ -488,25 +480,22 @@ export default function AddExhivitor() {
                 toast.success("Exhibitor found. Details filled.");
             } else {
                 resetAllFieldsForNew();
-                // if backend returns success=false for not found:
-                // toast.info("No exhibitor found for this mobile.");
             }
         } catch (e: any) {
             lastSearchedMobileRef.current = ""; // allow retry
             resetAllFieldsForNew();
-            // optional: toast.error(e?.response?.data?.message || "Search failed");
         } finally {
-            // allow next user typing to search again
             setTimeout(() => {
                 suppressAutoSearchRef.current = false;
             }, 0);
         }
     };
 
-    // ✅ Load states + industries on mount
+    // ✅ Load states + industries on mount (parallel)
     useEffect(() => {
-        fetchStates();
-        fetchIndustries();
+        (async () => {
+            await Promise.all([fetchStates(), fetchIndustries()]);
+        })();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -517,8 +506,9 @@ export default function AddExhivitor() {
 
         if (stateId) fetchCitiesByState(stateId);
         if (userId && slug) {
-            fetchExpoWiseCount(); // ✅ added
+            fetchExpoWiseCount();
         }
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [stateId]);
 
@@ -528,17 +518,12 @@ export default function AddExhivitor() {
         setSubcategoryId("");
         setCategoryOptions([]);
         setSubcategoryOptions([]);
-
         const valid =
-            industryId &&
-            industryId !== "null" &&
-            industryId !== "undefined" &&
-            industryId !== "0";
+            industryId && industryId !== "null" && industryId !== "undefined" && industryId !== "0";
 
         if (valid) fetchCategoriesByIndustry(industryId);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [industryId]);
-
 
     // ✅ When category changes → reset subcategory and load subcategories
     useEffect(() => {
@@ -566,8 +551,7 @@ export default function AddExhivitor() {
     const validateBeforeSave = () => {
         if (!userId) return toast.error("User not logged in (User_Id missing)"), false;
 
-        if (!isValidMobile(exhibitorMobile))
-            return toast.error("Exhibitor Mobile must be 10 digits"), false;
+        if (!isValidMobile(exhibitorMobile)) return toast.error("Exhibitor Mobile must be 10 digits"), false;
         if (!exhibitorName.trim()) return toast.error("Exhibitor Name is required"), false;
         if (!isValidEmail(exhibitorEmail)) return toast.error("Exhibitor Email is invalid"), false;
 
@@ -682,7 +666,7 @@ export default function AddExhivitor() {
             setSaving(false);
         }
     };
-    console.log(industryId, "industryidddd")
+
 
     return (
         <div className="p-6 space-y-6">
@@ -806,7 +790,10 @@ export default function AddExhivitor() {
                         <label className="block text-sm font-medium mb-1">State</label>
                         <select
                             value={stateId}
-                            onChange={(e) => setStateId(e.target.value)}
+                            onChange={(e) => {
+                                setStateId(e.target.value);
+                                fetchCategoriesByIndustry(industryId);
+                            }}
                             className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
                             disabled={loadingStates}
                         >
@@ -850,8 +837,6 @@ export default function AddExhivitor() {
                         />
                     </div>
 
-
-
                     {/* Category */}
                     <div>
                         <label className="block text-sm font-medium mb-1">
@@ -861,14 +846,10 @@ export default function AddExhivitor() {
                             value={categoryId}
                             onChange={(e) => setCategoryId(e.target.value)}
                             className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
-                            disabled={!industryId || loadingCategory}
+                            disabled={loadingCategory}
                         >
                             <option value="">
-                                {!industryId
-                                    ? "Select Industry first"
-                                    : loadingCategory
-                                        ? "Loading..."
-                                        : "Select Category"}
+                                {!industryId ? "Select Industry first" : loadingCategory ? "Loading..." : "Select Category"}
                             </option>
                             {categoryOptions.map((x) => (
                                 <option key={x.id} value={x.id}>
@@ -890,11 +871,7 @@ export default function AddExhivitor() {
                             disabled={!categoryId || loadingSubcategory}
                         >
                             <option value="">
-                                {!categoryId
-                                    ? "Select Category first"
-                                    : loadingSubcategory
-                                        ? "Loading..."
-                                        : "Select Subcategory"}
+                                {!categoryId ? "Select Category first" : loadingSubcategory ? "Loading..." : "Select Subcategory"}
                             </option>
                             {subcategoryOptions.map((x) => (
                                 <option key={x.id} value={x.id}>
@@ -997,9 +974,7 @@ export default function AddExhivitor() {
                         disabled={saving}
                         className="bg-[#2e56a6] disabled:opacity-60 text-white px-8 py-2 rounded-lg shadow inline-flex items-center gap-2"
                     >
-                        {saving && (
-                            <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                        )}
+                        {saving && <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />}
                         Save Exhibitor
                     </button>
                 </div>
