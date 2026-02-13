@@ -531,20 +531,8 @@ export default function AddExhivitor() {
 
         if (!industryId) return toast.error("Industry is required"), false;
         if (!categoryId) return toast.error("Category is required"), false;
-        if (!subcategoryId) return toast.error("Subcategory is required"), false;
 
-        const nonEmptyCards = contacts.filter((c) => {
-            const any = c.mobile.trim() || c.name.trim() || c.designation.trim() || c.email.trim();
-            return Boolean(any);
-        });
 
-        for (let i = 0; i < nonEmptyCards.length; i++) {
-            const c = nonEmptyCards[i];
-            const label = `Extra Contact #${i + 1}`;
-            if (!isValidMobile(c.mobile)) return toast.error(`${label}: Mobile must be 10 digits`), false;
-            if (!c.name.trim()) return toast.error(`${label}: Name is required`), false;
-            if (!isValidEmail(c.email)) return toast.error(`${label}: Email is invalid`), false;
-        }
 
         return true;
     };
@@ -651,7 +639,80 @@ export default function AddExhivitor() {
                     </span>
                 </div>
             </div>
+            <div className="bg-white p-6 rounded-xl shadow-md border">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            Industry <span className="text-red-600">*</span>
+                        </label>
+                        <select
+                            value={industryId}
+                            onChange={(e) => setIndustryId(e.target.value)}
+                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+                            disabled={loadingIndustry}
+                        >
+                            <option value="">{loadingIndustry ? "Loading..." : "Select Industry"}</option>
+                            {industryOptions.map((x) => (
+                                <option key={x.id} value={x.id}>
+                                    {x.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
+                    {/* Category */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            Category <span className="text-red-600">*</span>
+                        </label>
+                        <select
+                            value={categoryId}
+                            onChange={(e) => setCategoryId(e.target.value)}
+                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+                            disabled={!industryId || loadingCategory}
+                        >
+                            <option value="">
+                                {!industryId
+                                    ? "Select Industry first"
+                                    : loadingCategory
+                                        ? "Loading..."
+                                        : "Select Category"}
+                            </option>
+                            {categoryOptions.map((x) => (
+                                <option key={x.id} value={x.id}>
+                                    {x.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Subcategory */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            Subcategory
+                        </label>
+                        <select
+                            value={subcategoryId}
+                            onChange={(e) => setSubcategoryId(e.target.value)}
+                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+                            disabled={!categoryId || loadingSubcategory}
+                        >
+                            <option value="">
+                                {!categoryId
+                                    ? "Select Category first"
+                                    : loadingSubcategory
+                                        ? "Loading..."
+                                        : "Select Subcategory"}
+                            </option>
+                            {subcategoryOptions.map((x) => (
+                                <option key={x.id} value={x.id}>
+                                    {x.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+            </div>
             {/* 1) Exhibitor */}
             <div className="bg-white p-6 rounded-xl shadow-md border">
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">Exhibitor</h2>
@@ -742,7 +803,7 @@ export default function AddExhivitor() {
                         />
                     </div>
 
-                    
+
 
                     {/* State */}
                     <div>
@@ -794,76 +855,7 @@ export default function AddExhivitor() {
                     </div>
 
                     {/* Industry */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Industry <span className="text-red-600">*</span>
-                        </label>
-                        <select
-                            value={industryId}
-                            onChange={(e) => setIndustryId(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
-                            disabled={loadingIndustry}
-                        >
-                            <option value="">{loadingIndustry ? "Loading..." : "Select Industry"}</option>
-                            {industryOptions.map((x) => (
-                                <option key={x.id} value={x.id}>
-                                    {x.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
 
-                    {/* Category */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Category <span className="text-red-600">*</span>
-                        </label>
-                        <select
-                            value={categoryId}
-                            onChange={(e) => setCategoryId(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
-                            disabled={!industryId || loadingCategory}
-                        >
-                            <option value="">
-                                {!industryId
-                                    ? "Select Industry first"
-                                    : loadingCategory
-                                        ? "Loading..."
-                                        : "Select Category"}
-                            </option>
-                            {categoryOptions.map((x) => (
-                                <option key={x.id} value={x.id}>
-                                    {x.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Subcategory */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Subcategory <span className="text-red-600">*</span>
-                        </label>
-                        <select
-                            value={subcategoryId}
-                            onChange={(e) => setSubcategoryId(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
-                            disabled={!categoryId || loadingSubcategory}
-                        >
-                            <option value="">
-                                {!categoryId
-                                    ? "Select Category first"
-                                    : loadingSubcategory
-                                        ? "Loading..."
-                                        : "Select Subcategory"}
-                            </option>
-                            {subcategoryOptions.map((x) => (
-                                <option key={x.id} value={x.id}>
-                                    {x.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
                 </div>
             </div>
 
