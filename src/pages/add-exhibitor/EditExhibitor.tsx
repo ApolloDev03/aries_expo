@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import {  useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../../config";
 
 /** ---------- helpers ---------- */
@@ -92,6 +92,11 @@ type ApiCity = {
   name: string;
   stateid: number;
 };
+// Business Type API shape
+type BusinessType = {
+  id: number;
+  strBusinessType: string;
+};
 
 function pickStateId(s: ApiState) {
   return String(s?.id ?? s?.stateId ?? s?.iStateId ?? "");
@@ -114,7 +119,7 @@ export default function ExhibitorEdit() {
     return Number.isFinite(n) && n > 0 ? n : 0;
   }, []);
 
- 
+
 
   /** ✅ primary contact */
   const [exhibitorMobile, setExhibitorMobile] = useState("");
@@ -162,6 +167,50 @@ export default function ExhibitorEdit() {
   const pendingCityIdRef = useRef<string>("");
   const pendingCategoryIdRef = useRef<string>("");
   const pendingSubcategoryIdRef = useRef<string>("");
+  // ✅ ADD THESE TYPES + STATES near top (after OptionItem types)
+  const [businessTypeId, setBusinessTypeId] = useState<string>("");
+  const [businessTypeOptions, setBusinessTypeOptions] = useState<BusinessType[]>([]);
+  const [loadingBusinessTypes, setLoadingBusinessTypes] = useState(false);
+  const [defaultIndustryId, setDefaultIndustryId] = useState<string>("");
+
+  // OPTIONAL: if your state list items contain industry_id per state
+  const stateIndustryMapRef = useRef<Record<string, string>>({});
+
+
+  // ✅ pending ref for SHOW -> apply after list load
+  const pendingBusinessTypeIdRef = useRef<string>("");
+
+  // ✅ fetch business types
+  const fetchBusinessTypes = async () => {
+    try {
+      setLoadingBusinessTypes(true);
+
+      const res = await axios.post(
+        `${apiUrl}/business-types/index`,
+        {},
+        { headers: { ...authHeaders() } }
+      );
+
+      if (res.data?.success) {
+        setBusinessTypeOptions(res.data?.data || []);
+
+        // ✅ apply pending selection (from SHOW)
+        const pending = pendingBusinessTypeIdRef.current;
+        if (pending && (res.data?.data || []).some((x: any) => String(x.id) === String(pending))) {
+          setBusinessTypeId(String(pending));
+          pendingBusinessTypeIdRef.current = "";
+        }
+      } else {
+        toast.error(res.data?.message || "Failed to load business types");
+        setBusinessTypeOptions([]);
+      }
+    } catch (err: any) {
+      toast.error(getApiErrorMessage(err, "Failed to load business types"));
+      setBusinessTypeOptions([]);
+    } finally {
+      setLoadingBusinessTypes(false);
+    }
+  };
 
   /** -------------------- API: SHOW (fill all fields) -------------------- */
   const fetchExhibitorShow = async (id: number) => {
@@ -206,17 +255,24 @@ export default function ExhibitorEdit() {
       pendingCityIdRef.current = ct; // keep city id until city list loads
       setStateId(st); // triggers CityByState
 
-      // ✅ INDUSTRY -> CATEGORY -> SUBCATEGORY (ID wise)
-      const ind = String(data.industry_id || "");
-      const cat = String(data.category_id || "");
-      const sub = String(data.subcategory_id || "");
-      pendingCategoryIdRef.current = cat;
-      pendingSubcategoryIdRef.current = sub;
-      setIndustryId(ind); // triggers categories API
+
+      pendingCategoryIdRef.current = String(data.category_id || "");
+      pendingSubcategoryIdRef.current = String(data.subcategory_id || "");
+
 
       // other contacts (only active iSDelete=0)
       const others = Array.isArray(data.other_contacts) ? data.other_contacts : [];
       const active = others.filter((x: any) => String(x?.iSDelete ?? "0") !== "1");
+      // ✅ BUSINESS TYPE (ID wise)
+      const bt = String(data.iBusinessType ?? data.business_type_id ?? data.businessTypeId ?? "");
+      if (bt) {
+        // if options already loaded -> set directly
+        if (businessTypeOptions.some((x) => String(x.id) === String(bt))) {
+          setBusinessTypeId(String(bt));
+        } else {
+          pendingBusinessTypeIdRef.current = String(bt); // apply later after list loads
+        }
+      }
 
       if (active.length) {
         setContacts(
@@ -250,10 +306,24 @@ export default function ExhibitorEdit() {
         const res = await axios.post(`${apiUrl}/statelist`, { page: String(page) });
         if (res.data?.success) {
           const { data, last_page } = res.data;
+
+          // ✅ if API sends common industry_id in response (best)
+          if (res.data?.industry_id) {
+            setDefaultIndustryId(String(res.data.industry_id));
+          }
+
+          // ✅ if each state row has industry_id (optional)
+          (data || []).forEach((s: any) => {
+            const sid = String(s?.id ?? s?.stateId ?? s?.iStateId ?? "");
+            const ind = String(s?.industry_id ?? s?.iIndustryId ?? "");
+            if (sid && ind) stateIndustryMapRef.current[sid] = ind;
+          });
+
           all.push(...((data || []) as ApiState[]));
           lastPage = last_page ?? page;
           page++;
-        } else {
+        }
+        else {
           break;
         }
       }
@@ -387,7 +457,7 @@ export default function ExhibitorEdit() {
   useEffect(() => {
     fetchStates();
     fetchIndustries();
-
+    fetchBusinessTypes();
     const idNum = Number(routeId || 0);
     if (idNum) fetchExhibitorShow(idNum);
     else toast.error("Exhibitor id missing in route");
@@ -397,9 +467,29 @@ export default function ExhibitorEdit() {
 
   /** ✅ when state changes -> fetch cities (NO RESET HERE) */
   useEffect(() => {
-    if (stateId) fetchCitiesByState(stateId);
+    if (!stateId) return;
+
+    // ✅ fetch cities
+    fetchCitiesByState(stateId);
+
+    // ✅ derive industry_id from state OR default
+    const derivedIndustry =
+      stateIndustryMapRef.current[stateId] || defaultIndustryId || "";
+
+    if (derivedIndustry) {
+      // ✅ reset category chain when state changes
+      pendingCategoryIdRef.current = "";
+      pendingSubcategoryIdRef.current = "";
+      setCategoryId("");
+      setSubcategoryId("");
+      setCategoryOptions([]);
+      setSubcategoryOptions([]);
+
+      setIndustryId(String(derivedIndustry)); // triggers categories by industry
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stateId]);
+  }, [stateId, defaultIndustryId]);
+
 
   /** ✅ when industry changes -> fetch categories (NO RESET HERE) */
   useEffect(() => {
@@ -436,10 +526,9 @@ export default function ExhibitorEdit() {
     if (!isValidEmail(exhibitorEmail)) return setFormError("Primary Email is invalid"), false;
 
     if (!companyName.trim()) return setFormError("Company Name is required"), false;
+    if (!businessTypeId) return setFormError("Business Type is required"), false;
 
-    if (!industryId) return setFormError("Industry is required"), false;
     if (!categoryId) return setFormError("Category is required"), false;
-    if (!subcategoryId) return setFormError("Subcategory is required"), false;
 
     if (!stateId) return setFormError("State is required"), false;
     if (!cityId) return setFormError("City is required"), false;
@@ -480,7 +569,7 @@ export default function ExhibitorEdit() {
         primary_contact_mobile: exhibitorMobile.trim(),
         primary_contact_email: exhibitorEmail.trim(),
         primary_contact_designation: exhibitorDesignation.trim(),
-
+        iBusinessType: businessTypeId ? Number(businessTypeId) : null,
         company_name: companyName.trim(),
         industry_id: Number(industryId),
         category_id: Number(categoryId),
@@ -690,6 +779,30 @@ export default function ExhibitorEdit() {
               placeholder="Enter address"
             />
           </div>
+          {/* ✅ Business Type */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Business Type <span className="text-red-600">*</span>
+            </label>
+
+            <select
+              value={businessTypeId}
+              onChange={(e) => setBusinessTypeId(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+              disabled={loadingBusinessTypes}
+            >
+              <option value="">
+                {loadingBusinessTypes ? "Loading..." : "Select Business Type"}
+              </option>
+
+              {businessTypeOptions.map((bt) => (
+                <option key={bt.id} value={String(bt.id)}>
+                  {bt.strBusinessType}
+                </option>
+              ))}
+            </select>
+          </div>
+
 
           {/* ✅ Industry (ID wise selected from SHOW) */}
           <div>

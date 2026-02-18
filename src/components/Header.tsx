@@ -130,6 +130,7 @@ export default function Header() {
                   { to: "/admin/users", label: "User" },
                   { to: "/admin/category", label: "Category" },
                   { to: "/admin/subcategory", label: "Subcategory" },
+                  { to: "/admin/buissness-type", label: "Business Type" },
                   { to: "/admin/department", label: "Department" },
                   { to: "/admin/visitor-category", label: "Visitor Category" }
                 ].map((m) => (

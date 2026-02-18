@@ -98,6 +98,12 @@ function pickStateId(s: ApiState) {
 function pickStateName(s: ApiState) {
     return String(s?.name ?? s?.stateName ?? s?.statename ?? "");
 }
+// ✅ Business Type API shape
+type BusinessType = {
+    id: number;
+    strBusinessType: string;
+};
+
 
 /** ✅ Solution: normalize SHOW response */
 function normalizeShowResponse(res: any, expoIdFallback: number) {
@@ -130,6 +136,7 @@ function normalizeShowResponse(res: any, expoIdFallback: number) {
 
         stateId: String(data?.state_id || ""),
         cityId: String(data?.city_id || ""),
+        businessTypeId: String(data?.iBusinessType ?? data?.business_type_id ?? data?.businessTypeId ?? ""),
 
         // expo related - from expo_details first
         industryId: String(expoRow?.industry_id ?? data?.industry_id ?? ""),
@@ -206,12 +213,50 @@ export default function ExpectedExhibitorEdit() {
     const pendingCityIdRef = useRef<string>("");
     const pendingCategoryIdRef = useRef<string>("");
     const pendingSubcategoryIdRef = useRef<string>("");
+    // ✅ Business Type dropdown
+    const [businessTypeId, setBusinessTypeId] = useState<string>("");
+    const [businessTypeOptions, setBusinessTypeOptions] = useState<BusinessType[]>([]);
+    const [loadingBusinessTypes, setLoadingBusinessTypes] = useState(false);
+
+    // ✅ pending (SHOW -> apply after list load)
+    const pendingBusinessTypeIdRef = useRef<string>("");
 
     const userId = useMemo(() => {
         const v = localStorage.getItem("User_Id");
         const n = Number(v || 0);
         return Number.isFinite(n) && n > 0 ? n : 0;
     }, []);
+    const fetchBusinessTypes = async () => {
+        try {
+            setLoadingBusinessTypes(true);
+
+            const res = await axios.post(
+                `${apiUrl}/business-types/index`,
+                {},
+                { headers: { ...authHeaders() } }
+            );
+
+            if (res.data?.success) {
+                const list = (res.data?.data || []) as BusinessType[];
+                setBusinessTypeOptions(list);
+
+                // ✅ apply pending selection
+                const pending = pendingBusinessTypeIdRef.current;
+                if (pending && list.some((x) => String(x.id) === String(pending))) {
+                    setBusinessTypeId(String(pending));
+                    pendingBusinessTypeIdRef.current = "";
+                }
+            } else {
+                toast.error(res.data?.message || "Failed to load business types");
+                setBusinessTypeOptions([]);
+            }
+        } catch (err: any) {
+            toast.error(getApiErrorMessage(err, "Failed to load business types"));
+            setBusinessTypeOptions([]);
+        } finally {
+            setLoadingBusinessTypes(false);
+        }
+    };
 
     /** -------------------- API: SHOW (fill all fields) -------------------- */
     const fetchExhibitorShow = async (id: number) => {
@@ -228,6 +273,16 @@ export default function ExpectedExhibitorEdit() {
             }
 
             const m = normalizeShowResponse(res, expoIdFromState);
+            // ✅ Business Type (SHOW -> set by id)
+            if (m.businessTypeId) {
+                if (businessTypeOptions.some((x) => String(x.id) === String(m.businessTypeId))) {
+                    setBusinessTypeId(String(m.businessTypeId));
+                } else {
+                    pendingBusinessTypeIdRef.current = String(m.businessTypeId);
+                }
+            } else {
+                setBusinessTypeId("");
+            }
 
             // expo name/slug
             setExpo_Name(m.expo_name);
@@ -428,6 +483,7 @@ export default function ExpectedExhibitorEdit() {
     useEffect(() => {
         fetchStates();
         fetchIndustries();
+        fetchBusinessTypes();
 
         const idNum = Number(routeId || 0);
         if (idNum) fetchExhibitorShow(idNum);
@@ -479,22 +535,12 @@ export default function ExpectedExhibitorEdit() {
 
         if (!industryId) return setFormError("Industry is required"), false;
         if (!categoryId) return setFormError("Category is required"), false;
-        if (!subcategoryId) return setFormError("Subcategory is required"), false;
 
         if (!stateId) return setFormError("State is required"), false;
         if (!cityId) return setFormError("City is required"), false;
+        if (!businessTypeId) return setFormError("Business Type is required"), false;
 
-        const nonEmpty = contacts.filter(
-            (c) => c.mobile.trim() || c.name.trim() || c.designation.trim() || c.email.trim()
-        );
-        for (let i = 0; i < nonEmpty.length; i++) {
-            const c = nonEmpty[i];
-            const label = `Contact #${i + 1}`;
-            if (!isValidMobile(c.mobile)) return setFormError(`${label}: Mobile must be 10 digits`), false;
-            if (!c.name.trim()) return setFormError(`${label}: Name is required`), false;
-            if (!isValidEmail(c.email)) return setFormError(`${label}: Email is invalid`), false;
-        }
-
+       
 
 
         return true;
@@ -538,6 +584,7 @@ export default function ExpectedExhibitorEdit() {
                 state_id: Number(stateId),
                 city_id: Number(cityId),
                 address: address.trim(),
+                iBusinessType: businessTypeId ? Number(businessTypeId) : null,
 
                 // expo related
                 industry_id: Number(industryId),
@@ -602,7 +649,121 @@ export default function ExpectedExhibitorEdit() {
             {!!formError && (
                 <div className="p-3 rounded-lg bg-red-50 text-red-700 border border-red-200">{formError}</div>
             )}
+            <div className="bg-white p-6 rounded-xl shadow-md border">
+             
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {/* ✅ Industry */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            Industry <span className="text-red-600">*</span>
+                        </label>
+                        <select
+                            value={industryId}
+                            onChange={(e) => {
+                                const v = e.target.value;
 
+                                pendingCategoryIdRef.current = "";
+                                pendingSubcategoryIdRef.current = "";
+                                setCategoryId("");
+                                setSubcategoryId("");
+                                setCategoryOptions([]);
+                                setSubcategoryOptions([]);
+                                setIndustryId(v);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+                            disabled={loadingIndustry}
+                        >
+                            <option value="">{loadingIndustry ? "Loading..." : "Select Industry"}</option>
+                            {industryOptions.map((x) => (
+                                <option key={x.id} value={x.id}>
+                                    {x.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    {/* ✅ Business Type */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            Business Type <span className="text-red-600">*</span>
+                        </label>
+
+                        <select
+                            value={businessTypeId}
+                            onChange={(e) => setBusinessTypeId(e.target.value)}
+                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+                            disabled={loadingBusinessTypes}
+                        >
+                            <option value="">
+                                {loadingBusinessTypes ? "Loading..." : "Select Business Type"}
+                            </option>
+
+                            {businessTypeOptions.map((bt) => (
+                                <option key={bt.id} value={String(bt.id)}>
+                                    {bt.strBusinessType}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* ✅ Category */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            Category <span className="text-red-600">*</span>
+                        </label>
+                        <select
+                            value={categoryId}
+                            onChange={(e) => {
+                                const v = e.target.value;
+                                pendingSubcategoryIdRef.current = "";
+                                setSubcategoryId("");
+                                setSubcategoryOptions([]);
+                                setCategoryId(v);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+                            disabled={!industryId || loadingCategory}
+                        >
+                            <option value="">
+                                {!industryId
+                                    ? "Select Industry first"
+                                    : loadingCategory
+                                        ? "Loading..."
+                                        : "Select Category"}
+                            </option>
+                            {categoryOptions.map((x) => (
+                                <option key={x.id} value={x.id}>
+                                    {x.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* ✅ Subcategory */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            Subcategory
+                        </label>
+                        <select
+                            value={subcategoryId}
+                            onChange={(e) => setSubcategoryId(e.target.value)}
+                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+                            disabled={!categoryId || loadingSubcategory}
+                        >
+                            <option value="">
+                                {!categoryId
+                                    ? "Select Category first"
+                                    : loadingSubcategory
+                                        ? "Loading..."
+                                        : "Select Subcategory"}
+                            </option>
+                            {subcategoryOptions.map((x) => (
+                                <option key={x.id} value={x.id}>
+                                    {x.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+            </div>
             {/* ✅ 1) Primary Contact */}
             <div className="bg-white p-6 rounded-xl shadow-md border">
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">Primary Contact</h2>
@@ -746,93 +907,7 @@ export default function ExpectedExhibitorEdit() {
                         />
                     </div>
 
-                    {/* ✅ Industry */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Industry <span className="text-red-600">*</span>
-                        </label>
-                        <select
-                            value={industryId}
-                            onChange={(e) => {
-                                const v = e.target.value;
 
-                                pendingCategoryIdRef.current = "";
-                                pendingSubcategoryIdRef.current = "";
-                                setCategoryId("");
-                                setSubcategoryId("");
-                                setCategoryOptions([]);
-                                setSubcategoryOptions([]);
-                                setIndustryId(v);
-                            }}
-                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
-                            disabled={loadingIndustry}
-                        >
-                            <option value="">{loadingIndustry ? "Loading..." : "Select Industry"}</option>
-                            {industryOptions.map((x) => (
-                                <option key={x.id} value={x.id}>
-                                    {x.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* ✅ Category */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Category <span className="text-red-600">*</span>
-                        </label>
-                        <select
-                            value={categoryId}
-                            onChange={(e) => {
-                                const v = e.target.value;
-                                pendingSubcategoryIdRef.current = "";
-                                setSubcategoryId("");
-                                setSubcategoryOptions([]);
-                                setCategoryId(v);
-                            }}
-                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
-                            disabled={!industryId || loadingCategory}
-                        >
-                            <option value="">
-                                {!industryId
-                                    ? "Select Industry first"
-                                    : loadingCategory
-                                        ? "Loading..."
-                                        : "Select Category"}
-                            </option>
-                            {categoryOptions.map((x) => (
-                                <option key={x.id} value={x.id}>
-                                    {x.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* ✅ Subcategory */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Subcategory <span className="text-red-600">*</span>
-                        </label>
-                        <select
-                            value={subcategoryId}
-                            onChange={(e) => setSubcategoryId(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
-                            disabled={!categoryId || loadingSubcategory}
-                        >
-                            <option value="">
-                                {!categoryId
-                                    ? "Select Category first"
-                                    : loadingSubcategory
-                                        ? "Loading..."
-                                        : "Select Subcategory"}
-                            </option>
-                            {subcategoryOptions.map((x) => (
-                                <option key={x.id} value={x.id}>
-                                    {x.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
                 </div>
             </div>
 

@@ -76,6 +76,11 @@ type ApiCity = {
     name: string;
     stateid: number;
 };
+// Business Type API shape
+type BusinessType = {
+    id: number;
+    strBusinessType: string;
+};
 
 export default function AddExhivitor() {
     const userId = String(localStorage.getItem("User_Id") || "");
@@ -132,6 +137,14 @@ export default function AddExhivitor() {
     const pendingCategoryIdRef = useRef<string>("");
     const pendingSubcategoryIdRef = useRef<string>("");
 
+    // inside component states
+    const [businessTypeId, setBusinessTypeId] = useState<string>("");
+    const [businessTypeOptions, setBusinessTypeOptions] = useState<BusinessType[]>([]);
+    const [loadingBusinessTypes, setLoadingBusinessTypes] = useState(false);
+
+    // pending (for auto-fill from search)
+    const pendingBusinessTypeIdRef = useRef<string>("");
+
     const addContactCard = () => {
         setContacts((prev) => [
             ...prev,
@@ -153,6 +166,38 @@ export default function AddExhivitor() {
     function pickStateName(s: ApiState) {
         return String(s?.name ?? s?.stateName ?? s?.statename ?? "");
     }
+    const fetchBusinessTypes = async () => {
+        try {
+            setLoadingBusinessTypes(true);
+
+            const res = await axios.post(
+                `${apiUrl}/business-types/index`,
+                {},
+                { headers: { ...authHeaders() } }
+            );
+
+            if (res.data?.success) {
+                const list = res.data?.data || [];
+                setBusinessTypeOptions(list);
+
+                // ✅ apply pending from search response (if any)
+                const pending = pendingBusinessTypeIdRef.current;
+                if (pending && list.some((x: any) => String(x.id) === String(pending))) {
+                    setBusinessTypeId(String(pending));
+                    pendingBusinessTypeIdRef.current = "";
+                }
+            } else {
+                toast.error(res.data?.message || "Failed to load business types");
+                setBusinessTypeOptions([]);
+            }
+        } catch (e: any) {
+            toast.error(e?.response?.data?.message || "Failed to load business types");
+            setBusinessTypeOptions([]);
+        } finally {
+            setLoadingBusinessTypes(false);
+        }
+    };
+
 
     /** ---------------- API CALLS ---------------- */
     const fetchStates = async () => {
@@ -343,6 +388,17 @@ export default function AddExhivitor() {
                 setStateId("");
                 setCityId("");
             }
+            const bt = String(company.iBusinessType ?? company.business_type_id ?? "");
+            if (bt) {
+                // if list already loaded
+                if (businessTypeOptions.some((x) => String(x.id) === String(bt))) {
+                    setBusinessTypeId(bt);
+                } else {
+                    pendingBusinessTypeIdRef.current = bt; // apply after fetchBusinessTypes loads
+                }
+            } else {
+                setBusinessTypeId("");
+            }
 
             const ind = String(company.industry_id || "");
             const cat = String(company.category_id || "");
@@ -402,6 +458,8 @@ export default function AddExhivitor() {
         pendingCityIdRef.current = "";
         pendingCategoryIdRef.current = "";
         pendingSubcategoryIdRef.current = "";
+        setBusinessTypeId("");
+        pendingBusinessTypeIdRef.current = "";
 
         // ✅ reset update ids
         setPrimaryContactDbId(null);
@@ -420,14 +478,6 @@ export default function AddExhivitor() {
         setStateId("");
         setCityId("");
         setCities([]);
-
-        // ✅ industry dropdowns
-        setIndustryId("");
-        setCategoryId("");
-        setSubcategoryId("");
-        setCategoryOptions([]);
-        setSubcategoryOptions([]);
-
         // ✅ other contacts
         setContacts([{ id: newId(), db_id: null, mobile: "", name: "", designation: "", email: "" }]);
     };
@@ -470,6 +520,7 @@ export default function AddExhivitor() {
     useEffect(() => {
         fetchStates();
         fetchIndustries();
+        fetchBusinessTypes()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -528,6 +579,7 @@ export default function AddExhivitor() {
         if (!isValidEmail(exhibitorEmail)) return toast.error("Exhibitor Email is invalid"), false;
 
         if (!companyName.trim()) return toast.error("Company Name is required"), false;
+        if (!businessTypeId) return toast.error("Business Type is required"), false;
 
         if (!industryId) return toast.error("Industry is required"), false;
         if (!categoryId) return toast.error("Category is required"), false;
@@ -575,6 +627,7 @@ export default function AddExhivitor() {
                 industry_id: industryId ? Number(industryId) : null,
                 category_id: categoryId ? Number(categoryId) : null,
                 subcategory_id: subcategoryId ? Number(subcategoryId) : null,
+                iBusinessType: businessTypeId ? Number(businessTypeId) : null,
 
                 gst: gst.trim(),
                 state_id: stateId ? Number(stateId) : null,
@@ -640,7 +693,7 @@ export default function AddExhivitor() {
                 </div>
             </div>
             <div className="bg-white p-6 rounded-xl shadow-md border">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label className="block text-sm font-medium mb-1">
                             Industry <span className="text-red-600">*</span>
@@ -655,6 +708,29 @@ export default function AddExhivitor() {
                             {industryOptions.map((x) => (
                                 <option key={x.id} value={x.id}>
                                     {x.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    {/* ✅ Business Type */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            Business Type <span className="text-red-600">*</span>
+                        </label>
+
+                        <select
+                            value={businessTypeId}
+                            onChange={(e) => setBusinessTypeId(e.target.value)}
+                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+                            disabled={loadingBusinessTypes}
+                        >
+                            <option value="">
+                                {loadingBusinessTypes ? "Loading..." : "Select Business Type"}
+                            </option>
+
+                            {businessTypeOptions.map((bt) => (
+                                <option key={bt.id} value={String(bt.id)}>
+                                    {bt.strBusinessType}
                                 </option>
                             ))}
                         </select>

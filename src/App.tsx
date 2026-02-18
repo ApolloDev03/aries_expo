@@ -38,6 +38,7 @@ import VisitorCategoryMaster from "./pages/visitor-category/page";
 import ExpectedExhivitor from "./pages/add-exhibitor/ExpectedExhibitor";
 import ExpectedExhibitorListDesign from "./pages/add-exhibitor/ExpectedExhibitorList";
 import ExpectedExhibitorEdit from "./pages/add-exhibitor/EditExpectedExhibitor";
+import BusinessTypeMaster from "./pages/buissness-type/page";
 
 
 
@@ -118,6 +119,7 @@ export default function App() {
             <Route path="report" element={<VisitorReportPage />} />;
             <Route path="visitor-category" element={<VisitorCategoryMaster />} />
             <Route path="form2" element={<DummyAdminPage />} />
+            <Route path="buissness-type" element={<BusinessTypeMaster />} />
 
           </Route>
         </Routes>

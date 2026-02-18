@@ -207,7 +207,7 @@ export default function UploadVisitor() {
   // Download Sample (CSV for Excel/WPS)
   // ---------------------------
   const downloadSample = () => {
-    const header = ["Name", "Mobile", "Email", "Company", "State", "City", "Visitor Category"];
+    const header = ["Name", "Mobile", "Email", "Company", "Address", "State", "City", "Visitor Category"];
     const csv = `${header.join(",")}\n`;
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
