@@ -2,6 +2,8 @@ import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { apiUrl } from "../config";
+import { Link } from "react-router-dom";
+
 /** ---------------- helpers ---------------- */
 function authHeaders() {
     const token = localStorage.getItem("usertoken");
@@ -104,7 +106,7 @@ export default function Dashboard() {
     const cards = useMemo(() => {
         const d = data;
         return [
-            { label: "Total Visitors", value: n(d?.total_visitors), border: "border-orange-500" },
+            { label: "Total Visitors", value: n(d?.total_visitors), border: "border-orange-500", link: "adminuservisits" },
             { label: "Today Visitors", value: n(d?.today_visitors), border: "border-blue-500" },
             { label: "Today Exhibitors", value: n(d?.today_exhibitors), border: "border-green-500" },
             { label: "Total Exhibitors", value: n(d?.total_exhibitors), border: "border-[#6567A4]" },
@@ -127,12 +129,24 @@ export default function Dashboard() {
 
             {/* TOP CARDS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {cards.map((c) => (
-                    <div key={c.label} className={`bg-white rounded-xl p-6 shadow border-l-4 ${c.border}`}>
-                        <h2 className="text-sm text-gray-500">{c.label}</h2>
-                        <p className="text-3xl font-bold text-gray-800 mt-2">{c.value}</p>
-                    </div>
-                ))}
+                {cards.map((c) => {
+                    const CardBox = (
+                        <div
+                            className={`bg-white rounded-xl p-6 shadow border-l-4 ${c.border} cursor-pointer hover:shadow-md transition`}
+                        >
+                            <h2 className="text-sm text-gray-500">{c.label}</h2>
+                            <p className="text-3xl font-bold text-gray-800 mt-2">{c.value}</p>
+                        </div>
+                    );
+
+                    return c.link ? (
+                        <Link key={c.label} to={c.link} className="block">
+                            {CardBox}
+                        </Link>
+                    ) : (
+                        <div key={c.label}>{CardBox}</div>
+                    );
+                })}
             </div>
 
             {/* TABLE SECTION */}

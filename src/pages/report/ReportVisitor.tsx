@@ -26,7 +26,9 @@ type VisitorRow = {
     // ✅ NEW (for listing)
     visitor_category_id?: number | string | null;
     visitor_category_name?: string | null;
-    
+    created_at: string;
+    enter_by: string;
+
 };
 
 function getToken() {
@@ -526,6 +528,8 @@ export default function VisitorReportPage() {
                                 <th className="p-3 border-b">State</th>
                                 <th className="p-3 border-b">City</th>
                                 <th className="p-3 border-b">Visitor Category</th>
+                                <th className="p-3 border-b">Entry Date</th>
+                                <th className="p-3 border-b">Entry By</th>
                             </tr>
                         </thead>
 
@@ -556,6 +560,8 @@ export default function VisitorReportPage() {
                                                 categoryNameById.get(String(r.visitor_category_id ?? "")) ||
                                                 "-"}
                                         </td>
+                                        <td className="p-3 border-b">{r.created_at || "-"}</td>
+                                        <td className="p-3 border-b">{r.enter_by || "-"}</td>
                                     </tr>
                                 ))
                             )}

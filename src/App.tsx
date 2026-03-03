@@ -39,6 +39,8 @@ import ExpectedExhivitor from "./pages/add-exhibitor/ExpectedExhibitor";
 import ExpectedExhibitorListDesign from "./pages/add-exhibitor/ExpectedExhibitorList";
 import ExpectedExhibitorEdit from "./pages/add-exhibitor/EditExpectedExhibitor";
 import BusinessTypeMaster from "./pages/buissness-type/page";
+import AdminUserVisits from "./pages/adminuservisits/AdminUserVisits";
+import AdminExhibitorReports from "./pages/report/ReportExhibitor";
 
 
 
@@ -94,6 +96,7 @@ export default function App() {
           >
             {/* DASHBOARD */}
             <Route index element={<Dashboard />} />
+            <Route path="adminuservisits" element={<AdminUserVisits />} />
 
             {/* CITY ROUTES */}
             <Route path="city" element={<CityList />} />
@@ -107,20 +110,18 @@ export default function App() {
 
             <Route path="profile" element={<AdminProfile />} />
             <Route path="edit-profile" element={<EditProfile />} />
-
-
-            {/* USERS ROUTES */}
             <Route path="users" element={<UserList />} />
             <Route path="users/assign/:id" element={<UserForm />} />
             <Route path="users/edit/:id" element={<UserForm />} />;
             <Route path="category" element={<CategoryMaster />} />
             <Route path="subcategory" element={<SubCategoryMaster />} />
             <Route path="users" element={<UserList />} />
-            <Route path="report" element={<VisitorReportPage />} />;
+            <Route path="report/visitor" element={<VisitorReportPage />} />;
+            <Route path="report/exhibitor" element={<AdminExhibitorReports />} />;
             <Route path="visitor-category" element={<VisitorCategoryMaster />} />
             <Route path="form2" element={<DummyAdminPage />} />
             <Route path="buissness-type" element={<BusinessTypeMaster />} />
-
+            {/* <Route path="adminuservisits" element={<AdminUserVisits />} /> */}
           </Route>
         </Routes>
         <ToastContainer

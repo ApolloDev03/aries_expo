@@ -458,7 +458,6 @@ export default function AddExhivitor() {
         pendingCityIdRef.current = "";
         pendingCategoryIdRef.current = "";
         pendingSubcategoryIdRef.current = "";
-        setBusinessTypeId("");
         pendingBusinessTypeIdRef.current = "";
 
         // ✅ reset update ids
