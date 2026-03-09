@@ -41,6 +41,8 @@ import ExpectedExhibitorEdit from "./pages/add-exhibitor/EditExpectedExhibitor";
 import BusinessTypeMaster from "./pages/buissness-type/page";
 import AdminUserVisits from "./pages/adminuservisits/AdminUserVisits";
 import AdminExhibitorReports from "./pages/report/ReportExhibitor";
+import StateMaster from "./pages/state/Statelist";
+import UploadExhibitor from "./pages/upload-exhibitor/uploadExhibitor";
 
 
 
@@ -76,6 +78,7 @@ export default function App() {
             <Route path="profile" element={<UserProfile />} />
             <Route path="edit-profile" element={<EditUserProfile />} />
             <Route path="upload-visitor" element={<UploadVisitor />} />
+            <Route path="upload-Exhibitors" element={<UploadExhibitor />} />
             <Route path="add-exhivitor/:slug" element={<AddExhivitor />} />
             <Route path="expectedexhibitor" element={<ExpectedExhivitor />} />
 
@@ -97,7 +100,7 @@ export default function App() {
             {/* DASHBOARD */}
             <Route index element={<Dashboard />} />
             <Route path="adminuservisits" element={<AdminUserVisits />} />
-
+            <Route path="state" element={<StateMaster />} />
             {/* CITY ROUTES */}
             <Route path="city" element={<CityList />} />
 

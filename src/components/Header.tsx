@@ -350,6 +350,7 @@ export default function Header() {
             {openMaster && (
               <div className="absolute top-7 left-0 bg-white shadow-lg border rounded-md w-48 py-2 z-50">
                 {[
+                  { to: "/admin/state", label: "State" },
                   { to: "/admin/city", label: "City" },
                   { to: "/admin/industry", label: "Industry" },
                   { to: "/admin/expo", label: "Expo" },
