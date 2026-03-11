@@ -1293,7 +1293,7 @@ export default function VisitorListingPage() {
                                     <td colSpan={tableColumns.length} className="p-8 text-center">
                                         <div className="flex items-center justify-center gap-3 text-gray-500">
                                             <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
-                                            <span>Loading...</span>
+
                                         </div>
                                     </td>
                                 </tr>
