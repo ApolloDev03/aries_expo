@@ -39,10 +39,12 @@ import ExpectedExhivitor from "./pages/add-exhibitor/ExpectedExhibitor";
 import ExpectedExhibitorListDesign from "./pages/add-exhibitor/ExpectedExhibitorList";
 import ExpectedExhibitorEdit from "./pages/add-exhibitor/EditExpectedExhibitor";
 import BusinessTypeMaster from "./pages/buissness-type/page";
-import AdminUserVisits from "./pages/adminuservisits/AdminUserVisits";
+import AdminUserVisits from "./pages/adminuserlist/AdminUserVisits";
 import AdminExhibitorReports from "./pages/report/ReportExhibitor";
 import StateMaster from "./pages/state/Statelist";
 import UploadExhibitor from "./pages/upload-exhibitor/uploadExhibitor";
+import VisitorListingPage from "./pages/adminuserlist/VisitorListingPage";
+import UserWiseCountPage from "./pages/adminuserlist/UserWiseCountPage";
 
 
 
@@ -124,6 +126,8 @@ export default function App() {
             <Route path="visitor-category" element={<VisitorCategoryMaster />} />
             <Route path="form2" element={<DummyAdminPage />} />
             <Route path="buissness-type" element={<BusinessTypeMaster />} />
+            <Route path="/admin/visitor-listing/:type" element={<VisitorListingPage />} />
+            <Route path="/admin/user-wise/:type" element={<UserWiseCountPage />} />
             {/* <Route path="adminuservisits" element={<AdminUserVisits />} /> */}
           </Route>
         </Routes>
