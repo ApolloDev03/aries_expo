@@ -73,6 +73,7 @@ export default function VisitorReportPage() {
 
     // so page change calls API ONLY after first search click
     const hasSearchedRef = useRef(false);
+    const [searchText, setSearchText] = useState("");
 
     // ✅ helper: clear old result (fix "previous data stays")
     const resetResults = () => {
@@ -222,14 +223,14 @@ export default function VisitorReportPage() {
             industry_id: industryId || "",
             Is_Pre,
             Is_Visit,
-
-            // ✅ IMPORTANT: send selected visitor_category_id
             visitor_category_id: visitorCategoryId ? String(visitorCategoryId) : "0",
+
+            // ✅ send search text to API
+            textSearch: searchText.trim(),
 
             page: pageNo,
         };
     };
-
     // -------------------- Search list (calls API) --------------------
     const handleSearch = async (pageNo = 1) => {
         if (!industryId) {
@@ -480,42 +481,57 @@ export default function VisitorReportPage() {
                 </div>
 
                 {/* Summary */}
-                <div className=" px-6 pb-4 text-sm text-gray-600 flex justify-end gap-2 items-center">
-                    <div className="text-white bg-[#2e56a6] px-5 py-2 rounded-lg shadow">
-                        Count: <span className="font-semibold">{count}</span>
-                    </div>
-
-                    <div>
-                        <button
-                            onClick={() => {
-                                hasSearchedRef.current = true;
-
-                                // ✅ avoid double API call
-                                if (page !== 1) {
-                                    setPage(1);
-                                } else {
-                                    handleSearch(1);
-                                }
+                <div className=" px-6 pb-4 text-sm text-gray-600 flex justify-between gap-2 items-center">
+                    <div className="mb-4">
+                        <input
+                            type="text"
+                            value={searchText}
+                            onChange={(e) => {
+                                setSearchText(e.target.value);
+                                onAnyFilterChangeReset();
                             }}
-                            disabled={isSearching}
-                            className="w-full px-6 py-2 bg-[#2e56a6] disabled:bg-gray-400 text-white font-medium rounded-lg hover:bg-blue-700 transition"
-                        >
-                            {isSearching ? "Searching..." : "Search"}
-                        </button>
+                            placeholder="Search by name, mobile, company, visitor category"
+                            className="w-full md:w-96 rounded-lg border border-gray-300 bg-white px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        />
                     </div>
+                    <div className="px-6 pb-4 text-sm text-gray-600 flex justify-end gap-2 items-center">
+                        <div className="text-white bg-[#2e56a6] px-5 py-2 rounded-lg shadow">
+                            Count: <span className="font-semibold">{count}</span>
+                        </div>
 
-                    <div>
-                        <button
-                            onClick={handleExport}
-                            className="w-full px-6 py-2 bg-green-600 disabled:bg-gray-400 text-white font-medium rounded-lg hover:bg-green-700 transition"
-                        >
-                            Export Excel
-                        </button>
+                        <div>
+                            <button
+                                onClick={() => {
+                                    hasSearchedRef.current = true;
+
+                                    // ✅ avoid double API call
+                                    if (page !== 1) {
+                                        setPage(1);
+                                    } else {
+                                        handleSearch(1);
+                                    }
+                                }}
+                                disabled={isSearching}
+                                className="w-full px-6 py-2 bg-[#2e56a6] disabled:bg-gray-400 text-white font-medium rounded-lg hover:bg-blue-700 transition"
+                            >
+                                {isSearching ? "Searching..." : "Search"}
+                            </button>
+                        </div>
+
+                        <div>
+                            <button
+                                onClick={handleExport}
+                                className="w-full px-6 py-2 bg-green-600 disabled:bg-gray-400 text-white font-medium rounded-lg hover:bg-green-700 transition"
+                            >
+                                Export Excel
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 {/* ✅ Table (Visitor Category column added) */}
                 <div className="px-6 pb-6 overflow-x-auto">
+
                     <table className="min-w-full border rounded-xl overflow-hidden">
                         <thead className="bg-gray-50">
                             <tr className="text-left text-sm text-gray-700">
@@ -554,7 +570,6 @@ export default function VisitorReportPage() {
                                         <td className="p-3 border-b">{r.state_name || "-"}</td>
                                         <td className="p-3 border-b">{r.city_name || "-"}</td>
 
-                                        {/* ✅ Show category name from API OR fallback mapping */}
                                         <td className="p-3 border-b">
                                             {r.visitor_category_name ||
                                                 categoryNameById.get(String(r.visitor_category_id ?? "")) ||
