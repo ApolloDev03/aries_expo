@@ -359,7 +359,8 @@ export default function VisitorList() {
     }
   };
 
-
+  const capitalize = (val: any) =>
+    val ? String(val).toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : "-";
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
@@ -407,17 +408,27 @@ export default function VisitorList() {
                   <td className="p-2 border text-center font-medium">
                     {index + 1}
                   </td>
-                  <td className="p-2 border">{v.mobile}</td>
-                  <td className="p-2 border">{v.company}</td>
-                  <td className="p-2 border">{v.name}</td>
-                  <td className="p-2 border">{v.email}</td>
-                  <td className="p-2 border">{v.stateName || "-"}</td>
-                  <td className="p-2 border">{v.cityName || "-"}</td>
+                  <td className="p-2 border">{v.mobile || "-"}</td>
+
+                  <td className="p-2 border">{capitalize(v.company)}</td>
+
+                  <td className="p-2 border">{capitalize(v.name)}</td>
+
+                  <td className="p-2 border">
+                    {(v.email || "-").toLowerCase()}
+                  </td>
+
+                  <td className="p-2 border">{capitalize(v.stateName)}</td>
+
+                  <td className="p-2 border">{capitalize(v.cityName)}</td>
 
                   {/* ✅ NEW */}
-                  <td className="p-2 border">{v.visitorCategoryName || "-"}</td>
+                  <td className="p-2 border">
+                    {capitalize(v.visitorCategoryName)}
+                  </td>
 
-                  <td className="p-2 border">{v.address || "-"}</td>
+                  <td className="p-2 border">{capitalize(v.address)}</td>
+                  
                   <td className="p-2 border">
                     {v.created_at
                       ? new Date(v.created_at).toLocaleDateString("en-GB")

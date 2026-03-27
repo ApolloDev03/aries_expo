@@ -922,7 +922,8 @@ export default function ExpectedExhibitorReportPage() {
             setIsExporting(false);
         }
     };
-
+    const capitalize = (val: any) =>
+        val ? String(val).toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : "-";
     return (
         <div className="p-6">
             <div className="w-full bg-white rounded-2xl shadow-xl">
@@ -1109,21 +1110,21 @@ export default function ExpectedExhibitorReportPage() {
                                 rows.map((r, idx) => (
                                     <tr key={r.id} className="text-sm hover:bg-gray-50">
                                         <td className="p-3 border-b">{idx + 1}</td>
-                                        <td className="p-3 border-b">{r.company_name || "-"}</td>
-                                        <td className="p-3 border-b">{r.primary_contact_name || "-"}</td>
-                                        <td className="p-3 border-b">{r.primary_contact_mobile || "-"}</td>
+                                        <td className="p-3 border-b">{capitalize(r.company_name || "-")}</td>
+                                        <td className="p-3 border-b">{capitalize(r.primary_contact_name || "-")}</td>
+                                        <td className="p-3 border-b">{capitalize(r.primary_contact_mobile || "-")}</td>
                                         <td className="p-3 border-b">{r.primary_contact_email || "-"}</td>
-                                        <td className="p-3 border-b">{r.primary_contact_designation || "-"}</td>
+                                        <td className="p-3 border-b">{capitalize(r.primary_contact_designation || "-")}</td>
                                         <td className="p-3 border-b">{r.gst || "-"}</td>
-                                        <td className="p-3 border-b">{r.address || "-"}</td>
-                                        <td className="p-3 border-b">{r.state_name || "-"}</td>
-                                        <td className="p-3 border-b">{r.city_name || "-"}</td>
-                                        <td className="p-3 border-b">{r.industry || "-"}</td>
-                                        <td className="p-3 border-b">{r.businessType || "-"}</td>
-                                        <td className="p-3 border-b">{r.industry_category || "-"}</td>
-                                        <td className="p-3 border-b">{r.industry_subcategory || "-"}</td>
+                                        <td className="p-3 border-b">{capitalize(r.address || "-")}</td>
+                                        <td className="p-3 border-b">{capitalize(r.state_name || "-")}</td>
+                                        <td className="p-3 border-b">{capitalize(r.city_name || "-")}</td>
+                                        <td className="p-3 border-b">{capitalize(r.industry || "-")}</td>
+                                        <td className="p-3 border-b">{capitalize(r.businessType || "-")}</td>
+                                        <td className="p-3 border-b">{capitalize(r.industry_category || "-")}</td>
+                                        <td className="p-3 border-b">{capitalize(r.industry_subcategory || "-")}</td>
                                         <td className="p-3 border-b">{r.created_at || "-"}</td>
-                                        <td className="p-3 border-b">{r.enter_by || "-"}</td>
+                                        <td className="p-3 border-b">{capitalize(r.enter_by || "-")}</td>
                                     </tr>
                                 ))
                             )}

@@ -45,6 +45,7 @@ import StateMaster from "./pages/state/Statelist";
 import UploadExhibitor from "./pages/upload-exhibitor/uploadExhibitor";
 import VisitorListingPage from "./pages/adminuserlist/VisitorListingPage";
 import UserWiseCountPage from "./pages/adminuserlist/UserWiseCountPage";
+import LeadManagement from "./pages/mycall/LeadManagement";
 
 
 
@@ -88,6 +89,7 @@ export default function App() {
             <Route path="/users/exhibitor/edit/:id" element={<ExhibitorEditDesign />} />
             <Route path="/users/expectedexhibitors-list/:label" element={<ExpectedExhibitorListDesign />} />
             <Route path="/users/expectedexhibitor/edit/:id" element={<ExpectedExhibitorEdit />} />
+            <Route path="mycall" element={<LeadManagement />} />
           </Route>
 
           {/* admin */}
