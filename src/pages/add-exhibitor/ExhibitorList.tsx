@@ -1095,6 +1095,9 @@ export default function ExhibitorListDesign() {
         });
     }, [rows, search]);
 
+    const capitalize = (val: any) =>
+        val ? String(val).toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : "-";
+
     return (
         <div className="p-6">
             {/* Header */}
@@ -1135,13 +1138,13 @@ export default function ExhibitorListDesign() {
                         {filtered.map((r, index) => (
                             <tr key={r.id} className="hover:bg-gray-50">
                                 <td className="p-2 border text-center font-medium">{index + 1}</td>
-                                <td className="p-2 border">{r.companyName}</td>
-                                <td className="p-2 border">{r.contactPerson}</td>
-                                <td className="p-2 border">{r.cityName}</td>
-                                <td className="p-2 border">{r.stateName}</td>
-                                <td className="p-2 border">{r.industry}</td>
-                                <td className="p-2 border">{r.category}</td>
-                                <td className="p-2 border">{r.subcategory}</td>
+                                <td className="p-2 border">{capitalize(r.companyName)}</td>
+                                <td className="p-2 border">{capitalize(r.contactPerson)}</td>
+                                <td className="p-2 border">{capitalize(r.cityName)}</td>
+                                <td className="p-2 border">{capitalize(r.stateName)}</td>
+                                <td className="p-2 border">{capitalize(r.industry)}</td>
+                                <td className="p-2 border">{capitalize(r.category)}</td>
+                                <td className="p-2 border">{capitalize(r.subcategory)}</td>
 
                                 <td className="p-2 border text-center">
                                     <button
@@ -1223,7 +1226,7 @@ export default function ExhibitorListDesign() {
                                     {deleteError}
                                 </div>
                             ) : (
-                              ""
+                                ""
                             )}
 
                             <div className="flex items-center justify-end gap-2">

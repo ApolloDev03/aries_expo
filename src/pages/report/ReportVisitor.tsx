@@ -361,7 +361,8 @@ export default function VisitorReportPage() {
             toast.error(e?.response?.data?.message || "Error exporting excel");
         }
     };
-
+    const capitalize = (val: any) =>
+        val ? String(val).toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : "-";
     return (
         <div className="p-6">
             <div className="w-full bg-white rounded-2xl shadow-xl">
@@ -562,13 +563,13 @@ export default function VisitorReportPage() {
                                         <td className="p-3 border-b">
                                             {(page - 1) * perPage + idx + 1}
                                         </td>
-                                        <td className="p-3 border-b">{r.name || "-"}</td>
+                                        <td className="p-3 border-b">{capitalize(r.name)}</td>
                                         <td className="p-3 border-b">{r.mobileno || "-"}</td>
                                         <td className="p-3 border-b">{r.email || "-"}</td>
-                                        <td className="p-3 border-b">{r.companyname || "-"}</td>
-                                        <td className="p-3 border-b">{r.address || "-"}</td>
-                                        <td className="p-3 border-b">{r.state_name || "-"}</td>
-                                        <td className="p-3 border-b">{r.city_name || "-"}</td>
+                                        <td className="p-3 border-b">{capitalize(r.companyname || "-")}</td>
+                                        <td className="p-3 border-b">{capitalize(r.address || "-")}</td>
+                                        <td className="p-3 border-b">{capitalize(r.state_name || "-")}</td>
+                                        <td className="p-3 border-b">{capitalize(r.city_name || "-")}</td>
 
                                         <td className="p-3 border-b">
                                             {r.visitor_category_name ||
