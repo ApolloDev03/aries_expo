@@ -98,14 +98,51 @@ export default function VisitorReportPage() {
     }, [visitorCategories]);
 
     // -------------------- Fetch visitor categories --------------------
-    const fetchVisitorCategories = async () => {
+    // const fetchVisitorCategories = async () => {
+    //     try {
+    //         setIsVisitorCategoryLoading(true);
+    //         const token = getToken();
+
+    //         const res = await axios.post(
+    //             VISITOR_CATEGORY_API,
+    //             {},
+    //             {
+    //                 headers: {
+    //                     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    //                     "Content-Type": "application/json",
+    //                 },
+    //             }
+    //         );
+
+    //         if (res.data?.status) {
+    //             const list: ApiVisitorCategory[] = res.data?.data || [];
+    //             const mapped: VisitorCategoryItem[] = list.map((x) => ({
+    //                 id: Number(x.id),
+    //                 name: String(x.strVisitorCategory),
+    //             }));
+    //             setVisitorCategories(mapped);
+    //         } else {
+    //             setVisitorCategories([]);
+    //             toast.error(res.data?.message || "Failed to fetch visitor categories");
+    //         }
+    //     } catch (e) {
+    //         console.error(e);
+    //         setVisitorCategories([]);
+    //         toast.error("Error fetching visitor categories");
+    //     } finally {
+    //         setIsVisitorCategoryLoading(false);
+    //     }
+    // };
+    const fetchVisitorCategories = async (id?: string) => {
         try {
             setIsVisitorCategoryLoading(true);
             const token = getToken();
 
             const res = await axios.post(
                 VISITOR_CATEGORY_API,
-                {},
+                {
+                    industry_id: id || industryId || "",
+                },
                 {
                     headers: {
                         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -123,17 +160,18 @@ export default function VisitorReportPage() {
                 setVisitorCategories(mapped);
             } else {
                 setVisitorCategories([]);
+                setVisitorCategoryId("0");
                 toast.error(res.data?.message || "Failed to fetch visitor categories");
             }
         } catch (e) {
             console.error(e);
             setVisitorCategories([]);
+            setVisitorCategoryId("0");
             toast.error("Error fetching visitor categories");
         } finally {
             setIsVisitorCategoryLoading(false);
         }
     };
-
     // -------------------- Fetch industries --------------------
     const fetchIndustries = async () => {
         try {
@@ -205,12 +243,15 @@ export default function VisitorReportPage() {
     useEffect(() => {
         setExpoId("");
         setExpos([]);
+        setVisitorCategoryId("0");
+        setVisitorCategories([]);
 
-        // ✅ clear old results when Industry changes
         onAnyFilterChangeReset();
 
-        if (industryId) fetchExpos(industryId);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        if (industryId) {
+            fetchExpos(industryId);
+            fetchVisitorCategories(industryId);
+        }
     }, [industryId]);
 
     // -------------------- Build payload (MATCH YOUR API) --------------------

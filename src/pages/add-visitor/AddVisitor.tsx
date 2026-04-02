@@ -70,6 +70,7 @@ export default function AddVisitor() {
   const [visitorCategories, setVisitorCategories] = useState<VisitorCategoryItem[]>([]);
   const [visitorCategoryId, setVisitorCategoryId] = useState<string>("0");
   const [loadingVisitorCategory, setLoadingVisitorCategory] = useState(false);
+  const [pincode, setPincode] = useState("");
 
   const focusMobile = () => requestAnimationFrame(() => mobileRef.current?.focus());
   const focusCompany = () => requestAnimationFrame(() => companyRef.current?.focus());
@@ -259,7 +260,7 @@ export default function AddVisitor() {
       setLoadingVisitorCategory(true);
 
       const res = await axios.post(
-        `https://rsw-laravel.ariesevents.in/api/visitor-category/index`,
+        `${apiUrl}/visitor-category/index`,
         {}
       );
 
@@ -301,6 +302,7 @@ export default function AddVisitor() {
         userid: String(userId),
         address: address,
         visitor_category_id: Number(visitorCategoryId || "0"),
+        pincode: pincode,
       };
 
       // ✅ if exists → call by-mobile (your update flow), else → call Add
@@ -490,6 +492,24 @@ export default function AddVisitor() {
 
             </div>
             <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Pincode
+                </label>
+
+                <input
+                  type="text"
+                  value={pincode}
+                  maxLength={6}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (/^\d*$/.test(v)) setPincode(v);
+                  }}
+                  placeholder="Enter pincode"
+                  className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+                  disabled={loadingMobile}
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium mb-1">
                   Visitor Category

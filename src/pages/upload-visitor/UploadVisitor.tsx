@@ -10,7 +10,13 @@ type VisitorType = "pre_register" | "industry" | "visited_visitor" | "";
 type IndustryItem = { id: number; name: string };
 type ExpoItem = { expoid: number; exponame: string };
 
-type UploadStats = { total_rows: number; imported: number; skipped: number };
+type UploadStats = {
+    total_rows: number;
+    new?: number;
+    duplicate?: number;
+    imported: number;
+    skipped: number;
+};
 
 function getToken() {
     return localStorage.getItem("usertoken");
@@ -65,9 +71,7 @@ export default function UploadVisitor() {
         setShowAllErrors(false);
     };
 
-    // ---------------------------
-    // Fetch Industry List
-    // ---------------------------
+
     const fetchIndustries = async () => {
         try {
             setIsIndustryLoading(true);
@@ -98,9 +102,7 @@ export default function UploadVisitor() {
         fetchIndustries();
     }, []);
 
-    // ---------------------------
-    // Fetch Expos by Industry
-    // ---------------------------
+
     const fetchExposByIndustry = async (id: string) => {
         if (!id) {
             setExpos([]);
@@ -159,9 +161,7 @@ export default function UploadVisitor() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [type]);
 
-    // ---------------------------
-    // Handlers
-    // ---------------------------
+
     const handleTypeChange = (v: VisitorType) => {
         setType(v);
         clearUploadResult(); // ✅ hide errors when type changes
@@ -173,9 +173,7 @@ export default function UploadVisitor() {
         clearUploadResult(); // ✅ hide errors when industry changes
     };
 
-    // ---------------------------
-    // File handler (Excel only)
-    // ---------------------------
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
         if (!selectedFile) return;
@@ -203,9 +201,7 @@ export default function UploadVisitor() {
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
-    // ---------------------------
-    // Download Sample (CSV for Excel/WPS)
-    // ---------------------------
+
     const downloadSample = () => {
         const header = ["Name", "Mobile", "Email", "Company", "Address", "State", "City", "Visitor Category"];
         const csv = `${header.join(",")}\n`;
@@ -224,6 +220,81 @@ export default function UploadVisitor() {
     // ---------------------------
     // Upload Excel
     // ---------------------------
+    // const handleUpload = async () => {
+    //     if (!file) return toast.error("Please select an Excel file");
+    //     if (!type) return toast.error("Please select Type");
+    //     if (!industryId) return toast.error("Please select Industry");
+    //     if (showExpo && !expoId) return toast.error("Please select Expo");
+
+    //     const user_id = getUserId();
+    //     const user_name = getUserName();
+    //     if (!user_id || !user_name) {
+    //         toast.error("User info not found. Please login again.");
+    //         return;
+    //     }
+
+    //     try {
+    //         setIsUploading(true);
+
+    //         // ✅ reset last result before uploading
+    //         clearUploadResult();
+
+    //         const token = getToken();
+    //         const apiType = type === "visited_visitor" ? "visited" : type;
+
+    //         const form = new FormData();
+    //         form.append("type", apiType);
+    //         form.append("industry_id", industryId);
+    //         form.append("user_id", user_id);
+    //         form.append("user_name", user_name);
+    //         if (apiType === "visited" || apiType === "pre_register") {
+    //             form.append("expo_id", expoId);
+    //         }
+    //         form.append("file", file);
+
+    //         const res = await axios.post(UPLOAD_API, form, {
+    //             headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    //         });
+
+    //         if (res.data?.success) {
+    //             toast.success(res.data?.message || "Visitor Excel uploaded successfully");
+    //             resetFileInput();
+
+    //             // ✅ clear UI errors on success (and show stats/message if you want)
+    //             setUploadErrors([]);
+    //             setUploadStats(res.data?.stats || null);
+    //             setUploadMessage(res.data?.message || "");
+    //         } else {
+    //             // ✅ show errors in UI (red box)
+    //             const msg = res.data?.message || "Upload failed";
+    //             const errs: string[] = Array.isArray(res.data?.errors) ? res.data.errors : [];
+    //             setUploadMessage(msg);
+    //             setUploadErrors(errs);
+    //             setUploadStats(res.data?.stats || null);
+
+    //             toast.error(msg);
+    //         }
+    //     } catch (err: any) {
+    //         console.error(err);
+
+    //         const msg =
+    //             err?.response?.data?.message ||
+    //             err?.response?.data?.error ||
+    //             "Upload failed";
+
+    //         const errs: string[] = Array.isArray(err?.response?.data?.errors)
+    //             ? err.response.data.errors
+    //             : [];
+
+    //         setUploadMessage(msg);
+    //         setUploadErrors(errs);
+    //         setUploadStats(err?.response?.data?.stats || null);
+
+    //         toast.error(msg);
+    //     } finally {
+    //         setIsUploading(false);
+    //     }
+    // };
     const handleUpload = async () => {
         if (!file) return toast.error("Please select an Excel file");
         if (!type) return toast.error("Please select Type");
@@ -239,8 +310,6 @@ export default function UploadVisitor() {
 
         try {
             setIsUploading(true);
-
-            // ✅ reset last result before uploading
             clearUploadResult();
 
             const token = getToken();
@@ -263,18 +332,27 @@ export default function UploadVisitor() {
             if (res.data?.success) {
                 toast.success(res.data?.message || "Visitor Excel uploaded successfully");
                 resetFileInput();
-
-                // ✅ clear UI errors on success (and show stats/message if you want)
                 setUploadErrors([]);
                 setUploadStats(res.data?.stats || null);
                 setUploadMessage(res.data?.message || "");
             } else {
-                // ✅ show errors in UI (red box)
                 const msg = res.data?.message || "Upload failed";
                 const errs: string[] = Array.isArray(res.data?.errors) ? res.data.errors : [];
+                const stats = res.data?.stats || null;
+
+                const statsErrors: string[] = [];
+
+                if (stats) {
+                    statsErrors.push(`Total rows: ${stats.total_rows ?? 0}`);
+                    statsErrors.push(`New records added: ${stats.new ?? 0}`);
+                    statsErrors.push(`Duplicate records found: ${stats.duplicate ?? 0}`);
+                    statsErrors.push(`Imported records: ${stats.imported ?? 0}`);
+                    statsErrors.push(`Skipped records: ${stats.skipped ?? 0}`);
+                }
+
                 setUploadMessage(msg);
-                setUploadErrors(errs);
-                setUploadStats(res.data?.stats || null);
+                setUploadErrors([...statsErrors, ...errs]);
+                setUploadStats(stats);
 
                 toast.error(msg);
             }
@@ -290,16 +368,27 @@ export default function UploadVisitor() {
                 ? err.response.data.errors
                 : [];
 
+            const stats = err?.response?.data?.stats || null;
+
+            const statsErrors: string[] = [];
+
+            if (stats) {
+                statsErrors.push(`Total rows: ${stats.total_rows ?? 0}`);
+                statsErrors.push(`New records added: ${stats.new ?? 0}`);
+                statsErrors.push(`Duplicate records found: ${stats.duplicate ?? 0}`);
+                statsErrors.push(`Imported records: ${stats.imported ?? 0}`);
+                statsErrors.push(`Skipped records: ${stats.skipped ?? 0}`);
+            }
+
             setUploadMessage(msg);
-            setUploadErrors(errs);
-            setUploadStats(err?.response?.data?.stats || null);
+            setUploadErrors([...statsErrors, ...errs]);
+            setUploadStats(stats);
 
             toast.error(msg);
         } finally {
             setIsUploading(false);
         }
     };
-
     const selectedIndustryName = useMemo(() => {
         const item = industries.find((x) => String(x.id) === String(industryId));
         return item?.name || "";
@@ -434,8 +523,11 @@ export default function UploadVisitor() {
 
                                 {uploadStats && (
                                     <p className="text-xs text-red-700 mt-1">
-                                        Total: {uploadStats.total_rows} • Imported: {uploadStats.imported} • Skipped:{" "}
-                                        {uploadStats.skipped}
+                                        Total: {uploadStats.total_rows}
+                                        {" • "}New: {uploadStats.new ?? 0}
+                                        {" • "}Duplicate: {uploadStats.duplicate ?? 0}
+                                        {" • "}Imported: {uploadStats.imported}
+                                        {" • "}Skipped: {uploadStats.skipped}
                                     </p>
                                 )}
 

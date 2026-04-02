@@ -350,16 +350,18 @@ export default function Header() {
             {openMaster && (
               <div className="absolute top-7 left-0 bg-white shadow-lg border rounded-md w-48 py-2 z-50">
                 {[
-                  { to: "/admin/state", label: "State" },
-                  { to: "/admin/city", label: "City" },
-                  { to: "/admin/industry", label: "Industry" },
-                  { to: "/admin/expo", label: "Expo" },
-                  { to: "/admin/users", label: "User" },
-                  { to: "/admin/category", label: "Category" },
-                  { to: "/admin/subcategory", label: "Subcategory" },
+
                   { to: "/admin/buissness-type", label: "Business Type" },
+                  { to: "/admin/category", label: "Category" },
+                  { to: "/admin/city", label: "City" },
                   { to: "/admin/department", label: "Department" },
+                  { to: "/admin/expo", label: "Expo" },
+                  { to: "/admin/industry", label: "Industry" },
+                  { to: "/admin/state", label: "State" },
+                  { to: "/admin/subcategory", label: "Subcategory" },
+                  { to: "/admin/users", label: "User" },
                   { to: "/admin/visitor-category", label: "Visitor Category" },
+
                 ].map((m) => (
                   <Link
                     key={m.to}

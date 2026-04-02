@@ -15,6 +15,7 @@ type ApiVisitor = {
   stateName: string;
   cityName: string;
   address: string;
+  pincode?: string;
 
   // ✅ NEW (if your Visitor/show & list returns it)
   visitor_category_id?: number;
@@ -32,7 +33,7 @@ type VisitorRow = {
   stateid?: number;
   cityid?: number;
   address?: string;
-
+  pincode?: string;
   stateName?: string;
   cityName?: string;
 
@@ -105,6 +106,7 @@ export default function VisitorList() {
     stateName: v.stateName,
     cityName: v.cityName,
     address: v.address,
+    pincode: v.pincode ? String(v.pincode) : "",
 
     // ✅ NEW
     visitorCategoryId:
@@ -297,6 +299,7 @@ export default function VisitorList() {
         city_id: String(selectedVisitor.cityid),
         visitorid: String(selectedVisitor.id),
         address: selectedVisitor.address,
+        pincode: selectedVisitor.pincode || "",
 
         // ✅ NEW: visitor category id (optional)
         // if not selected, send 0
@@ -397,6 +400,7 @@ export default function VisitorList() {
                 <th className="p-2 border">Category</th>
 
                 <th className="p-2 border">Address</th>
+                <th className="p-2 border">Pincode</th>
                 <th className="p-2 border">Created At</th>
                 <th className="p-2 border text-center">Action</th>
               </tr>
@@ -428,7 +432,7 @@ export default function VisitorList() {
                   </td>
 
                   <td className="p-2 border">{capitalize(v.address)}</td>
-                  
+                  <td className="p-2 border">{v.pincode || "-"}</td>
                   <td className="p-2 border">
                     {v.created_at
                       ? new Date(v.created_at).toLocaleDateString("en-GB")
