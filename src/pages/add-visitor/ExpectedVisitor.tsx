@@ -78,6 +78,7 @@ export default function ExpectedVisitor() {
   const [lastFetchedMobile, setLastFetchedMobile] = useState<string>("");
 
   const [mobileExists, setMobileExists] = useState(false);
+  const [pincode, setPincode] = useState("");
 
   const mobileRef = useRef<HTMLInputElement | null>(null);
   const companyRef = useRef<HTMLInputElement | null>(null);
@@ -99,6 +100,7 @@ export default function ExpectedVisitor() {
     // ✅ reset industry + category
     setIndustryId("");
     setVisitorCategoryId("0");
+    setVisitorCategories([]);
   };
 
   // ✅ Today expected visitor count API
@@ -183,14 +185,20 @@ export default function ExpectedVisitor() {
     }
   };
 
-  // ✅ Fetch Visitor Category list (LIVE API)
-  const fetchVisitorCategories = async (): Promise<VisitorCategoryItem[]> => {
+  // ✅ Fetch Visitor Category list with industry_id
+  const fetchVisitorCategories = async (
+    selectedIndustryId?: string
+  ): Promise<VisitorCategoryItem[]> => {
     try {
       setLoadingVisitorCategory(true);
 
+      const payload = {
+        industry_id: String(selectedIndustryId || ""),
+      };
+
       const res = await axios.post(
-        `https://rsw-laravel.ariesevents.in/api/visitor-category/index`,
-        {}
+        `${apiUrl}/visitor-category/index`,
+        payload
       );
 
       if (!res.data?.status) {
@@ -266,11 +274,10 @@ export default function ExpectedVisitor() {
       try {
         setLoadingInit(true);
 
-        // ✅ Load states + industries + visitor categories
-        const [stateRes, industryRes, categoryRes] = await Promise.allSettled([
+        // ✅ Load only states + industries on init
+        const [stateRes, industryRes] = await Promise.allSettled([
           fetchAllStates(),
           fetchIndustries(),
-          fetchVisitorCategories(),
         ]);
 
         if (stateRes.status === "fulfilled") setStates(stateRes.value);
@@ -283,12 +290,6 @@ export default function ExpectedVisitor() {
         else {
           setIndustries([]);
           toast.error(industryRes.reason?.message || "Industry fetch failed");
-        }
-
-        if (categoryRes.status === "fulfilled") setVisitorCategories(categoryRes.value);
-        else {
-          setVisitorCategories([]);
-          toast.error(categoryRes.reason?.message || "Visitor category fetch failed");
         }
 
         await fetchTodayVisitorCount();
@@ -306,6 +307,28 @@ export default function ExpectedVisitor() {
     init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ✅ Industry change par visitor category reload
+  useEffect(() => {
+    const loadVisitorCategories = async () => {
+      if (!industryId) {
+        setVisitorCategories([]);
+        setVisitorCategoryId("0");
+        return;
+      }
+
+      try {
+        setVisitorCategoryId("0");
+        const categories = await fetchVisitorCategories(industryId);
+        setVisitorCategories(categories);
+      } catch (err: any) {
+        setVisitorCategories([]);
+        toast.error(err?.message || "Visitor category fetch failed");
+      }
+    };
+
+    loadVisitorCategories();
+  }, [industryId]);
 
   // ✅ Check visitor exists by mobile API
   const checkVisitorByMobile = async (m: string) => {
@@ -357,15 +380,11 @@ export default function ExpectedVisitor() {
         companyname: companyName,
         name,
         email,
-
-        // ✅ existing
         industry_id: String(industryId),
-
-        // ✅ NEW: visitor category id (optional)
         visitor_category_id: Number(visitorCategoryId || "0"),
-
         stateid: String(stateId),
         cityid: String(cityId),
+        pincode: pincode,
         userid: String(userId),
         username: String(username),
         address: address,
@@ -422,7 +441,6 @@ export default function ExpectedVisitor() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
-            {/* ✅ Now 3 columns: Industry + Visitor Category + Mobile */}
             <div className="grid grid-cols-2 gap-4">
               {/* Industry */}
               <div>
@@ -430,7 +448,11 @@ export default function ExpectedVisitor() {
                 <div className="relative">
                   <select
                     value={industryId}
-                    onChange={(e) => setIndustryId(e.target.value)}
+                    onChange={(e) => {
+                      setIndustryId(e.target.value);
+                      setVisitorCategoryId("0");
+                      setVisitorCategories([]);
+                    }}
                     className="w-full border rounded-lg px-3 py-2 pr-10 focus:ring focus:ring-blue-300"
                     disabled={loadingMobile || loadingIndustry}
                   >
@@ -449,8 +471,6 @@ export default function ExpectedVisitor() {
                   )}
                 </div>
               </div>
-
-
 
               {/* Mobile */}
               <div>
@@ -533,6 +553,7 @@ export default function ExpectedVisitor() {
                   disabled={loadingMobile}
                 />
               </div>
+
               {/* ✅ Visitor Category */}
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -543,10 +564,18 @@ export default function ExpectedVisitor() {
                     value={visitorCategoryId}
                     onChange={(e) => setVisitorCategoryId(e.target.value)}
                     className="w-full border rounded-lg px-3 py-2 pr-10 focus:ring focus:ring-blue-300"
-                    disabled={loadingMobile || loadingVisitorCategory}
+                    disabled={
+                      loadingMobile ||
+                      loadingVisitorCategory ||
+                      !industryId
+                    }
                   >
                     <option value="0">
-                      {loadingVisitorCategory ? "Loading categories..." : "Select Category"}
+                      {!industryId
+                        ? "Select Industry First"
+                        : loadingVisitorCategory
+                          ? "Loading categories..."
+                          : "Select Category"}
                     </option>
 
                     {visitorCategories.map((it) => (
@@ -564,7 +593,7 @@ export default function ExpectedVisitor() {
             </div>
 
             {/* State / City / Address */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">State</label>
                 <select
@@ -621,6 +650,21 @@ export default function ExpectedVisitor() {
                   className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300 resize-none"
                   disabled={loadingMobile}
                   placeholder="Enter address"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Pincode</label>
+                <input
+                  type="text"
+                  value={pincode}
+                  maxLength={6}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (/^\d*$/.test(v)) setPincode(v);
+                  }}
+                  className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+                  disabled={loadingMobile}
+                  placeholder="Enter pincode"
                 />
               </div>
             </div>
