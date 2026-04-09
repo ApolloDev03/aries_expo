@@ -45,8 +45,10 @@ import StateMaster from "./pages/state/Statelist";
 import UploadExhibitor from "./pages/upload-exhibitor/uploadExhibitor";
 import VisitorListingPage from "./pages/adminuserlist/VisitorListingPage";
 import UserWiseCountPage from "./pages/adminuserlist/UserWiseCountPage";
+import LeadDashboard from "./pages/mycall/LeadDashboard";
 import LeadManagement from "./pages/mycall/LeadManagement";
-
+import VisitorIndustrys from "./pages/adminuserlist/VisitorIndustrys";
+import OverdueFollowUp from "./pages/mycall/LeadFollowup";
 
 
 export default function App() {
@@ -89,7 +91,9 @@ export default function App() {
             <Route path="/users/exhibitor/edit/:id" element={<ExhibitorEditDesign />} />
             <Route path="/users/expectedexhibitors-list/:label" element={<ExpectedExhibitorListDesign />} />
             <Route path="/users/expectedexhibitor/edit/:id" element={<ExpectedExhibitorEdit />} />
-            <Route path="mycall" element={<LeadManagement />} />
+            <Route path="mycall" element={<LeadDashboard />} />
+            <Route path="followup/:type" element={<OverdueFollowUp />} />
+            <Route path="new-clients" element={<LeadManagement />} />
           </Route>
 
           {/* admin */}
@@ -128,6 +132,7 @@ export default function App() {
             <Route path="visitor-category" element={<VisitorCategoryMaster />} />
             <Route path="form2" element={<DummyAdminPage />} />
             <Route path="buissness-type" element={<BusinessTypeMaster />} />
+            <Route path="/admin/visitor-industryes/:type" element={<VisitorIndustrys />} />
             <Route path="/admin/visitor-listing/:type" element={<VisitorListingPage />} />
             <Route path="/admin/user-wise/:type" element={<UserWiseCountPage />} />
             {/* <Route path="adminuservisits" element={<AdminUserVisits />} /> */}
