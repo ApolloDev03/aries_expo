@@ -77,7 +77,7 @@ export default function AssignedExpoList() {
         <div className="space-y-6">
             {/* TITLE */}
             <h1 className="text-2xl font-bold text-gray-800">
-                Assigned Expo List
+                Assigned Expo List 
             </h1>
 
             {/* CARD */}

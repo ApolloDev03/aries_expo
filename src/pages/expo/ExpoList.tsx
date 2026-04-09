@@ -31,7 +31,7 @@ interface ExpoListRow {
   date?: string;
   venue?: string;
   no_of_stall?: string | number;
-  total_sq_meter?: string | number;
+  total_sq_meters?: string | number;
 }
 
 interface ExpoEditRow {
@@ -43,7 +43,7 @@ interface ExpoEditRow {
   date?: string;
   venue?: string;
   no_of_stall?: string | number;
-  total_sq_meter?: string | number;
+  total_sq_meters?: string | number;
 }
 
 export default function ExpoMaster() {
@@ -82,7 +82,7 @@ export default function ExpoMaster() {
     date: "",
     venue: "",
     no_of_stall: "",
-    total_sq_meter: "",
+    total_sq_meters: "",
   });
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -310,7 +310,7 @@ export default function ExpoMaster() {
           expo_date: apiDateList,
           venue: venue,
           no_of_stall: noOfStall,
-          total_sq_meter: totalSqMeter,
+          total_sq_meters: totalSqMeter,
         }
       );
 
@@ -362,7 +362,7 @@ export default function ExpoMaster() {
         date: normalizeDateForUI(rawDate),
         venue: row.venue ?? "",
         no_of_stall: row.no_of_stall ?? "",
-        total_sq_meter: row.total_sq_meter ?? "",
+        total_sq_meters: row.total_sq_meters ?? "",
       });
 
       setIsEditOpen(true);
@@ -383,7 +383,7 @@ export default function ExpoMaster() {
       !editData.date ||
       !editData.venue ||
       !editData.no_of_stall ||
-      !editData.total_sq_meter
+      !editData.total_sq_meters
     ) {
       return toast.error("Please fill all fields");
     }
@@ -404,7 +404,7 @@ export default function ExpoMaster() {
           expo_date: apiDateList,
           venue: editData.venue,
           no_of_stall: String(editData.no_of_stall),
-          total_sq_meter: String(editData.total_sq_meter),
+          total_sq_meters: String(editData.total_sq_meters),
         }
       );
 
@@ -471,7 +471,7 @@ export default function ExpoMaster() {
         (item.date || "").toLowerCase().includes(search) ||
         (item.venue || "").toLowerCase().includes(search) ||
         String(item.no_of_stall || "").toLowerCase().includes(search) ||
-        String(item.total_sq_meter || "").toLowerCase().includes(search)
+        String(item.total_sq_meters || "").toLowerCase().includes(search)
       );
     });
   }, [expoList, searchExpo]);
@@ -673,7 +673,7 @@ export default function ExpoMaster() {
                     <td className="p-1">{item.date ? item.date : "-"}</td>
                     <td className="p-1">{item.venue || "-"}</td>
                     <td className="p-1">{item.no_of_stall || "-"}</td>
-                    <td className="p-1">{item.total_sq_meter || "-"}</td>
+                    <td className="p-1">{item.total_sq_meters || "-"}</td>
 
                     <td className="p-1 flex gap-3">
                       <button
@@ -888,10 +888,10 @@ export default function ExpoMaster() {
             <label className="font-medium">Total Sq. Meter</label>
             <input
               type="number"
-              value={String(editData.total_sq_meter ?? "")}
+              value={String(editData.total_sq_meters ?? "")}
               disabled={isUpdating}
               onChange={(e) =>
-                setEditData({ ...editData, total_sq_meter: e.target.value })
+                setEditData({ ...editData, total_sq_meters: e.target.value })
               }
               className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
             />

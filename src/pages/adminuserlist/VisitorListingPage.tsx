@@ -528,7 +528,10 @@
 //     const [industryCategories, setIndustryCategories] = useState<IndustryCategoryRow[]>([]);
 //     const [subCategories, setSubCategories] = useState<IndustrySubcategoryRow[]>([]);
 //     const [businessTypes, setBusinessTypes] = useState<BusinessTypeRow[]>([]);
+
 //     const [isExpoLoading, setIsExpoLoading] = useState(false);
+//     const [isCategoryLoading, setIsCategoryLoading] = useState(false);
+//     const [isSubcategoryLoading, setIsSubcategoryLoading] = useState(false);
 
 //     const [filters, setFilters] = useState<FilterState>({
 //         industry_id: "",
@@ -563,6 +566,7 @@
 //             [key]: value,
 //             ...(key === "industry_id"
 //                 ? {
+//                     expo_id: "",
 //                     visitor_category_id: "",
 //                     category_id: "",
 //                     subcategory_id: "",
@@ -575,6 +579,7 @@
 //                 : {}),
 //         }));
 //     };
+
 //     const fetchIndustries = async () => {
 //         try {
 //             setIsListing(true);
@@ -613,9 +618,7 @@
 
 //             const res = await axios.post(
 //                 `${apiUrl}/Industrywise/Expo`,
-//                 {
-//                     industry_id,
-//                 },
+//                 { industry_id },
 //                 { headers: authHeaders() }
 //             );
 
@@ -641,17 +644,7 @@
 //             setIsExpoLoading(false);
 //         }
 //     };
-//     useEffect(() => {
-//         setExpoList([]);
-//         setFilters((prev) => ({
-//             ...prev,
-//             expo_id: "",
-//         }));
 
-//         if (filters.industry_id) {
-//             fetchExpoList(filters.industry_id);
-//         }
-//     }, [filters.industry_id]);
 //     const fetchVisitorCategories = async (industry_id: string = "") => {
 //         try {
 //             setIsListing(true);
@@ -680,65 +673,108 @@
 //             setIsListing(false);
 //         }
 //     };
-//     useEffect(() => {
-//         setVisitorCategories([]);
-//         setFilters((prev) => ({
-//             ...prev,
-//             visitor_category_id: "",
-//         }));
 
-//         if (filters.industry_id) {
-//             fetchVisitorCategories(filters.industry_id);
-//         } else {
-//             fetchVisitorCategories("");
+//     const fetchIndustryCategories = async (industry_id: string = "") => {
+//         if (!industry_id) {
+//             setIndustryCategories([]);
+//             setFilters((prev) => ({
+//                 ...prev,
+//                 category_id: "",
+//                 subcategory_id: "",
+//             }));
+//             return;
 //         }
-//     }, [filters.industry_id]);
-//     const fetchIndustryCategories = async () => {
+
 //         try {
-//             setIsListing(true);
+//             setIsCategoryLoading(true);
 
 //             const res = await axios.post(
-//                 `${apiUrl}/industry-categories`,
-//                 {},
+//                 `${apiUrl}/industry-subcategories/get-by-industry`,
+//                 { industry_id },
 //                 { headers: authHeaders() }
 //             );
 
-//             if (res.data?.status) {
-//                 setIndustryCategories(res.data.data || []);
-//             } else {
-//                 toast.error(res.data?.message || "Failed to fetch categories");
-//             }
+//             const dataRows = res.data?.data || res.data?.result || [];
+//             const uniqueMap = new Map<string, IndustryCategoryRow>();
+
+//             (Array.isArray(dataRows) ? dataRows : []).forEach((item: any) => {
+//                 const id = String(
+//                     item?.category_id ??
+//                     item?.industry_category_id ??
+//                     item?.id ??
+//                     ""
+//                 );
+
+//                 const name =
+//                     item?.industry_category_name ||
+//                     item?.category_name ||
+//                     item?.name ||
+//                     item?.title ||
+//                     "";
+
+//                 if (id && name && !uniqueMap.has(id)) {
+//                     uniqueMap.set(id, {
+//                         id: Number(id),
+//                         industry_category_name: String(name),
+//                     });
+//                 }
+//             });
+
+//             setIndustryCategories(Array.from(uniqueMap.values()));
 //         } catch (error: any) {
 //             console.error(error);
+//             setIndustryCategories([]);
 //             toast.error(getApiErrorMessage(error, "Error fetching categories"));
 //         } finally {
-//             setIsListing(false);
+//             setIsCategoryLoading(false);
 //         }
 //     };
 
-//     const fetchSubCategories = async (
-//         industry_id: string | number | null = null,
-//         industry_subcategory_name = ""
-//     ) => {
+//     const fetchSubCategories = async (category_id: string | number | null = null) => {
+//         if (!category_id) {
+//             setSubCategories([]);
+//             setFilters((prev) => ({
+//                 ...prev,
+//                 subcategory_id: "",
+//             }));
+//             return;
+//         }
+
 //         try {
-//             setIsListing(true);
+//             setIsSubcategoryLoading(true);
 
 //             const res = await axios.post(
-//                 `${apiUrl}/industry-subcategories`,
-//                 { industry_id, industry_subcategory_name },
+//                 `${apiUrl}/industry-subcategories/get-by-category`,
+//                 { industry_category_id: category_id },
 //                 { headers: authHeaders() }
 //             );
 
-//             if (res.data?.status) {
-//                 setSubCategories(res.data.data || []);
-//             } else {
-//                 toast.error(res.data?.message || "Failed to fetch subcategories");
-//             }
+//             const dataRows = res.data?.data || res.data?.result || [];
+
+//             const list: IndustrySubcategoryRow[] = (Array.isArray(dataRows) ? dataRows : [])
+//                 .map((item: any) => ({
+//                     id: Number(
+//                         item?.id ??
+//                         item?.subcategory_id ??
+//                         item?.industry_subcategory_id ??
+//                         0
+//                     ),
+//                     industry_subcategory_name:
+//                         item?.industry_subcategory_name ||
+//                         item?.subcategory_name ||
+//                         item?.name ||
+//                         item?.title ||
+//                         "",
+//                 }))
+//                 .filter((item) => item.id && item.industry_subcategory_name);
+
+//             setSubCategories(list);
 //         } catch (error: any) {
 //             console.error(error);
+//             setSubCategories([]);
 //             toast.error(getApiErrorMessage(error, "Error fetching subcategories"));
 //         } finally {
-//             setIsListing(false);
+//             setIsSubcategoryLoading(false);
 //         }
 //     };
 
@@ -866,6 +902,9 @@
 //         };
 
 //         setFilters(emptyFilters);
+//         setExpoList([]);
+//         setVisitorCategories([]);
+//         setIndustryCategories([]);
 //         setSubCategories([]);
 //         setCurrentPage(1);
 //         fetchListing(1, emptyFilters);
@@ -873,14 +912,39 @@
 
 //     useEffect(() => {
 //         fetchIndustries();
-//         fetchIndustryCategories();
 //         fetchBusinessTypes();
 //     }, []);
+
 //     useEffect(() => {
+//         setExpoList([]);
+//         setVisitorCategories([]);
+//         setIndustryCategories([]);
+//         setSubCategories([]);
+
+//         setFilters((prev) => ({
+//             ...prev,
+//             expo_id: "",
+//             visitor_category_id: "",
+//             category_id: "",
+//             subcategory_id: "",
+//         }));
+
+//         if (filters.industry_id) {
+//             fetchExpoList(filters.industry_id);
+//             fetchVisitorCategories(filters.industry_id);
+//             fetchIndustryCategories(filters.industry_id);
+//         }
+//     }, [filters.industry_id]);
+
+//     useEffect(() => {
+//         setSubCategories([]);
+//         setFilters((prev) => ({
+//             ...prev,
+//             subcategory_id: "",
+//         }));
+
 //         if (filters.category_id) {
-//             fetchSubCategories(filters.category_id, "");
-//         } else {
-//             setSubCategories([]);
+//             fetchSubCategories(filters.category_id);
 //         }
 //     }, [filters.category_id]);
 
@@ -901,6 +965,9 @@
 //         setTotalRecords(0);
 //         setPerPage(10);
 //         setFilters(emptyFilters);
+//         setExpoList([]);
+//         setVisitorCategories([]);
+//         setIndustryCategories([]);
 //         setSubCategories([]);
 //         fetchListing(1, emptyFilters);
 //         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -978,7 +1045,6 @@
 
 //             <div className="rounded-xl bg-white p-4 shadow">
 //                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
-
 //                     <div>
 //                         <label className="mb-1 block text-sm font-medium text-gray-700">
 //                             Industry
@@ -1017,7 +1083,7 @@
 
 //                             {expoList.map((item) => (
 //                                 <option key={item.id} value={item.id}>
-//                                     {item.exponame}
+//                                     {item.exponame || item.name || item.title || `Expo ${item.id}`}
 //                                 </option>
 //                             ))}
 //                         </select>
@@ -1054,9 +1120,16 @@
 //                                 <select
 //                                     value={filters.category_id}
 //                                     onChange={(e) => handleFilterChange("category_id", e.target.value)}
+//                                     disabled={!filters.industry_id || isCategoryLoading}
 //                                     className="w-full rounded-lg border px-3 py-2"
 //                                 >
-//                                     <option value="">All Categories</option>
+//                                     <option value="">
+//                                         {!filters.industry_id
+//                                             ? "Select Industry first"
+//                                             : isCategoryLoading
+//                                                 ? "Loading..."
+//                                                 : "All Categories"}
+//                                     </option>
 //                                     {industryCategories.map((item) => (
 //                                         <option key={item.id} value={item.id}>
 //                                             {item.industry_category_name || item.name || `Category ${item.id}`}
@@ -1072,9 +1145,16 @@
 //                                 <select
 //                                     value={filters.subcategory_id}
 //                                     onChange={(e) => handleFilterChange("subcategory_id", e.target.value)}
+//                                     disabled={!filters.category_id || isSubcategoryLoading}
 //                                     className="w-full rounded-lg border px-3 py-2"
 //                                 >
-//                                     <option value="">All Subcategories</option>
+//                                     <option value="">
+//                                         {!filters.category_id
+//                                             ? "Select Category first"
+//                                             : isSubcategoryLoading
+//                                                 ? "Loading..."
+//                                                 : "All Subcategories"}
+//                                     </option>
 //                                     {subCategories.map((item) => (
 //                                         <option key={item.id} value={item.id}>
 //                                             {item.industry_subcategory_name || item.name || `Subcategory ${item.id}`}
@@ -1120,6 +1200,7 @@
 //                             />
 //                         </div>
 //                     </div>
+
 //                     <div className="mt-4 flex gap-3">
 //                         <button
 //                             onClick={() => handleSearch()}
@@ -1138,7 +1219,6 @@
 //                         </button>
 //                     </div>
 //                 </div>
-
 //             </div>
 
 //             <div className="overflow-hidden rounded-xl bg-white shadow">
@@ -1204,17 +1284,9 @@
 
 //                         <div className="flex flex-wrap items-center gap-2">
 //                             <button
-//                                 onClick={() => handlePageChange(1)}
-//                                 disabled={currentPage === 1}
-//                                 className="rounded-lg border bg-white px-3 py-2 disabled:opacity-50"
-//                             >
-//                                 First
-//                             </button>
-
-//                             <button
 //                                 onClick={() => handlePageChange(currentPage - 1)}
 //                                 disabled={currentPage === 1}
-//                                 className="rounded-lg border bg-white px-3 py-2 disabled:opacity-50"
+//                                 className="rounded-lg border bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
 //                             >
 //                                 Prev
 //                             </button>
@@ -1223,9 +1295,9 @@
 //                                 <button
 //                                     key={page}
 //                                     onClick={() => handlePageChange(page)}
-//                                     className={`rounded-lg border px-3 py-2 ${currentPage === page
-//                                         ? "border-blue-600 bg-blue-600 text-white"
-//                                         : "bg-white text-gray-700"
+//                                     className={`rounded-lg px-3 py-2 text-sm ${currentPage === page
+//                                         ? "bg-blue-600 text-white"
+//                                         : "border bg-white text-gray-700"
 //                                         }`}
 //                                 >
 //                                     {page}
@@ -1235,17 +1307,9 @@
 //                             <button
 //                                 onClick={() => handlePageChange(currentPage + 1)}
 //                                 disabled={currentPage === lastPage}
-//                                 className="rounded-lg border bg-white px-3 py-2 disabled:opacity-50"
+//                                 className="rounded-lg border bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
 //                             >
 //                                 Next
-//                             </button>
-
-//                             <button
-//                                 onClick={() => handlePageChange(lastPage)}
-//                                 disabled={currentPage === lastPage}
-//                                 className="rounded-lg border bg-white px-3 py-2 disabled:opacity-50"
-//                             >
-//                                 Last
 //                             </button>
 //                         </div>
 //                     </div>
@@ -1257,7 +1321,7 @@
 
 import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import {  useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { apiUrl } from "../../config";
 
@@ -1769,9 +1833,18 @@ function normalizeRows(
 
 export default function VisitorListingPage() {
     const { type } = useParams<{ type: string }>();
+    const location = useLocation();
+    const navigate = useNavigate();
+    const selectedIndustryId = location.state?.selectedIndustryId
+        ? String(location.state.selectedIndustryId)
+        : "";
+
+    const selectedIndustryName = location.state?.selectedIndustryName || "";
+    const lockIndustryFromState = Boolean(location.state?.lockIndustry);
 
     const [loading, setLoading] = useState(false);
-    const [isListing, setIsListing] = useState(false);
+    // const [isListing, setIsListing] = useState(false);
+    const [isIndustryLocked, setIsIndustryLocked] = useState(false);
 
     const [rows, setRows] = useState<ListingItem[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -1839,7 +1912,7 @@ export default function VisitorListingPage() {
 
     const fetchIndustries = async () => {
         try {
-            setIsListing(true);
+            // setIsListing(true);
 
             const res = await axios.post(
                 `${apiUrl}/IndustryList`,
@@ -1856,7 +1929,7 @@ export default function VisitorListingPage() {
             console.error(error);
             toast.error("Error fetching industries");
         } finally {
-            setIsListing(false);
+            // setIsListing(false);
         }
     };
 
@@ -1904,7 +1977,7 @@ export default function VisitorListingPage() {
 
     const fetchVisitorCategories = async (industry_id: string = "") => {
         try {
-            setIsListing(true);
+            // setIsListing(true);
 
             const res = await axios.post(
                 `${apiUrl}/visitor-category/index`,
@@ -1927,7 +2000,7 @@ export default function VisitorListingPage() {
             setFilters((prev) => ({ ...prev, visitor_category_id: "" }));
             toast.error(getApiErrorMessage(error, "Error fetching visitor categories"));
         } finally {
-            setIsListing(false);
+            // setIsListing(false);
         }
     };
 
@@ -2037,7 +2110,7 @@ export default function VisitorListingPage() {
 
     const fetchBusinessTypes = async () => {
         try {
-            setIsListing(true);
+            // setIsListing(true);
 
             const res = await axios.post(
                 `${apiUrl}/business-types/index`,
@@ -2054,7 +2127,7 @@ export default function VisitorListingPage() {
             console.error(error);
             toast.error("Error fetching business types");
         } finally {
-            setIsListing(false);
+            // setIsListing(false);
         }
     };
 
@@ -2158,6 +2231,7 @@ export default function VisitorListingPage() {
             textSearch: "",
         };
 
+        setIsIndustryLocked(false);
         setFilters(emptyFilters);
         setExpoList([]);
         setVisitorCategories([]);
@@ -2170,9 +2244,18 @@ export default function VisitorListingPage() {
     useEffect(() => {
         fetchIndustries();
         fetchBusinessTypes();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
+        if (!filters.industry_id) {
+            setExpoList([]);
+            setVisitorCategories([]);
+            setIndustryCategories([]);
+            setSubCategories([]);
+            return;
+        }
+
         setExpoList([]);
         setVisitorCategories([]);
         setIndustryCategories([]);
@@ -2186,11 +2269,10 @@ export default function VisitorListingPage() {
             subcategory_id: "",
         }));
 
-        if (filters.industry_id) {
-            fetchExpoList(filters.industry_id);
-            fetchVisitorCategories(filters.industry_id);
-            fetchIndustryCategories(filters.industry_id);
-        }
+        fetchExpoList(filters.industry_id);
+        fetchVisitorCategories(filters.industry_id);
+        fetchIndustryCategories(filters.industry_id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filters.industry_id]);
 
     useEffect(() => {
@@ -2203,11 +2285,12 @@ export default function VisitorListingPage() {
         if (filters.category_id) {
             fetchSubCategories(filters.category_id);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filters.category_id]);
 
     useEffect(() => {
-        const emptyFilters: FilterState = {
-            industry_id: "",
+        const initialFilters: FilterState = {
+            industry_id: selectedIndustryId || "",
             expo_id: "",
             visitor_category_id: "",
             category_id: "",
@@ -2221,14 +2304,22 @@ export default function VisitorListingPage() {
         setLastPage(1);
         setTotalRecords(0);
         setPerPage(10);
-        setFilters(emptyFilters);
+        setFilters(initialFilters);
         setExpoList([]);
         setVisitorCategories([]);
         setIndustryCategories([]);
         setSubCategories([]);
-        fetchListing(1, emptyFilters);
+        setIsIndustryLocked(!!selectedIndustryId && lockIndustryFromState);
+
+        if (selectedIndustryId) {
+            fetchExpoList(selectedIndustryId);
+            fetchVisitorCategories(selectedIndustryId);
+            fetchIndustryCategories(selectedIndustryId);
+        }
+
+        fetchListing(1, initialFilters);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [type]);
+    }, [type, selectedIndustryId, lockIndustryFromState]);
 
     const handlePageChange = (page: number) => {
         if (page < 1 || page > lastPage || page === currentPage) return;
@@ -2292,12 +2383,14 @@ export default function VisitorListingPage() {
                     <p className="mt-1 text-sm text-gray-500">Total Records: {totalRecords}</p>
                 </div>
 
-                <Link
-                    to="/admin"
+
+                <button
+                    type="button"
+                    onClick={() => navigate(-1)}
                     className="inline-flex w-fit items-center rounded-lg bg-gray-200 px-4 py-2 text-gray-800 transition hover:bg-gray-300"
                 >
                     Back
-                </Link>
+                </button>
             </div>
 
             <div className="rounded-xl bg-white p-4 shadow">
@@ -2309,15 +2402,24 @@ export default function VisitorListingPage() {
                         <select
                             value={filters.industry_id}
                             onChange={(e) => handleFilterChange("industry_id", e.target.value)}
-                            className="w-full rounded-lg border px-3 py-2"
+                            disabled={isIndustryLocked}
+                            className={`w-full rounded-lg border px-3 py-2 ${isIndustryLocked ? "cursor-not-allowed bg-gray-100" : ""
+                                }`}
                         >
-                            <option value="">All Industries</option>
+                            {!isIndustryLocked && <option value="">All Industries</option>}
+
                             {industries.map((item) => (
                                 <option key={item.id} value={item.id}>
                                     {item.name || `Industry ${item.id}`}
                                 </option>
                             ))}
                         </select>
+
+                        {isIndustryLocked && selectedIndustryName ? (
+                            <p className="mt-1 text-xs text-blue-600">
+                                Selected Industry: {selectedIndustryName}
+                            </p>
+                        ) : null}
                     </div>
 
                     <div>
@@ -2440,135 +2542,130 @@ export default function VisitorListingPage() {
                         </>
                     )}
 
-                    <div className="">
+                    <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
                             Search
                         </label>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                value={filters.textSearch}
-                                onChange={(e) => handleFilterChange("textSearch", e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter") handleSearch();
-                                }}
-                                placeholder="Search here..."
-                                className="w-full rounded-lg border p-2"
-                            />
-                        </div>
+                        <input
+                            type="text"
+                            value={filters.textSearch}
+                            onChange={(e) => handleFilterChange("textSearch", e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    handleSearch();
+                                }
+                            }}
+                            placeholder="Search here..."
+                            className="w-full rounded-lg border px-3 py-2"
+                        />
                     </div>
+                </div>
 
-                    <div className="mt-4 flex gap-3">
-                        <button
-                            onClick={() => handleSearch()}
-                            disabled={loading || isListing}
-                            className="rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700 disabled:opacity-50"
-                        >
-                            Search
-                        </button>
+                <div className="mt-4 flex flex-wrap gap-3">
+                    <button
+                        type="button"
+                        onClick={handleSearch}
+                        className="rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700"
+                    >
+                        Search
+                    </button>
 
-                        <button
-                            onClick={resetFilters}
-                            disabled={loading || isListing}
-                            className="rounded-lg bg-gray-200 px-5 py-2 text-gray-800 transition hover:bg-gray-300 disabled:opacity-50"
-                        >
-                            Reset
-                        </button>
-                    </div>
+                    <button
+                        type="button"
+                        onClick={resetFilters}
+                        className="rounded-lg bg-gray-200 px-5 py-2 text-gray-800 transition hover:bg-gray-300"
+                    >
+                        Reset
+                    </button>
                 </div>
             </div>
 
             <div className="overflow-hidden rounded-xl bg-white shadow">
                 <div className="overflow-x-auto">
-                    <table className="min-w-[1400px] w-full border-collapse">
-                        <thead>
-                            <tr className="bg-gray-100 text-gray-700">
-                                {tableColumns.map((col) => (
+                    <table className="w-full min-w-[900px]">
+                        <thead className="bg-gray-100">
+                            <tr>
+                                {tableColumns.map((column) => (
                                     <th
-                                        key={col.key}
-                                        className="whitespace-nowrap p-3 text-left font-semibold"
+                                        key={column.key}
+                                        className="px-4 py-3 text-left text-sm font-semibold text-gray-700"
                                     >
-                                        {col.label}
+                                        {column.label}
                                     </th>
                                 ))}
                             </tr>
                         </thead>
 
                         <tbody>
-                            {loading && (
-                                <tr>
-                                    <td colSpan={tableColumns.length} className="p-8 text-center">
-                                        <div className="flex items-center justify-center gap-3 text-gray-500">
-                                            <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
-                                        </div>
-                                    </td>
-                                </tr>
-                            )}
-
-                            {!loading && displayRows.length === 0 && (
+                            {loading ? (
                                 <tr>
                                     <td
                                         colSpan={tableColumns.length}
-                                        className="p-8 text-center text-gray-500"
+                                        className="px-4 py-8 text-center text-gray-500"
                                     >
-                                        No records found
+                                        Loading...
                                     </td>
                                 </tr>
-                            )}
-
-                            {!loading &&
-                                displayRows.map((row: Record<string, any>, rowIndex: number) => (
-                                    <tr
-                                        key={`${row.id || row.sr_no || rowIndex}`}
-                                        className="border-b align-top hover:bg-gray-50"
-                                    >
-                                        {tableColumns.map((col) => (
-                                            <td key={col.key} className="whitespace-nowrap p-3">
-                                                {formatCellValue(col.key, row[col.key])}
+                            ) : displayRows.length > 0 ? (
+                                displayRows.map((row: any, rowIndex) => (
+                                    <tr key={rowIndex} className="border-t">
+                                        {tableColumns.map((column) => (
+                                            <td
+                                                key={column.key}
+                                                className="px-4 py-3 align-top text-sm text-gray-700"
+                                            >
+                                                {formatCellValue(column.key, row[column.key])}
                                             </td>
                                         ))}
                                     </tr>
-                                ))}
+                                ))
+                            ) : (
+                                <tr>
+                                    <td
+                                        colSpan={tableColumns.length}
+                                        className="px-4 py-8 text-center text-gray-500"
+                                    >
+                                        No data found
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
 
-                {!loading && totalRecords > 0 && (
-                    <div className="flex flex-col gap-4 border-t bg-gray-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
-                        <div className="text-sm text-gray-600">
-                            Page {currentPage} of {lastPage} | Showing {rows.length} records
-                        </div>
+                {lastPage > 1 && (
+                    <div className="flex flex-wrap items-center justify-center gap-2 border-t p-4">
+                        <button
+                            type="button"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="rounded-lg border px-3 py-1.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            Previous
+                        </button>
 
-                        <div className="flex flex-wrap items-center gap-2">
+                        {pageNumbers.map((page) => (
                             <button
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="rounded-lg border bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                                key={page}
+                                type="button"
+                                onClick={() => handlePageChange(page)}
+                                className={`rounded-lg px-3 py-1.5 text-sm ${currentPage === page
+                                    ? "bg-blue-600 text-white"
+                                    : "border text-gray-700"
+                                    }`}
                             >
-                                Prev
+                                {page}
                             </button>
+                        ))}
 
-                            {pageNumbers.map((page) => (
-                                <button
-                                    key={page}
-                                    onClick={() => handlePageChange(page)}
-                                    className={`rounded-lg px-3 py-2 text-sm ${currentPage === page
-                                            ? "bg-blue-600 text-white"
-                                            : "border bg-white text-gray-700"
-                                        }`}
-                                >
-                                    {page}
-                                </button>
-                            ))}
-
-                            <button
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={currentPage === lastPage}
-                                className="rounded-lg border bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                Next
-                            </button>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === lastPage}
+                            className="rounded-lg border px-3 py-1.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            Next
+                        </button>
                     </div>
                 )}
             </div>
