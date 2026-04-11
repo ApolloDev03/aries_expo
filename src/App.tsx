@@ -49,6 +49,9 @@ import LeadDashboard from "./pages/mycall/LeadDashboard";
 import LeadManagement from "./pages/mycall/LeadManagement";
 import VisitorIndustrys from "./pages/adminuserlist/VisitorIndustrys";
 import OverdueFollowUp from "./pages/mycall/LeadFollowup";
+import RegisterListing from "./pages/mycall/RegisterList";
+import CallingPage from "./pages/allcall/TellingCalling";
+import CallingList from "./pages/allcall/CallingList";
 
 
 export default function App() {
@@ -93,6 +96,7 @@ export default function App() {
             <Route path="/users/expectedexhibitor/edit/:id" element={<ExpectedExhibitorEdit />} />
             <Route path="mycall" element={<LeadDashboard />} />
             <Route path="followup/:type" element={<OverdueFollowUp />} />
+            <Route path="register/:type" element={<RegisterListing />} />
             <Route path="new-clients" element={<LeadManagement />} />
           </Route>
 
@@ -109,6 +113,8 @@ export default function App() {
             <Route index element={<Dashboard />} />
             <Route path="adminuservisits" element={<AdminUserVisits />} />
             <Route path="state" element={<StateMaster />} />
+            <Route path="calling" element={<CallingPage />} />
+            <Route path="calling/:type" element={<CallingList />} />
             {/* CITY ROUTES */}
             <Route path="city" element={<CityList />} />
 

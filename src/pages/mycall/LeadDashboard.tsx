@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Clock, AlertCircle, UserPlus } from "lucide-react";
+import { Clock, AlertCircle, UserPlus, Users, ClipboardList } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../../config";
 
@@ -10,25 +10,23 @@ const LeadDashboard = () => {
   const [dashboardData, setDashboardData] = useState({
     today_followup_count: 0,
     overdue_followup_count: 0,
+    totalRegisterCount: 0,
+    todayRegisterCount: 0,
   });
 
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const userId = localStorage.getItem("User_Id");
-
-  if (!userId) {
-    console.error("User_Id not found in localStorage");
-    setLoading(false);
-    return;
-  }
   const fetchDashboardData = async () => {
+    const userId = localStorage.getItem("User_Id");
+
+    if (!userId) {
+      console.error("User_Id not found in localStorage");
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-
 
       const response = await axios.post(`${apiUrl}/FollowUpDashboard`, {
         user_id: userId,
@@ -38,6 +36,8 @@ const LeadDashboard = () => {
         setDashboardData({
           today_followup_count: response.data?.data?.today_followup_count || 0,
           overdue_followup_count: response.data?.data?.overdue_followup_count || 0,
+          totalRegisterCount: response.data?.data?.totalRegisterCount || 0,
+          todayRegisterCount: response.data?.data?.todayRegisterCount || 0,
         });
       }
     } catch (error) {
@@ -46,6 +46,10 @@ const LeadDashboard = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
   const stats = [
     {
@@ -69,12 +73,26 @@ const LeadDashboard = () => {
       icon: <UserPlus size={20} />,
       path: "/users/new-clients",
     },
+    {
+      label: "Today Register",
+      count: dashboardData.todayRegisterCount,
+      color: "bg-orange-500",
+      icon: <ClipboardList size={20} />,
+      path: "/users/register/Todayregister",
+    },
+    {
+      label: "Total Register",
+      count: dashboardData.totalRegisterCount,
+      color: "bg-purple-500",
+      icon: <Users size={20} />,
+      path: "/users/register/Totalregister",
+    },
   ];
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 lg:p-10 font-sans text-slate-800">
       <div className="max-w-7xl mx-auto space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3  gap-4">
           {stats.map((item, index) => (
             <div
               key={index}
