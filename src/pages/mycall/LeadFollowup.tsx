@@ -437,8 +437,10 @@ const OverdueFollowUp = () => {
                 >
                   <option value="">Select Status</option>
                   <option value="1">Registered</option>
-                  <option value="2">Not Interested</option>
-                  <option value="3">Call Back Later</option>
+                  <option value="2">Wrong Number</option>
+                  <option value="3">Busy Now... Call Back</option>
+                  <option value="4">Business Change</option>
+                  <option value="5">Information Passed</option>
                 </select>
               </div>
 
@@ -454,7 +456,8 @@ const OverdueFollowUp = () => {
                   className="w-full p-4 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-orange-500 outline-none"
                 />
               </div>
-
+              
+              {status === "3" && (
               <div>
                 <label className="text-sm font-bold text-slate-700 block mb-2">
                   Next Follow Up
@@ -468,9 +471,9 @@ const OverdueFollowUp = () => {
                       setShowDateError(false);
                     }
                   }}
-                  disabled={status === "2" || status === "1"}
-                  className={`w-full p-4 rounded-xl border text-sm outline-none ${status === "2" || status === "1"
-                    ? "border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed"
+                  // disabled={status === "2" || status === "1"}
+                  className={`w-full p-4 rounded-xl border text-sm outline-none
+                    ? "border-slate-200 bg-slate-100 text-black cursor-not-allowed"
                     : showDateError
                       ? "border-red-500 bg-white focus:ring-2 focus:ring-red-500"
                       : "border-slate-200 bg-white focus:ring-2 focus:ring-orange-500"
@@ -483,6 +486,7 @@ const OverdueFollowUp = () => {
                   </p>
                 )}
               </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4 pt-4">
                 <button
