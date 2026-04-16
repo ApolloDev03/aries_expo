@@ -67,7 +67,7 @@ const LeadDashboard = () => {
       path: "/users/followup/overduefollowup",
     },
     {
-      label: "New Clients",
+      label: "New Call",
       count: "",
       color: "bg-emerald-500",
       icon: <UserPlus size={20} />,

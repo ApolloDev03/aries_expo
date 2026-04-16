@@ -661,7 +661,7 @@ const LeadManagement = () => {
     expo_id: "",
     industry_id: "",
     visitor_category_id: "",
-    status: "",
+    status: "" as string | number,
     remarks: "",
     next_follow_up: "",
   });
@@ -755,7 +755,7 @@ const LeadManagement = () => {
         ...prev,
         status: value,
         next_follow_up:
-          value === "to-be-call-back" ? prev.next_follow_up || formatDateTimeForInput(new Date()) : "",
+          value === "3" ? prev.next_follow_up || formatDateTimeForInput(new Date()) : "",
       }));
       setShowDateError(false);
       return;
@@ -853,22 +853,22 @@ const LeadManagement = () => {
     }
   };
 
-  const getFollowupStatusValue = (status: string) => {
-    switch (status) {
-      case "wrong-number":
-        return "1";
-      case "business-change":
-        return "2";
-      case "to-be-call-back":
-        return "3";
-      case "register":
-        return "4";
-      case "information-passed":
-        return "5";
-      default:
-        return "";
-    }
-  };
+  // const getFollowupStatusValue = (status: string) => {
+  //   switch (status) {
+  //     case "wrong-number":
+  //       return "1";
+  //     case "business-change":
+  //       return "2";
+  //     case "to-be-call-back":
+  //       return "3";
+  //     case "register":
+  //       return "4";
+  //     case "information-passed":
+  //       return "5";
+  //     default:
+  //       return "";
+  //   }
+  // };
 
   const handleStartNewRecord = async () => {
     await fetchUniqueVisitor();
@@ -885,10 +885,13 @@ const LeadManagement = () => {
       return;
     }
 
-    if (formData.status === "to-be-call-back" && !formData.next_follow_up) {
+    if (Number(formData.status) === 3 && !formData.next_follow_up) {
       setShowDateError(true);
       return;
     }
+
+    console.log("STATUS:", formData.status);
+console.log("NEXT FOLLOW UP:", formData.next_follow_up);
 
     setShowDateError(false);
 
@@ -904,11 +907,11 @@ const LeadManagement = () => {
         expo_id: String(formData.expo_id || 0),
         industry_id: 0,
         visitor_category_id: 0,
-        followup_status: getFollowupStatusValue(formData.status),
+        followup_status: Number(formData.status),
         start_time: formatTimeForApi(startDate),
         end_time: formatTimeForApi(now),
         next_followup_date:
-          formData.status === "to-be-call-back"
+          Number(formData.status) === 3 && formData.next_follow_up
             ? formatDateTimeForApi(formData.next_follow_up)
             : null,
         followup_remark: formData.remarks,
@@ -951,7 +954,7 @@ const LeadManagement = () => {
     <div className="bg-[#f3f4f6] flex items-center justify-center px-4 py-24 text-black font-sans">
       {!showForm ? (
         <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-          <h2 className="text-2xl font-bold text-center mb-6">New Client Setup</h2>
+          <h2 className="text-2xl font-bold text-center mb-6">New Call Setup</h2>
 
           <div className="space-y-5">
             <div>
@@ -1036,11 +1039,11 @@ const LeadManagement = () => {
                 className={inputClass}
               >
                 <option value="">Select Status</option>
-                <option value="wrong-number">Wrong Number</option>
-                <option value="business-change">Business Change</option>
-                <option value="to-be-call-back">Busy Now... Call Back</option>
-                <option value="register">Registered</option>
-                <option value="information-passed">Information Passed</option>
+                <option value="1">Registered</option>
+                <option value="2">Wrong Number</option>
+                <option value="3">Busy Now... Call Back</option>
+                <option value="4">Business Change</option>
+                <option value="5">Information Passed</option>
               </select>
             </div>
 
@@ -1055,7 +1058,7 @@ const LeadManagement = () => {
               />
             </div>
 
-            {formData.status === "to-be-call-back" && (
+            {formData.status === "3" && (
               <div>
                 <label className={labelClass}>Next Follow Up</label>
                 <input
