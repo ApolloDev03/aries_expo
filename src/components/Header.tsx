@@ -173,7 +173,7 @@ export default function Header() {
             )}
           </div>
           <Link className="hover:text-orange-600" to="/admin/calling">
-            Telling calling
+            Telly calling
           </Link>
         </nav>
 
