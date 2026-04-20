@@ -657,9 +657,13 @@ const LeadManagement = () => {
   const [recordStartTime, setRecordStartTime] = useState<Date | null>(null);
   const [showDateError, setShowDateError] = useState(false);
 
+  const [visitorCategories, setVisitorCategories] = useState<any[]>([]);
+  const [states, setStates] = useState<any[]>([]);
+
   const [formData, setFormData] = useState({
     expo_id: "",
     industry_id: "",
+    state_id: "",
     visitor_category_id: "",
     status: "" as string | number,
     remarks: "",
@@ -727,6 +731,40 @@ const LeadManagement = () => {
     fetchAssignedExpoList();
   }, []);
 
+  const fetchVisitorCategoryAndState = async (expoId: string) => {
+    if (!userId || !expoId) return;
+
+    try {
+      const res = await axios.post(
+        `${apiUrl}/Expo_to_industry_get`,
+        {
+          user_id: String(userId),
+          expo_id: String(expoId),
+        }
+      );
+
+      if (res.data?.success) {
+        setVisitorCategories(res.data.data.visitor_category || []);
+        setStates(res.data.data.state || []);
+
+        // set industry_id automatically from API
+        setFormData((prev) => ({
+          ...prev,
+          industry_id: String(res.data.data.industry_id || ""),
+        }));
+      } else {
+        setVisitorCategories([]);
+        setStates([]);
+        toast.error(res.data?.message || "Failed to fetch data");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to fetch visitor category");
+      setVisitorCategories([]);
+      setStates([]);
+    }
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -736,7 +774,12 @@ const LeadManagement = () => {
       setFormData((prev) => ({
         ...prev,
         expo_id: value,
+        visitor_category_id: "",
+        state_id: "",
       }));
+
+      fetchVisitorCategoryAndState(value);
+
       return;
     }
 
@@ -821,8 +864,8 @@ const LeadManagement = () => {
       const payload = {
         user_id: String(userId),
         expo_id: String(formData.expo_id),
-        industry_id: 0,
-        visitor_category_id: 0,
+        industry_id: Number(formData.industry_id || 0),
+        visitor_category_id: Number(formData.visitor_category_id || 0),
       };
 
       const res = await axios.post(`${apiUrl}/Get_unique_visitor`, payload);
@@ -891,7 +934,7 @@ const LeadManagement = () => {
     }
 
     console.log("STATUS:", formData.status);
-console.log("NEXT FOLLOW UP:", formData.next_follow_up);
+    console.log("NEXT FOLLOW UP:", formData.next_follow_up);
 
     setShowDateError(false);
 
@@ -905,8 +948,9 @@ console.log("NEXT FOLLOW UP:", formData.next_follow_up);
         visitor_id: String(currentVisitor.id),
         user_id: String(userId),
         expo_id: String(formData.expo_id || 0),
-        industry_id: 0,
-        visitor_category_id: 0,
+        industry_id: Number(formData.industry_id || 0),
+        visitor_category_id: Number(formData.visitor_category_id || 0),
+        state_id: Number(formData.state_id || 0),
         followup_status: Number(formData.status),
         start_time: formatTimeForApi(startDate),
         end_time: formatTimeForApi(now),
@@ -974,6 +1018,45 @@ console.log("NEXT FOLLOW UP:", formData.next_follow_up);
               </select>
             </div>
 
+            {/* Visitor Category */}
+            <div>
+              <label className={labelClass}>Visitor Category</label>
+              <select
+                name="visitor_category_id"
+                value={formData.visitor_category_id}
+                onChange={handleChange}
+                className={inputClass}
+              >
+                <option value="">Select Category</option>
+                {visitorCategories
+                  // .filter((v) => v.isDelete === 0) 
+                  .map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.strVisitorCategory}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            {/* State */}
+            <div>
+              <label className={labelClass}>State</label>
+              <select
+                name="state_id"
+                value={formData.state_id}
+                onChange={handleChange}
+                className={inputClass}
+              >
+                <option value="">Select State</option>
+                {states.map((state) => (
+                  <option key={state.stateId} value={state.stateId}>
+                    {state.stateName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+
             <button
               onClick={handleStartNewRecord}
               disabled={loadingVisitor}
@@ -991,7 +1074,7 @@ console.log("NEXT FOLLOW UP:", formData.next_follow_up);
         >
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <h2 className="text-2xl sm:text-3xl font-bold">
-              Record 
+              Record
             </h2>
 
             <div className="bg-[#f4e3d8] text-[#8a4d2f] px-4 py-2 rounded-full text-sm font-medium">
@@ -1067,8 +1150,8 @@ console.log("NEXT FOLLOW UP:", formData.next_follow_up);
                   value={formData.next_follow_up}
                   onChange={handleChange}
                   className={`w-full rounded-lg px-4 py-3 outline-none transition ${showDateError
-                      ? "bg-white border border-red-500 focus:ring-2 focus:ring-red-500"
-                      : "bg-white border border-gray-300 focus:ring-2 focus:ring-[#d47d4c] focus:border-[#d47d4c]"
+                    ? "bg-white border border-red-500 focus:ring-2 focus:ring-red-500"
+                    : "bg-white border border-gray-300 focus:ring-2 focus:ring-[#d47d4c] focus:border-[#d47d4c]"
                     }`}
                 />
 
