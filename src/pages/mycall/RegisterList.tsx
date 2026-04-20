@@ -30,7 +30,16 @@ const RegisterListing = () => {
     const { type } = useParams();
 
     const currentType = type || "Todayregister";
-    const isToday = currentType === "Todayregister";
+    const titleMap: Record<string, string> = {
+  Todayregister: "Today Register Listing",
+  Totalregister: "Total Register Listing",
+  TotalWrongNumber: "Total Wrong Number Listing",
+  TodayWrongNumber: "Today Wrong Number Listing",
+  TotalCall: "Total Call Listing",
+  TodayCall: "Today Call Listing",
+};
+
+const pageTitle = titleMap[currentType] || "Listing";
 
     const [loading, setLoading] = useState(true);
     const [registerData, setRegisterData] = useState<{
@@ -103,7 +112,7 @@ const RegisterListing = () => {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900">
-                            {isToday ? "Today Register Listing" : "Total Register Listing"}
+                            {pageTitle}
                         </h1>
                     </div>
 

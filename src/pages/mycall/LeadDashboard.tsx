@@ -12,10 +12,10 @@ const LeadDashboard = () => {
     overdue_followup_count: 0,
     totalRegisterCount: 0,
     todayRegisterCount: 0,
-    today_call_count:0,
-    total_call_count:0,
-    total_wrong_number:0,
-    today_wrong_number:0,
+    today_call_count: 0,
+    total_call_count: 0,
+    total_wrong_number: 0,
+    today_wrong_number: 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -95,34 +95,34 @@ const LeadDashboard = () => {
       icon: <Users size={20} />,
       path: "/users/register/Totalregister",
     },
-  {
-    label: "Total Wrong Number",
-    count: dashboardData.total_wrong_number,
-    color: "bg-pink-500",
-    icon: <PhoneOff size={20} />,
-    path: "/users/register/TotalWrongNumber",
-  },
-  {
-    label: "Today Wrong Number",
-    count: dashboardData.today_wrong_number,
-    color: "bg-yellow-500",
-    icon: <PhoneMissed size={20} />,
-    path: "/users/register/TodayWrongNumber",
-  },
-  {
-    label: "Total Calls",
-    count: dashboardData.total_call_count,
-    color: "bg-indigo-500",
-    icon: <Phone size={20} />,
-    path: "/users/register/TotalCall",
-  },
-  {
-    label: "Today's Call",
-    count: dashboardData.today_call_count,
-    color: "bg-cyan-500",
-    icon: <PhoneCall size={20} />,
-    path: "/users/register/TodayCall",
-  },
+    {
+      label: "Total Wrong Number",
+      count: dashboardData.total_wrong_number,
+      color: "bg-pink-500",
+      icon: <PhoneOff size={20} />,
+      path: "/users/register/TotalWrongNumber",
+    },
+    {
+      label: "Today Wrong Number",
+      count: dashboardData.today_wrong_number,
+      color: "bg-yellow-500",
+      icon: <PhoneMissed size={20} />,
+      path: "/users/register/TodayWrongNumber",
+    },
+    {
+      label: "Total Calls",
+      count: dashboardData.total_call_count,
+      color: "bg-indigo-500",
+      icon: <Phone size={20} />,
+      path: "/users/register/TotalCall",
+    },
+    {
+      label: "Today's Call",
+      count: dashboardData.today_call_count,
+      color: "bg-cyan-500",
+      icon: <PhoneCall size={20} />,
+      path: "/users/register/TodayCall",
+    },
   ];
 
   return (
