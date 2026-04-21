@@ -52,6 +52,7 @@ import OverdueFollowUp from "./pages/mycall/LeadFollowup";
 import RegisterListing from "./pages/mycall/RegisterList";
 import CallingPage from "./pages/allcall/TellingCalling";
 import CallingList from "./pages/allcall/CallingList";
+import CallingReportPage from "./pages/allcall/CallReport";
 
 
 export default function App() {
@@ -114,7 +115,8 @@ export default function App() {
             <Route path="adminuservisits" element={<AdminUserVisits />} />
             <Route path="state" element={<StateMaster />} />
             <Route path="calling" element={<CallingPage />} />
-            <Route path="calling/:type" element={<CallingList />} />
+            <Route path="calling/:type/:subtype" element={<CallingList />} />
+            <Route path="call/report/:type" element={<CallingReportPage />} />
             {/* CITY ROUTES */}
             <Route path="city" element={<CityList />} />
 
