@@ -864,8 +864,9 @@ const LeadManagement = () => {
       const payload = {
         user_id: String(userId),
         expo_id: String(formData.expo_id),
-        industry_id: Number(formData.industry_id || 0),
-        visitor_category_id: Number(formData.visitor_category_id || 0),
+        industry_id: String(formData.industry_id || 0),
+        visitor_category_id: String(formData.visitor_category_id || ""),
+        state: String(formData.state_id || ""),
       };
 
       const res = await axios.post(`${apiUrl}/Get_unique_visitor`, payload);

@@ -1,24 +1,27 @@
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ariesLogo from "../assets/logo.png";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { apiUrl } from "../config";
+
 type User = {
   id: number;
   name: string;
   mobile: string;
   address?: string;
+  Department?: string;
 };
 
 export default function UserHeader() {
   const [openProfile, setOpenProfile] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
-
   const navigate = useNavigate();
+
   const userDetail = JSON.parse(localStorage.getItem("user") || "{}") as User;
 
+  const department = userDetail?.Department?.toLowerCase()?.trim() || "";
+  const isCallingDepartment = department === "calling";
 
   const handleLogout = async () => {
     try {
@@ -27,21 +30,18 @@ export default function UserHeader() {
         localStorage.getItem("user_id") ||
         "";
 
-      // even if api fails, we still clear local keys
       await axios.post(`${apiUrl}/user/logout`, { user_id: userId }).catch(() => { });
 
-      // ✅ remove only specific auth keys
       localStorage.removeItem("usertoken");
       localStorage.removeItem("user");
       localStorage.removeItem("User_Id");
-      localStorage.removeItem("user_id"); // optional if exists in your app
+      localStorage.removeItem("user_id");
 
       toast.success("Logged out successfully");
       navigate("/logout");
     } catch (error) {
       console.error("Logout error:", error);
 
-      // ✅ still clear local keys
       localStorage.removeItem("usertoken");
       localStorage.removeItem("user");
       localStorage.removeItem("User_Id");
@@ -54,12 +54,7 @@ export default function UserHeader() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-
-
-      if (
-        profileRef.current &&
-        !profileRef.current.contains(e.target as Node)
-      ) {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setOpenProfile(false);
       }
     };
@@ -71,39 +66,61 @@ export default function UserHeader() {
   return (
     <header className="flex justify-between items-center px-6 py-4 bg-white shadow">
       {/* LEFT SIDE LOGO */}
-      <Link to="/users">
-        <img src={ariesLogo} className="h-12 cursor-pointer" />
-      </Link>
+      {
+        !isCallingDepartment ?
+          <Link to="/users">
+            <img src={ariesLogo} className="h-12 cursor-pointer" alt="Aries Logo" />
+          </Link>
+          :
+          <Link to="/users/mycall">
+            <img src={ariesLogo} className="h-12 cursor-pointer" alt="Aries Logo" />
+          </Link>
+
+      }
 
       <div className="flex items-center gap-4">
         {/* TOP NAV MENU */}
-        <nav className="flex gap-6 text-sm font-semibold">
-          <Link className="hover:text-orange-600" to="/users">
-            Dashboard
-          </Link>
+        <nav className="flex gap-6 text-sm font-semibold items-center">
+          {isCallingDepartment ? (
+            <>
+              <Link className="hover:text-orange-600" to="/users/new-clients">
+                My Call
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link className="hover:text-orange-600" to="/users">
+                Dashboard
+              </Link>
 
-          <Link className="hover:text-orange-600" to="/users/my-expo">
-            My Expo
-          </Link>
-          <Link className="hover:text-orange-600" to="/users/expectedvisitor">
-            Expected Visitor
-          </Link>
-          <Link className="hover:text-orange-600" to="/users/expectedexhibitor">
-            Expected Exhibitors
-          </Link>
-          <Link className="hover:text-orange-600" to="/users/upload-visitor">
-            Upload Visitor
-          </Link>
-          <Link className="hover:text-orange-600" to="/users/upload-Exhibitors">
-            Upload Exhibitors
-          </Link>
-          <Link className="hover:text-orange-600" to="/users/mycall">
-            My Call
-          </Link>
-          <p>Welcome , <span className="capitalize text-[#2e56a6]">{userDetail.name}</span> </p>
+              <Link className="hover:text-orange-600" to="/users/my-expo">
+                My Expo
+              </Link>
+
+              <Link className="hover:text-orange-600" to="/users/expectedvisitor">
+                Expected Visitor
+              </Link>
+
+              <Link className="hover:text-orange-600" to="/users/expectedexhibitor">
+                Expected Exhibitors
+              </Link>
+
+              <Link className="hover:text-orange-600" to="/users/upload-visitor">
+                Upload Visitor
+              </Link>
+
+              <Link className="hover:text-orange-600" to="/users/upload-Exhibitors">
+                Upload Exhibitors
+              </Link>
+            </>
+          )}
+
+          <p>
+            Welcome ,{" "}
+            <span className="capitalize text-[#2e56a6]">{userDetail.name}</span>
+          </p>
         </nav>
 
-        {/* LOGOUT BUTTON */}
         {/* PROFILE DROPDOWN */}
         <div className="relative" ref={profileRef}>
           <button
@@ -122,14 +139,6 @@ export default function UserHeader() {
               >
                 Profile
               </Link>
-
-              {/* <Link
-                to="/users/edit-profile"
-                className="block px-4 py-2 hover:bg-gray-100"
-                onClick={() => setOpenProfile(false)}
-              >
-                Change Password
-              </Link> */}
 
               <button
                 onClick={handleLogout}
