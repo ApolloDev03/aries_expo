@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Clock, AlertCircle, UserPlus, Users, ClipboardList, Phone, PhoneCall, PhoneOff, PhoneMissed } from "lucide-react";
+import { Clock, AlertCircle, Users, ClipboardList, Phone, PhoneCall, PhoneOff, PhoneMissed } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../../config";
 
@@ -74,13 +74,7 @@ const LeadDashboard = () => {
       icon: <AlertCircle size={20} />,
       path: "/users/followup/overduefollowup",
     },
-    {
-      label: "New Call",
-      count: "",
-      color: "bg-emerald-500",
-      icon: <UserPlus size={20} />,
-      path: "/users/new-clients",
-    },
+  
     {
       label: "Today Register",
       count: dashboardData.todayRegisterCount,
