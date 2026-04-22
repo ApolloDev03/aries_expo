@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../../config";
 
+// 1) UPDATE UserData type
 type UserData = {
     user_id: number;
     user_name: string;
@@ -15,13 +16,15 @@ type UserData = {
     today_wrong_number?: number;
     total_wrong_number?: number;
 
+    today_busy_now_callback?: number;
+    total_busy_now_callback?: number;
+
     today_business_changed?: number;
     total_business_changed?: number;
 
     today_information_passed?: number;
     total_information_passed?: number;
 };
-
 type TodayRegisterItem = {
     visitor_followup_id: number;
     visitor_id: number;
@@ -52,6 +55,8 @@ const CallingList = () => {
     const [searchLoading, setSearchLoading] = useState(false);
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<UserData[]>([]);
+    // add new state
+    const [listingCount, setListingCount] = useState(0);
 
     const [count, setCount] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
@@ -59,6 +64,7 @@ const CallingList = () => {
 
     const isTotalPage = subtype === "total";
 
+    // 2) ADD pageConfig entry
     const pageConfig = useMemo(() => {
         const config = {
             register: {
@@ -79,6 +85,21 @@ const CallingList = () => {
                 apiType: isTotalPage ? "TotalWrongNumber" : "TodayWrongNumber",
                 todayKey: "today_wrong_number",
                 totalKey: "total_wrong_number",
+            },
+            "busy-now-callback": {
+                headerTitle:
+                    isTotalPage
+                        ? "Total Busy Now Callback List"
+                        : "Today Busy Now Callback List",
+                listingTitle:
+                    isTotalPage
+                        ? "Total Busy Now Callback Listing"
+                        : "Today Busy Now Callback Listing",
+                apiType: isTotalPage
+                    ? "TotalBusyNowCallback"
+                    : "TodayBusyNowCallback",
+                todayKey: "today_busy_now_callback",
+                totalKey: "total_busy_now_callback",
             },
             "business-changed": {
                 headerTitle:
@@ -150,6 +171,7 @@ const CallingList = () => {
             } else {
                 setData([]);
                 setCount(0);
+                console.log(res.data.count, "cuntfkjn")
                 setCurrentPage(1);
                 setLastPage(1);
                 toast.error(res.data?.message || "Failed to fetch data");
@@ -166,6 +188,54 @@ const CallingList = () => {
         }
     };
 
+    // const fetchListing = async (userId?: string, dateValue?: string) => {
+    //     const adminId = localStorage.getItem("admin_id");
+    //     const token = localStorage.getItem("artoken");
+
+    //     if (!adminId || !token) {
+    //         toast.error("Session expired. Please login again.");
+    //         navigate("/");
+    //         return;
+    //     }
+
+    //     try {
+    //         setSearchLoading(true);
+
+    //         const finalDate = dateValue ?? selectedDate ?? "";
+    //         const finalUserId = userId ?? selectedUser ?? "";
+
+    //         const res = await axios.post(
+    //             `${apiUrl}/AdminTodayRegisterList`,
+    //             {
+    //                 admin_id: adminId,
+    //                 followup_user_id: finalUserId,
+    //                 type: pageConfig.apiType,
+    //                 fromdate: isTotalPage ? finalDate : "",
+    //                 todate: isTotalPage ? finalDate : "",
+    //             },
+    //             {
+    //                 headers: {
+    //                     Authorization: `Bearer ${token}`,
+    //                     Accept: "application/json",
+    //                 },
+    //             }
+    //         );
+
+    //         if (res.data?.success) {
+    //             setTodayList(res.data.data || []);
+    //         } else {
+    //             setTodayList([]);
+    //             toast.error(res.data?.message || "No data found");
+    //         }
+    //     } catch (err: any) {
+    //         console.error(err);
+    //         setTodayList([]);
+    //         toast.error(err?.response?.data?.message || "Search failed");
+    //     } finally {
+    //         setSearchLoading(false);
+    //     }
+    // };
+    // update fetchListing
     const fetchListing = async (userId?: string, dateValue?: string) => {
         const adminId = localStorage.getItem("admin_id");
         const token = localStorage.getItem("artoken");
@@ -201,21 +271,23 @@ const CallingList = () => {
 
             if (res.data?.success) {
                 setTodayList(res.data.data || []);
+                setListingCount(Number(res.data.count || 0)); // add this
             } else {
                 setTodayList([]);
+                setListingCount(0); // add this
                 toast.error(res.data?.message || "No data found");
             }
         } catch (err: any) {
             console.error(err);
             setTodayList([]);
+            setListingCount(0); // add this
             toast.error(err?.response?.data?.message || "Search failed");
         } finally {
             setSearchLoading(false);
         }
     };
-
     const handleSearch = async () => {
-     
+
         await fetchListing();
     };
 
@@ -380,7 +452,7 @@ const CallingList = () => {
                         {pageConfig.headerTitle}
                     </h2>
                     <div className="rounded-lg bg-[#d47d4c] px-4 py-2 text-sm font-semibold text-white">
-                        Count: {count}
+                        Count: {listingCount}
                     </div>
                 </div>
 

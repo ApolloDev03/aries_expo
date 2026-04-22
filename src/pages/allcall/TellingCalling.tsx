@@ -9,9 +9,11 @@ import {
     Info,
     Users,
     ChevronRight,
+    PhoneCall,
 } from "lucide-react";
 import { apiUrl } from "../../config";
 
+// 1) UPDATE type CallingData
 type CallingData = {
     total_call: number;
     today_call: number;
@@ -21,6 +23,9 @@ type CallingData = {
 
     total_wrong_number: number;
     today_wrong_number: number;
+
+    total_busy_now_callback: number;
+    today_busy_now_callback: number;
 
     total_business_changed: number;
     today_business_changed: number;
@@ -43,6 +48,7 @@ const CallingPage = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
 
+    // 2) UPDATE useState counts
     const [counts, setCounts] = useState<CallingData>({
         total_call: 0,
         today_call: 0,
@@ -52,6 +58,9 @@ const CallingPage = () => {
 
         total_wrong_number: 0,
         today_wrong_number: 0,
+
+        total_busy_now_callback: 0,
+        today_busy_now_callback: 0,
 
         total_business_changed: 0,
         today_business_changed: 0,
@@ -87,6 +96,7 @@ const CallingPage = () => {
             if (res.data?.success) {
                 const d = res.data.data || {};
 
+                // 3) UPDATE setCounts inside API response
                 setCounts({
                     total_call: Number(d?.total_call ?? 0),
                     today_call: Number(d?.today_call ?? 0),
@@ -96,6 +106,9 @@ const CallingPage = () => {
 
                     total_wrong_number: Number(d?.total_wrong_number ?? 0),
                     today_wrong_number: Number(d?.today_wrong_number ?? 0),
+
+                    total_busy_now_callback: Number(d?.total_busy_now_callback ?? 0),
+                    today_busy_now_callback: Number(d?.today_busy_now_callback ?? 0),
 
                     total_business_changed: Number(d?.total_business_changed ?? 0),
                     today_business_changed: Number(d?.today_business_changed ?? 0),
@@ -163,6 +176,16 @@ const CallingPage = () => {
             todayPath: "/admin/calling/information-passed/today",
             totalPath: "/admin/calling/information-passed/total",
         },
+        // 5) ADD cardData item after Wrong Number
+        {
+            title: "Busy Now Callback",
+            today: counts.today_busy_now_callback,
+            total: counts.total_busy_now_callback,
+            icon: <PhoneCall size={22} />,
+            color: "amber",
+            todayPath: "/admin/calling/busy-now-callback/today",
+            totalPath: "/admin/calling/busy-now-callback/total",
+        },
     ];
 
     const getCardTheme = (color: CardItem["color"]) => {
@@ -216,7 +239,7 @@ const CallingPage = () => {
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
                     {loading
-                        ? [...Array(5)].map((_, i) => (
+                        ? [...Array(6)].map((_, i) => (
                             <div
                                 key={i}
                                 className="h-[240px] animate-pulse rounded-3xl bg-gray-200"
