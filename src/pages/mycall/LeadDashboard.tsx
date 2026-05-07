@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Clock, AlertCircle, Users, ClipboardList, Phone, PhoneCall, PhoneOff, PhoneMissed } from "lucide-react";
+import {
+  Clock,
+  AlertCircle,
+  Users,
+  ClipboardList,
+  Phone,
+  PhoneCall,
+  PhoneOff,
+  PhoneMissed,
+  Info,
+  ThumbsDown,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../../config";
 
@@ -16,6 +27,10 @@ const LeadDashboard = () => {
     total_call_count: 0,
     total_wrong_number: 0,
     today_wrong_number: 0,
+    total_information_passed: 0,
+    today_information_passed: 0,
+    total_not_interested: 0,
+    today_not_interested: 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -46,6 +61,10 @@ const LeadDashboard = () => {
           total_call_count: response.data?.data?.total_call_count || 0,
           total_wrong_number: response.data?.data?.total_wrong_number || 0,
           today_wrong_number: response.data?.data?.today_wrong_number || 0,
+          total_information_passed: response.data?.data?.total_information_passed || 0,
+          today_information_passed: response.data?.data?.today_information_passed || 0,
+          total_not_interested: response.data?.data?.total_not_interested || 0,
+          today_not_interested: response.data?.data?.today_not_interested || 0,
         });
       }
     } catch (error) {
@@ -61,26 +80,33 @@ const LeadDashboard = () => {
 
   const stats = [
     {
-      label: "Today's Follow-up",
-      count: dashboardData.today_followup_count,
-      color: "bg-blue-500",
-      icon: <Clock size={20} />,
-      path: "/users/followup/Todayfollowup",
+      label: "Today's Call",
+      count: dashboardData.today_call_count,
+      color: "bg-cyan-500",
+      icon: <PhoneCall size={20} />,
+      path: "/users/register/TodayCall",
     },
-    {
-      label: "Overdue Follow-up",
-      count: dashboardData.overdue_followup_count,
-      color: "bg-red-500",
-      icon: <AlertCircle size={20} />,
-      path: "/users/followup/overduefollowup",
-    },
-  
     {
       label: "Today Register",
       count: dashboardData.todayRegisterCount,
       color: "bg-orange-500",
       icon: <ClipboardList size={20} />,
       path: "/users/register/Todayregister",
+    },
+    {
+      label: "Today Wrong Number",
+      count: dashboardData.today_wrong_number,
+      color: "bg-yellow-500",
+      icon: <PhoneMissed size={20} />,
+      path: "/users/register/TodayWrongNumber",
+    },
+
+    {
+      label: "Total Calls",
+      count: dashboardData.total_call_count,
+      color: "bg-indigo-500",
+      icon: <Phone size={20} />,
+      path: "/users/register/TotalCall",
     },
     {
       label: "Total Register",
@@ -96,33 +122,55 @@ const LeadDashboard = () => {
       icon: <PhoneOff size={20} />,
       path: "/users/register/TotalWrongNumber",
     },
+
     {
-      label: "Today Wrong Number",
-      count: dashboardData.today_wrong_number,
-      color: "bg-yellow-500",
-      icon: <PhoneMissed size={20} />,
-      path: "/users/register/TodayWrongNumber",
+      label: "Total Information Passed",
+      count: dashboardData.total_information_passed,
+      color: "bg-teal-500",
+      icon: <Info size={20} />,
+      path: "/users/register/TotalInformationPassed",
     },
     {
-      label: "Total Calls",
-      count: dashboardData.total_call_count,
-      color: "bg-indigo-500",
-      icon: <Phone size={20} />,
-      path: "/users/register/TotalCall",
+      label: "Today Information Passed",
+      count: dashboardData.today_information_passed,
+      color: "bg-emerald-500",
+      icon: <Info size={20} />,
+      path: "/users/register/TodayInformationPassed",
     },
     {
-      label: "Today's Call",
-      count: dashboardData.today_call_count,
-      color: "bg-cyan-500",
-      icon: <PhoneCall size={20} />,
-      path: "/users/register/TodayCall",
+      label: "Today Not Interested",
+      count: dashboardData.today_not_interested,
+      color: "bg-amber-500",
+      icon: <ThumbsDown size={20} />,
+      path: "/users/register/TodayNotInterested",
+    },
+    {
+      label: "Total Not Interested",
+      count: dashboardData.total_not_interested,
+      color: "bg-orange-600",
+      icon: <ThumbsDown size={20} />,
+      path: "/users/register/TotalNotInterested",
+    },
+    {
+      label: "Today's Follow-up",
+      count: dashboardData.today_followup_count,
+      color: "bg-blue-500",
+      icon: <Clock size={20} />,
+      path: "/users/followup/Todayfollowup",
+    },
+    {
+      label: "Overdue Follow-up",
+      count: dashboardData.overdue_followup_count,
+      color: "bg-red-500",
+      icon: <AlertCircle size={20} />,
+      path: "/users/followup/overduefollowup",
     },
   ];
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 lg:p-10 font-sans text-slate-800">
       <div className="max-w-7xl mx-auto space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-3  gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {stats.map((item, index) => (
             <div
               key={index}

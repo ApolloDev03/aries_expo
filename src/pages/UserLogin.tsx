@@ -44,8 +44,13 @@ export default function UserLogin() {
 
         toast.success(res.data?.message || "Login successful");
 
-        // direct dashboard open
-        nav("/users");
+        const department = userData?.Department?.trim()?.toLowerCase();
+
+        if (department === "calling") {
+          nav("/users/mycall");
+        } else {
+          nav("/users");
+        }
       } else {
         toast.error(res.data?.message || "Login failed");
       }

@@ -80,7 +80,7 @@ export default function IndustryCategoryMaster() {
         return token ? { Authorization: `Bearer ${token}` } : {};
     };
 
-  
+
     // -------------------- Fetch Industries --------------------
     const fetchIndustries = async () => {
         try {
@@ -296,7 +296,7 @@ export default function IndustryCategoryMaster() {
                     }}
                     className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
                 >
-                    <option value="">Select industry</option>
+                    <option value="">Select Industry</option>
                     {industries.map((i) => (
                         <option key={i.id} value={i.id}>
                             {i.name}
@@ -310,7 +310,7 @@ export default function IndustryCategoryMaster() {
                     value={categoryName}
                     disabled={isSaving || isListing}
                     onChange={(e) => setCategoryName(e.target.value)}
-                    placeholder="Enter category"
+                    placeholder="Enter Category"
                     className="w-full border px-3 py-2 rounded mt-1 mb-6 disabled:bg-gray-100"
                 />
 
@@ -351,7 +351,7 @@ export default function IndustryCategoryMaster() {
                             {currentRecords.length === 0 && !isListing && (
                                 <tr>
                                     <td colSpan={4} className="p-4 text-center text-gray-500">
-                                        No categories found
+                                        No categories Found
                                     </td>
                                 </tr>
                             )}
@@ -469,7 +469,7 @@ export default function IndustryCategoryMaster() {
                                 }}
                                 className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
                             >
-                                <option value="">Select industry</option>
+                                <option value="">Select Industry</option>
                                 {industries.map((i) => (
                                     <option key={i.id} value={i.id}>
                                         {i.name}
@@ -530,7 +530,7 @@ export default function IndustryCategoryMaster() {
                             </h2>
 
                             <p className="text-gray-600 mb-6">
-                                Are you sure you want to delete this category?
+                                Are You Sure You Want To Delete This Category?
                             </p>
 
                             <div className="flex justify-center gap-4">

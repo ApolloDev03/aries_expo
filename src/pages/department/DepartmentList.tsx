@@ -400,7 +400,7 @@ export default function DepartmentMaster() {
               <h2 className="text-xl font-semibold text-red-600 mb-2">Delete Record</h2>
 
               <p className="text-gray-600 mb-6">
-                Are you sure you want to delete this department?
+                Are You Sure You Want To Delete This department?
               </p>
 
               <div className="flex justify-center gap-4">

@@ -441,6 +441,7 @@ const OverdueFollowUp = () => {
                   <option value="3">Busy Now... Call Back</option>
                   <option value="4">Business Change</option>
                   <option value="5">Information Passed</option>
+                  <option value="6">Not Interested</option>
                 </select>
               </div>
 

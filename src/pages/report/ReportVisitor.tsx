@@ -451,7 +451,7 @@ export default function VisitorReportPage() {
                         >
                             <option value="">
                                 {!industryId
-                                    ? "Select Industry first"
+                                    ? "Select Industry First"
                                     : isExpoLoading
                                         ? "Loading..."
                                         : "Select Expo"}
@@ -606,7 +606,7 @@ export default function VisitorReportPage() {
                                         </td>
                                         <td className="p-3 border-b">{capitalize(r.name)}</td>
                                         <td className="p-3 border-b">{r.mobileno || "-"}</td>
-                                        <td className="p-3 border-b">{r.email || "-"}</td>
+                                        <td className="p-3 border-b email">{r.email || "-"}</td>
                                         <td className="p-3 border-b">{capitalize(r.companyname || "-")}</td>
                                         <td className="p-3 border-b">{capitalize(r.address || "-")}</td>
                                         <td className="p-3 border-b">{capitalize(r.state_name || "-")}</td>

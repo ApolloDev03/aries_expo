@@ -221,7 +221,7 @@ export default function BusinessTypeMaster() {
                     value={strBusinessType}
                     disabled={isSaving || isListing}
                     onChange={(e) => setStrBusinessType(e.target.value)}
-                    placeholder="Enter business type"
+                    placeholder="Enter Business Type"
                     className="w-full border px-3 py-2 rounded mt-1 mb-6 disabled:bg-gray-100"
                 />
 
@@ -261,7 +261,7 @@ export default function BusinessTypeMaster() {
                             {currentRecords.length === 0 && !isListing && (
                                 <tr>
                                     <td colSpan={3} className="p-4 text-center text-gray-500">
-                                        No business types found
+                                        No Business Types Found
                                     </td>
                                 </tr>
                             )}
@@ -417,7 +417,7 @@ export default function BusinessTypeMaster() {
                             </h2>
 
                             <p className="text-gray-600 mb-6">
-                                Are you sure you want to delete this business type?
+                                Are You Sure You Want To Delete This Business Type?
                             </p>
 
                             <div className="flex justify-center gap-4">

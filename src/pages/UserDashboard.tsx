@@ -3,6 +3,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { apiUrl } from "../config";
 import { useNavigate } from "react-router-dom";
+import LeadDashboard from "./mycall/LeadDashboard";
+import AttendanceDashboard from "./AttendanceDashboard";
 
 type CountRes = {
     user_id: string;
@@ -12,6 +14,13 @@ type CountRes = {
     today_exhibitors: number;
     total_Expected_Exhibitors: number;
     today_Expected_Exhibitors: number;
+};
+type User = {
+    id: number;
+    name: string;
+    mobile: string;
+    address?: string;
+    Department?: string;
 };
 
 export default function UserDashboard() {
@@ -25,7 +34,9 @@ export default function UserDashboard() {
     const [todayExhibitors, setTodayExhibitors] = useState(0);
     const [expectedTotalExhibitors, setExpectedTotalExhibitors] = useState(0);
     const [todayExpectedExhibitors, setTodayExpectedExhibitors] = useState(0);
-
+    const userDetail = JSON.parse(localStorage.getItem("user") || "{}") as User;
+    const department = userDetail?.Department?.toLowerCase()?.trim() || "";
+    const isCallingDepartment = department === "calling";
     const fetchVisitorCounts = async () => {
         if (!userId) {
             toast.error("User_Id not found in localStorage");
@@ -122,84 +133,91 @@ export default function UserDashboard() {
 
     return (
         <div className="space-y-6">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-xl shadow">
-                <h1 className="text-2xl font-bold">Welcome Back 👋</h1>
-                <p className="text-white/80 mt-1">Here's what's happening today</p>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div
-                    onClick={() => navigate("/users/visitors-list/TotalVisitors")}
-                    className="bg-white shadow rounded-xl p-6 border-l-4 cursor-pointer border-blue-500"
-                >
-                    <h2 className="text-sm text-gray-500">Total Visitors</h2>
-                    {loadingCounts ? (
-                        <div className="mt-3 flex items-center gap-2 text-gray-500">0</div>
-                    ) : (
-                        <p className="text-3xl font-bold text-gray-800 mt-2">{totalVisitors}</p>
-                    )}
-                </div>
 
-                <div
-                    onClick={() => navigate("/users/visitors-list/TodayTotalVisitors")}
-                    className="bg-white shadow rounded-xl p-6 border-l-4 border-green-500 cursor-pointer"
-                >
-                    <h2 className="text-sm text-gray-500">Today Visitors</h2>
-                    {loadingCounts ? (
-                        <div className="mt-3 flex items-center gap-2 text-gray-500">0</div>
-                    ) : (
-                        <p className="text-3xl font-bold text-gray-800 mt-2">{todayVisitors}</p>
-                    )}
-                </div>
-
-                <div
-                    onClick={() => navigate("/users/exhibitors-list/TotalVisitors")}
-                    className="bg-white shadow rounded-xl p-6 border-l-4 border-purple-500"
-                >
-                    <h2 className="text-sm text-gray-500">Total Exhibitors</h2>
-                    {loadingCounts ? (
-                        <div className="mt-3 flex items-center gap-2 text-gray-500">0</div>
-                    ) : (
-                        <p className="text-3xl font-bold text-gray-800 mt-2">{totalExhibitors}</p>
-                    )}
-                </div>
-
-                <div
-                    onClick={() => navigate("/users/exhibitors-list/TodayTotalVisitors")}
-                    className="bg-white shadow rounded-xl p-6 border-l-4 border-[#F54C54]"
-                >
-                    <h2 className="text-sm text-gray-500">Today Exhibitors</h2>
-                    {loadingCounts ? (
-                        <div className="mt-3 flex items-center gap-2 text-gray-500">0</div>
-                    ) : (
-                        <p className="text-3xl font-bold text-gray-800 mt-2">{todayExhibitors}</p>
-                    )}
-                </div>
-
-                <div
-                    onClick={() => navigate("/users/expectedexhibitors-list/ExpectedTotalVisitors")}
-                    className="bg-white shadow rounded-xl p-6 border-l-4 border-[#454C7D]"
-                >
-                    <h2 className="text-sm text-gray-500">Total Expected Exhibitors</h2>
-                    {loadingCounts ? (
-                        <div className="mt-3 flex items-center gap-2 text-gray-500">0</div>
-                    ) : (
-                        <p className="text-3xl font-bold text-gray-800 mt-2">{expectedTotalExhibitors}</p>
-                    )}
-                </div>
-
-                <div
-                    onClick={() => navigate("/users/expectedexhibitors-list/TodayTotalVisitors")}
-                    className="bg-white shadow rounded-xl p-6 border-l-4 border-[#8A6C56]"
-                >
-                    <h2 className="text-sm text-gray-500">Today Expected Exhibitors</h2>
-                    {loadingCounts ? (
-                        <div className="mt-3 flex items-center gap-2 text-gray-500">0</div>
-                    ) : (
-                        <p className="text-3xl font-bold text-gray-800 mt-2">{todayExpectedExhibitors}</p>
-                    )}
+            <div className="bg-gradient-to-r from-[#2c446b] to-[#2e628c] text-white p-6 rounded-2xl shadow-lg border border-white/10 relative overflow-hidden">
+                <div className="relative z-10">
+                    <h1 className="text-2xl font-bold tracking-tight">Welcome Back 👋</h1>
+                    <p className="text-blue-100/80 mt-1 font-medium">Here's what's happening today</p>
                 </div>
             </div>
+            <AttendanceDashboard />
+            {
+                isCallingDepartment ? <LeadDashboard /> :
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+                        <div
+                            onClick={() => navigate("/users/visitors-list/TotalVisitors")}
+                            className="bg-white shadow rounded-xl p-6 border-l-4 cursor-pointer border-blue-500"
+                        >
+                            <h2 className="text-sm text-gray-500">Total Visitors</h2>
+                            {loadingCounts ? (
+                                <div className="mt-3 flex items-center gap-2 text-gray-500">0</div>
+                            ) : (
+                                <p className="text-3xl font-bold text-gray-800 mt-2">{totalVisitors}</p>
+                            )}
+                        </div>
+
+                        <div
+                            onClick={() => navigate("/users/visitors-list/TodayTotalVisitors")}
+                            className="bg-white shadow rounded-xl p-6 border-l-4 border-green-500 cursor-pointer"
+                        >
+                            <h2 className="text-sm text-gray-500">Today Visitors</h2>
+                            {loadingCounts ? (
+                                <div className="mt-3 flex items-center gap-2 text-gray-500">0</div>
+                            ) : (
+                                <p className="text-3xl font-bold text-gray-800 mt-2">{todayVisitors}</p>
+                            )}
+                        </div>
+
+                        <div
+                            onClick={() => navigate("/users/exhibitors-list/TotalVisitors")}
+                            className="bg-white shadow rounded-xl p-6 border-l-4 border-purple-500"
+                        >
+                            <h2 className="text-sm text-gray-500">Total Exhibitors</h2>
+                            {loadingCounts ? (
+                                <div className="mt-3 flex items-center gap-2 text-gray-500">0</div>
+                            ) : (
+                                <p className="text-3xl font-bold text-gray-800 mt-2">{totalExhibitors}</p>
+                            )}
+                        </div>
+
+                        <div
+                            onClick={() => navigate("/users/exhibitors-list/TodayTotalVisitors")}
+                            className="bg-white shadow rounded-xl p-6 border-l-4 border-[#F54C54]"
+                        >
+                            <h2 className="text-sm text-gray-500">Today Exhibitors</h2>
+                            {loadingCounts ? (
+                                <div className="mt-3 flex items-center gap-2 text-gray-500">0</div>
+                            ) : (
+                                <p className="text-3xl font-bold text-gray-800 mt-2">{todayExhibitors}</p>
+                            )}
+                        </div>
+
+                        <div
+                            onClick={() => navigate("/users/expectedexhibitors-list/ExpectedTotalVisitors")}
+                            className="bg-white shadow rounded-xl p-6 border-l-4 border-[#454C7D]"
+                        >
+                            <h2 className="text-sm text-gray-500">Total Expected Exhibitors</h2>
+                            {loadingCounts ? (
+                                <div className="mt-3 flex items-center gap-2 text-gray-500">0</div>
+                            ) : (
+                                <p className="text-3xl font-bold text-gray-800 mt-2">{expectedTotalExhibitors}</p>
+                            )}
+                        </div>
+
+                        <div
+                            onClick={() => navigate("/users/expectedexhibitors-list/TodayTotalVisitors")}
+                            className="bg-white shadow rounded-xl p-6 border-l-4 border-[#8A6C56]"
+                        >
+                            <h2 className="text-sm text-gray-500">Today Expected Exhibitors</h2>
+                            {loadingCounts ? (
+                                <div className="mt-3 flex items-center gap-2 text-gray-500">0</div>
+                            ) : (
+                                <p className="text-3xl font-bold text-gray-800 mt-2">{todayExpectedExhibitors}</p>
+                            )}
+                        </div>
+                    </div>
+            }
         </div>
     );
 }

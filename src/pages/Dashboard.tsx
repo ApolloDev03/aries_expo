@@ -221,7 +221,7 @@ export default function Dashboard() {
                             {!loading && todayVisitorUserWise.length === 0 && (
                                 <tr>
                                     <td colSpan={2} className="p-4 text-center text-gray-500">
-                                        No records today
+                                        No Records Today
                                     </td>
                                 </tr>
                             )}
@@ -261,7 +261,7 @@ export default function Dashboard() {
                             {!loading && todayExhibitorUserWise.length === 0 && (
                                 <tr>
                                     <td colSpan={2} className="p-4 text-center text-gray-500">
-                                        No records today
+                                        No Records Today
                                     </td>
                                 </tr>
                             )}
@@ -324,7 +324,7 @@ export default function Dashboard() {
                     {/* Optional: show Today Industry Wise Visitors if you want */}
                     {data && (
                         <p className="text-xs text-gray-500 mt-3">
-                            Today Industry wise count items: {data.today_industry_wise_visitors?.length || 0}
+                            Today Industry Wise Count Items : {data.today_industry_wise_visitors?.length || 0}
                         </p>
                     )}
                 </div>

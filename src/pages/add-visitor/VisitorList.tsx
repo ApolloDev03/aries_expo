@@ -418,7 +418,7 @@ export default function VisitorList() {
 
                   <td className="p-2 border">{capitalize(v.name)}</td>
 
-                  <td className="p-2 border">
+                  <td className="p-2 border email">
                     {(v.email || "-").toLowerCase()}
                   </td>
 
@@ -772,7 +772,7 @@ export default function VisitorList() {
               </h2>
 
               <p className="text-gray-600 mt-2">
-                Are you sure you want to delete this visitor?
+                Are You Sure You Want To Delete This visitor?
               </p>
 
               {!!deleteError && (
