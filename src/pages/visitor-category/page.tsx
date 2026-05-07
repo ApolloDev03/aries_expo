@@ -481,7 +481,7 @@
 
 //                             <h2 className="text-xl font-semibold text-red-600 mb-2">Delete Record</h2>
 
-//                             <p className="text-gray-600 mb-6">Are you sure you want to delete this category?</p>
+//                             <p className="text-gray-600 mb-6">Are You Sure You Want To Delete This category?</p>
 
 //                             <div className="flex justify-center gap-4">
 //                                 <button
@@ -994,8 +994,8 @@ export default function VisitorCategoryMaster() {
                             disabled={currentPage === 1 || isListing}
                             onClick={() => handlePageChange(currentPage - 1)}
                             className={`px-3 py-1 rounded border ${currentPage === 1 || isListing
-                                    ? "bg-gray-200 cursor-not-allowed"
-                                    : "bg-white hover:bg-gray-100"
+                                ? "bg-gray-200 cursor-not-allowed"
+                                : "bg-white hover:bg-gray-100"
                                 }`}
                         >
                             Prev
@@ -1009,8 +1009,8 @@ export default function VisitorCategoryMaster() {
                                     disabled={isListing}
                                     onClick={() => handlePageChange(page)}
                                     className={`px-3 py-1 rounded border ${currentPage === page
-                                            ? "bg-[#2e56a6] text-white"
-                                            : "bg-white hover:bg-gray-100"
+                                        ? "bg-[#2e56a6] text-white"
+                                        : "bg-white hover:bg-gray-100"
                                         }`}
                                 >
                                     {page}
@@ -1022,8 +1022,8 @@ export default function VisitorCategoryMaster() {
                             disabled={currentPage === totalPages || isListing}
                             onClick={() => handlePageChange(currentPage + 1)}
                             className={`px-3 py-1 rounded border ${currentPage === totalPages || isListing
-                                    ? "bg-gray-200 cursor-not-allowed"
-                                    : "bg-white hover:bg-gray-100"
+                                ? "bg-gray-200 cursor-not-allowed"
+                                : "bg-white hover:bg-gray-100"
                                 }`}
                         >
                             Next
@@ -1118,7 +1118,7 @@ export default function VisitorCategoryMaster() {
                             <h2 className="text-xl font-semibold text-red-600 mb-2">Delete Record</h2>
 
                             <p className="text-gray-600 mb-6">
-                                Are you sure you want to delete this category?
+                                Are You Sure You Want To Delete This category?
                             </p>
 
                             <div className="flex justify-center gap-4">

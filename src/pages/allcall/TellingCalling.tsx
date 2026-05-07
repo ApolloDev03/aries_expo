@@ -10,6 +10,7 @@ import {
     Users,
     ChevronRight,
     PhoneCall,
+    ThumbsDown,
 } from "lucide-react";
 import { apiUrl } from "../../config";
 
@@ -32,6 +33,9 @@ type CallingData = {
 
     total_information_passed: number;
     today_information_passed: number;
+
+    total_not_interested: number;
+    today_not_interested: number;
 };
 
 type CardItem = {
@@ -67,6 +71,9 @@ const CallingPage = () => {
 
         total_information_passed: 0,
         today_information_passed: 0,
+
+        total_not_interested: 0,
+        today_not_interested: 0,
     });
 
     const fetchCallingCounts = async () => {
@@ -115,6 +122,9 @@ const CallingPage = () => {
 
                     total_information_passed: Number(d?.total_information_passed ?? 0),
                     today_information_passed: Number(d?.today_information_passed ?? 0),
+
+                    total_not_interested: Number(d?.total_not_interested ?? 0),
+                    today_not_interested: Number(d?.today_not_interested ?? 0),
                 });
             } else {
                 toast.error(res.data?.message || "Failed to fetch calling data");
@@ -185,6 +195,15 @@ const CallingPage = () => {
             color: "amber",
             todayPath: "/admin/calling/busy-now-callback/today",
             totalPath: "/admin/calling/busy-now-callback/total",
+        },
+        {
+            title: "Not Interested",
+            today: counts.today_not_interested,
+            total: counts.total_not_interested,
+            icon: <ThumbsDown size={22} />,
+            color: "red",
+            todayPath: "/admin/calling/not-interested/today",
+            totalPath: "/admin/calling/not-interested/total",
         },
     ];
 

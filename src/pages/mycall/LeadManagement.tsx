@@ -1104,7 +1104,7 @@ const LeadManagement = () => {
 
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wider">Email</p>
-              <p className="text-lg font-semibold">{currentVisitor?.email || "-"}</p>
+              <p className="text-lg font-semibold email">{currentVisitor?.email || "-"}</p>
             </div>
 
             <div className="sm:col-span-2">
@@ -1128,6 +1128,7 @@ const LeadManagement = () => {
                 <option value="3">Busy Now... Call Back</option>
                 <option value="4">Business Change</option>
                 <option value="5">Information Passed</option>
+                <option value="6">Not Interested</option>
               </select>
             </div>
 

@@ -34,6 +34,7 @@ const statusOptions = [
   { value: "3", label: "Busy Now... Call Back" },
   { value: "4", label: "Business Change" },
   { value: "5", label: "Information Passed" },
+  { value: "6", label: "Not Interested" },
 ];
 
 const statusLabelMap: Record<string, string> = {
@@ -42,15 +43,16 @@ const statusLabelMap: Record<string, string> = {
   "3": "Busy Now... Call Back",
   "4": "Business Change",
   "5": "Information Passed",
+  "6": "Not Interested",
 };
 
 const CallingReportPage = () => {
-  const { subtype } = useParams();
+  const { type } = useParams();
+  console.log(type,"gefh")
 
-  const pageType = subtype === "today" ? "today_call" : "total_call";
+  const pageType = type === "today" ? "today_call" : "total_call";
   const pageTitle =
-    subtype === "today" ? "Today Calling Report" : "Total Calling Report";
-
+    type === "today" ? "Today Calling Report" : "Total Calling Report";
   const [loading, setLoading] = useState(false);
   const [isExpoLoading, setIsExpoLoading] = useState(false);
   const [isEmployeeLoading, setIsEmployeeLoading] = useState(false);
@@ -214,7 +216,7 @@ const CallingReportPage = () => {
     setLastPage(1);
     setSearchText("");
     fetchReport(1);
-  }, [subtype]);
+  }, [type]);
 
   const handleSearch = () => {
     fetchReport(1);

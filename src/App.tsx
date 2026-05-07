@@ -53,6 +53,9 @@ import RegisterListing from "./pages/mycall/RegisterList";
 import CallingPage from "./pages/allcall/TellingCalling";
 import CallingList from "./pages/allcall/CallingList";
 import CallingReportPage from "./pages/allcall/CallReport";
+import AttendanceDashboard from "./pages/AttendanceDashboard";
+import MonthlyReportTable from "./pages/MonthlyReportTable";
+import AttendanceReport from "./pages/report/AttendenceReport";
 
 
 export default function App() {
@@ -78,9 +81,9 @@ export default function App() {
             }
           >
             <Route index element={<UserDashboard />} />
-
+            <Route path="Attendancedashboard" element={<AttendanceDashboard />} />
+            <Route path="monthly-report" element={<MonthlyReportTable />} />
             <Route path="my-expo" element={<AssignedExpoList />} />
-
             <Route path="add-visitors/:slug" element={<AddVisitor />} />
             <Route path="expectedvisitor" element={<ExpectedVisitor />} />
             <Route path="/users/visitors-list/:label" element={<VisitorList />} />
@@ -137,6 +140,7 @@ export default function App() {
             <Route path="users" element={<UserList />} />
             <Route path="report/visitor" element={<VisitorReportPage />} />;
             <Route path="report/exhibitor" element={<AdminExhibitorReports />} />;
+            <Route path="report/attendance" element={<AttendanceReport />} />;
             <Route path="visitor-category" element={<VisitorCategoryMaster />} />
             <Route path="form2" element={<DummyAdminPage />} />
             <Route path="buissness-type" element={<BusinessTypeMaster />} />

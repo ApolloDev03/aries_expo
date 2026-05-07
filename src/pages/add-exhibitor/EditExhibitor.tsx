@@ -533,14 +533,6 @@ export default function ExhibitorEdit() {
     if (!stateId) return setFormError("State is required"), false;
     if (!cityId) return setFormError("City is required"), false;
 
-    // const nonEmpty = contacts.filter((c) => c.mobile.trim() || c.name.trim() || c.designation.trim() || c.email.trim());
-    // for (let i = 0; i < nonEmpty.length; i++) {
-    //   const c = nonEmpty[i];
-    //   const label = `Contact #${i + 1}`;
-    //   if (!isValidMobile(c.mobile)) return setFormError(`${label}: Mobile must be 10 digits`), false;
-    //   if (!c.name.trim()) return setFormError(`${label}: Name is required`), false;
-    //   if (!isValidEmail(c.email)) return setFormError(`${label}: Email is invalid`), false;
-    // }
 
     return true;
   };

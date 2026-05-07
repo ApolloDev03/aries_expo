@@ -122,7 +122,7 @@ export default function Header() {
                   { to: "/admin/expo", label: "Expo" },
                   { to: "/admin/industry", label: "Industry" },
                   { to: "/admin/state", label: "State" },
-                  { to: "/admin/subcategory", label: "Subcategory" },
+                  { to: "/admin/subcategory", label: "Sub Category" },
                   { to: "/admin/users", label: "User" },
                   { to: "/admin/visitor-category", label: "Visitor Category" },
 
@@ -159,6 +159,7 @@ export default function Header() {
                 {[
                   { to: "/admin/report/visitor", label: "Visitor Report" },
                   { to: "/admin/report/exhibitor", label: "Exhibitor Report" },
+                   { to: "/admin/report/attendance", label: "Attendance Report" },
                 ].map((r) => (
                   <Link
                     key={r.to}

@@ -839,7 +839,7 @@
 //               </h2>
 
 //               <p className="text-gray-600 mb-6">
-//                 Are you sure you want to delete this user?
+//                 Are You Sure You Want To Delete This user?
 //               </p>
 
 //               <div className="flex justify-center gap-4">
@@ -1570,7 +1570,7 @@ export default function UserMaster() {
                 <tr key={item.id} className="border-b hover:bg-gray-50">
                   <td className="p-3">{indexOfFirstRecord + index + 1}</td>
                   <td className="p-2">{item.name}</td>
-                  <td className="p-2">{item.email || "-"}</td>
+                  <td className="p-2 email">{item.email || "-"}</td>
                   <td className="p-2">{item.mobile}</td>
                   <td className="p-2">{item.address}</td>
                   <td className="p-2">{item.department || "-"}</td>
@@ -1707,7 +1707,7 @@ export default function UserMaster() {
 
         {/* EDIT MODAL */}
         {isEditOpen && editData && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+          <div className="fixed inset-0  bg-black bg-opacity-40 flex items-center justify-center">
             <div
               className="bg-white p-6 rounded-lg shadow-lg w-96 relative"
               onClick={(e) => e.stopPropagation()}
@@ -1833,7 +1833,7 @@ export default function UserMaster() {
               </h2>
 
               <p className="text-gray-600 mb-6">
-                Are you sure you want to delete this user?
+                Are You Sure You Want To Delete This user?
               </p>
 
               <div className="flex justify-center gap-4">

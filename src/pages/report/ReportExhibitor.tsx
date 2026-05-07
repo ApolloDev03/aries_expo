@@ -471,7 +471,7 @@ export default function ExpectedExhibitorReportPage() {
                         >
                             <option value="">
                                 {!industryId
-                                    ? "Select Industry first"
+                                    ? "Select Industry First"
                                     : loadingCategory
                                         ? "Loading..."
                                         : "Select Category"}
@@ -500,7 +500,7 @@ export default function ExpectedExhibitorReportPage() {
                         >
                             <option value="">
                                 {!categoryId
-                                    ? "Select Category first"
+                                    ? "Select Category First"
                                     : loadingSubcategory
                                         ? "Loading..."
                                         : "Select Subcategory"}
@@ -575,7 +575,7 @@ export default function ExpectedExhibitorReportPage() {
                                         <td className="p-3 border-b">{capitalize(r.company_name || "-")}</td>
                                         <td className="p-3 border-b">{capitalize(r.primary_contact_name || "-")}</td>
                                         <td className="p-3 border-b">{r.primary_contact_mobile || "-"}</td>
-                                        <td className="p-3 border-b">{(r.primary_contact_email || "-").toLowerCase?.() || "-"}</td>
+                                        <td className="p-3 border-b email">{(r.primary_contact_email || "-").toLowerCase?.() || "-"}</td>
                                         <td className="p-3 border-b">{capitalize(r.primary_contact_designation || "-")}</td>
                                         <td className="p-3 border-b">{r.gst || "-"}</td>
                                         <td className="p-3 border-b">{capitalize(r.address || "-")}</td>

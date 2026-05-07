@@ -407,7 +407,7 @@
 //               </h2>
 
 //               <p className="text-gray-600 mb-6">
-//                 Are you sure you want to delete this industry?
+//                 Are You Sure You Want To Delete This industry?
 //               </p>
 
 //               <div className="flex justify-center gap-4">
@@ -888,7 +888,7 @@ export default function IndustryMaster() {
               </h2>
 
               <p className="text-gray-600 mb-6">
-                Are you sure you want to delete this industry?
+                Are You Sure You Want To Delete This industry?
               </p>
 
               <div className="flex justify-center gap-4">

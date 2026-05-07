@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../../config";
 
-// 1) UPDATE UserData type
 type UserData = {
     user_id: number;
     user_name: string;
@@ -24,7 +23,11 @@ type UserData = {
 
     today_information_passed?: number;
     total_information_passed?: number;
+
+    today_not_interested?: number;
+    total_not_interested?: number;
 };
+
 type TodayRegisterItem = {
     visitor_followup_id: number;
     visitor_id: number;
@@ -45,26 +48,41 @@ type AdminRegisterListResponse = {
     data: UserData[];
 };
 
+type AdminTodayRegisterListResponse = {
+    success: boolean;
+    message: string;
+    type?: string;
+    count?: number;
+    current_page?: number;
+    last_page?: number;
+    data: TodayRegisterItem[];
+};
+
 const CallingList = () => {
     const navigate = useNavigate();
     const { type, subtype } = useParams();
+
     const [isExporting, setIsExporting] = useState(false);
     const [selectedUser, setSelectedUser] = useState("");
     const [selectedDate, setSelectedDate] = useState("");
+
     const [todayList, setTodayList] = useState<TodayRegisterItem[]>([]);
     const [searchLoading, setSearchLoading] = useState(false);
+
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<UserData[]>([]);
-    // add new state
+
     const [listingCount, setListingCount] = useState(0);
 
-    const [count, setCount] = useState(0);
+    // Top table pagination (AdminRegisterList)
     const [currentPage, setCurrentPage] = useState(1);
-    const [lastPage, setLastPage] = useState(1);
+
+    // Bottom table pagination (AdminTodayRegisterList)
+    const [listingPage, setListingPage] = useState(1);
+    const [listingLastPage, setListingLastPage] = useState(1);
 
     const isTotalPage = subtype === "total";
 
-    // 2) ADD pageConfig entry
     const pageConfig = useMemo(() => {
         const config = {
             register: {
@@ -131,6 +149,24 @@ const CallingList = () => {
                 todayKey: "today_information_passed",
                 totalKey: "total_information_passed",
             },
+            "not-interested": {
+                headerTitle:
+                    isTotalPage
+                        ? "Total Not Interested List"
+                        : "Today Not Interested List",
+
+                listingTitle:
+                    isTotalPage
+                        ? "Total Not Interested Listing"
+                        : "Today Not Interested Listing",
+
+                apiType: isTotalPage
+                    ? "TotalNotInterested"
+                    : "TodayNotInterested",
+
+                todayKey: "today_not_interested",
+                totalKey: "total_not_interested",
+            },
         };
 
         return config[(type as keyof typeof config) || "register"] || config.register;
@@ -165,78 +201,27 @@ const CallingList = () => {
 
             if (res.data?.success) {
                 setData(res.data.data || []);
-                setCount(Number(res.data.count || 0));
                 setCurrentPage(Number(res.data.current_page || page || 1));
-                setLastPage(Number(res.data.last_page || 1));
             } else {
                 setData([]);
-                setCount(0);
-                console.log(res.data.count, "cuntfkjn")
                 setCurrentPage(1);
-                setLastPage(1);
                 toast.error(res.data?.message || "Failed to fetch data");
             }
         } catch (err: any) {
             console.error(err);
             setData([]);
-            setCount(0);
             setCurrentPage(1);
-            setLastPage(1);
             toast.error(err?.response?.data?.message || "Failed to fetch data");
         } finally {
             setLoading(false);
         }
     };
 
-    // const fetchListing = async (userId?: string, dateValue?: string) => {
-    //     const adminId = localStorage.getItem("admin_id");
-    //     const token = localStorage.getItem("artoken");
-
-    //     if (!adminId || !token) {
-    //         toast.error("Session expired. Please login again.");
-    //         navigate("/");
-    //         return;
-    //     }
-
-    //     try {
-    //         setSearchLoading(true);
-
-    //         const finalDate = dateValue ?? selectedDate ?? "";
-    //         const finalUserId = userId ?? selectedUser ?? "";
-
-    //         const res = await axios.post(
-    //             `${apiUrl}/AdminTodayRegisterList`,
-    //             {
-    //                 admin_id: adminId,
-    //                 followup_user_id: finalUserId,
-    //                 type: pageConfig.apiType,
-    //                 fromdate: isTotalPage ? finalDate : "",
-    //                 todate: isTotalPage ? finalDate : "",
-    //             },
-    //             {
-    //                 headers: {
-    //                     Authorization: `Bearer ${token}`,
-    //                     Accept: "application/json",
-    //                 },
-    //             }
-    //         );
-
-    //         if (res.data?.success) {
-    //             setTodayList(res.data.data || []);
-    //         } else {
-    //             setTodayList([]);
-    //             toast.error(res.data?.message || "No data found");
-    //         }
-    //     } catch (err: any) {
-    //         console.error(err);
-    //         setTodayList([]);
-    //         toast.error(err?.response?.data?.message || "Search failed");
-    //     } finally {
-    //         setSearchLoading(false);
-    //     }
-    // };
-    // update fetchListing
-    const fetchListing = async (userId?: string, dateValue?: string) => {
+    const fetchListing = async (
+        userId?: string,
+        dateValue?: string,
+        page: number = 1
+    ) => {
         const adminId = localStorage.getItem("admin_id");
         const token = localStorage.getItem("artoken");
 
@@ -252,7 +237,7 @@ const CallingList = () => {
             const finalDate = dateValue ?? selectedDate ?? "";
             const finalUserId = userId ?? selectedUser ?? "";
 
-            const res = await axios.post(
+            const res = await axios.post<AdminTodayRegisterListResponse>(
                 `${apiUrl}/AdminTodayRegisterList`,
                 {
                     admin_id: adminId,
@@ -260,6 +245,7 @@ const CallingList = () => {
                     type: pageConfig.apiType,
                     fromdate: isTotalPage ? finalDate : "",
                     todate: isTotalPage ? finalDate : "",
+                    page: page,
                 },
                 {
                     headers: {
@@ -271,29 +257,37 @@ const CallingList = () => {
 
             if (res.data?.success) {
                 setTodayList(res.data.data || []);
-                setListingCount(Number(res.data.count || 0)); // add this
+                setListingCount(Number(res.data.count || 0));
+                setListingPage(Number(res.data.current_page || page || 1));
+                setListingLastPage(Number(res.data.last_page || 1));
             } else {
                 setTodayList([]);
-                setListingCount(0); // add this
+                setListingCount(0);
+                setListingPage(1);
+                setListingLastPage(1);
                 toast.error(res.data?.message || "No data found");
             }
         } catch (err: any) {
             console.error(err);
             setTodayList([]);
-            setListingCount(0); // add this
+            setListingCount(0);
+            setListingPage(1);
+            setListingLastPage(1);
             toast.error(err?.response?.data?.message || "Search failed");
         } finally {
             setSearchLoading(false);
         }
     };
-    const handleSearch = async () => {
 
-        await fetchListing();
+    const handleSearch = async () => {
+        setListingPage(1);
+        await fetchListing(selectedUser, selectedDate, 1);
     };
 
-    const handlePageChange = (page: number) => {
-        if (page < 1 || page > lastPage || page === currentPage) return;
-        fetchData(page);
+
+    const handleListingPageChange = (page: number) => {
+        if (page < 1 || page > listingLastPage || page === listingPage) return;
+        fetchListing(selectedUser, selectedDate, page);
     };
 
     useEffect(() => {
@@ -303,7 +297,8 @@ const CallingList = () => {
     useEffect(() => {
         setSelectedUser("");
         setSelectedDate("");
-        fetchListing("", "");
+        setListingPage(1);
+        fetchListing("", "", 1);
         fetchData(1);
     }, [type, subtype]);
 
@@ -320,38 +315,40 @@ const CallingList = () => {
             .replace(/-/g, " ")
             .replace(/\b\w/g, (char) => char.toUpperCase());
 
-    const renderPaginationButtons = () => {
+
+
+    const renderListingPaginationButtons = () => {
         const buttons: (number | string)[] = [];
 
-        if (lastPage <= 7) {
-            for (let i = 1; i <= lastPage; i++) {
+        if (listingLastPage <= 7) {
+            for (let i = 1; i <= listingLastPage; i++) {
                 buttons.push(i);
             }
         } else {
             buttons.push(1);
 
-            if (currentPage > 3) {
+            if (listingPage > 3) {
                 buttons.push("...");
             }
 
-            const start = Math.max(2, currentPage - 1);
-            const end = Math.min(lastPage - 1, currentPage + 1);
+            const start = Math.max(2, listingPage - 1);
+            const end = Math.min(listingLastPage - 1, listingPage + 1);
 
             for (let i = start; i <= end; i++) {
                 buttons.push(i);
             }
 
-            if (currentPage < lastPage - 2) {
+            if (listingPage < listingLastPage - 2) {
                 buttons.push("...");
             }
 
-            buttons.push(lastPage);
+            buttons.push(listingLastPage);
         }
 
         return buttons.map((item, index) =>
             item === "..." ? (
                 <span
-                    key={`dots-${index}`}
+                    key={`listing-dots-${index}`}
                     className="px-2 py-1 text-sm font-medium text-gray-500"
                 >
                     ...
@@ -360,8 +357,8 @@ const CallingList = () => {
                 <button
                     key={item}
                     type="button"
-                    onClick={() => handlePageChange(Number(item))}
-                    className={`rounded-lg border px-3 py-1.5 text-sm font-medium ${currentPage === item
+                    onClick={() => handleListingPageChange(Number(item))}
+                    className={`rounded-lg border px-3 py-1.5 text-sm font-medium ${listingPage === item
                         ? "border-[#d47d4c] bg-[#d47d4c] text-white"
                         : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
                         }`}
@@ -371,6 +368,7 @@ const CallingList = () => {
             )
         );
     };
+
     const handleExportExcel = async () => {
         const adminId = localStorage.getItem("admin_id");
         const token = localStorage.getItem("artoken");
@@ -444,6 +442,7 @@ const CallingList = () => {
             setIsExporting(false);
         }
     };
+
     return (
         <div className="min-h-screen bg-[#f3f4f6] p-6">
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow">
@@ -504,6 +503,8 @@ const CallingList = () => {
                     </>
                 )}
 
+
+
                 <div className="mt-6">
                     <div className="mb-5 flex justify-between gap-3 sm:flex-row">
                         <div>
@@ -553,7 +554,7 @@ const CallingList = () => {
                         </div>
                     </div>
 
-                    <div className="max-h-[300px] overflow-y-auto rounded-lg border">
+                    <div className=" rounded-lg border">
                         <table className="w-full text-left text-sm">
                             <thead className="sticky top-0 bg-gray-100">
                                 <tr>
@@ -569,24 +570,28 @@ const CallingList = () => {
                             <tbody>
                                 {searchLoading ? (
                                     <tr>
-                                        <td colSpan={6} className="p-4 text-center text-gray-500">
+                                        <td colSpan={10} className="p-4 text-center text-gray-500">
                                             Loading...
                                         </td>
                                     </tr>
                                 ) : todayList.length > 0 ? (
                                     todayList.map((item, index) => (
                                         <tr key={item.visitor_followup_id} className="hover:bg-gray-50">
-                                            <td className="border p-3">{index + 1}</td>
+                                            <td className="border p-3">
+                                                {(listingPage - 1) * 10 + index + 1}
+                                            </td>
                                             <td className="border p-3">{item.name || "-"}</td>
                                             <td className="border p-3">{item.mobileno || "-"}</td>
                                             <td className="border p-3">{item.companyname || "-"}</td>
-                                            <td className="border p-3">{item.followup_username || "-"}</td>
+                                            <td className="border p-3">
+                                                {item.followup_username || "-"}
+                                            </td>
                                             <td className="border p-3">{item.created_at || "-"}</td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={6} className="p-4 text-center text-gray-500">
+                                        <td colSpan={10} className="p-4 text-center text-gray-500">
                                             No records found
                                         </td>
                                     </tr>
@@ -594,32 +599,33 @@ const CallingList = () => {
                             </tbody>
                         </table>
                     </div>
-                </div>
-                <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    <p className="text-sm font-medium text-gray-700">
-                        Page {currentPage} of {lastPage}
-                    </p>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1 || loading}
-                            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 disabled:opacity-50"
-                        >
-                            Prev
-                        </button>
+                    <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <p className="text-sm font-medium text-gray-700">
+                            Page {listingPage} of {listingLastPage}
+                        </p>
 
-                        {renderPaginationButtons()}
+                        <div className="flex flex-wrap items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => handleListingPageChange(listingPage - 1)}
+                                disabled={listingPage === 1 || searchLoading}
+                                className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 disabled:opacity-50"
+                            >
+                                Prev
+                            </button>
 
-                        <button
-                            type="button"
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === lastPage || loading}
-                            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 disabled:opacity-50"
-                        >
-                            Next
-                        </button>
+                            {renderListingPaginationButtons()}
+
+                            <button
+                                type="button"
+                                onClick={() => handleListingPageChange(listingPage + 1)}
+                                disabled={listingPage === listingLastPage || searchLoading}
+                                className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 disabled:opacity-50"
+                            >
+                                Next
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

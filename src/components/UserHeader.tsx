@@ -66,17 +66,10 @@ export default function UserHeader() {
   return (
     <header className="flex justify-between items-center px-6 py-4 bg-white shadow">
       {/* LEFT SIDE LOGO */}
-      {
-        !isCallingDepartment ?
-          <Link to="/users">
-            <img src={ariesLogo} className="h-12 cursor-pointer" alt="Aries Logo" />
-          </Link>
-          :
-          <Link to="/users/mycall">
-            <img src={ariesLogo} className="h-12 cursor-pointer" alt="Aries Logo" />
-          </Link>
 
-      }
+      <Link to="/users">
+        <img src={ariesLogo} className="h-12 cursor-pointer" alt="Aries Logo" />
+      </Link>
 
       <div className="flex items-center gap-4">
         {/* TOP NAV MENU */}

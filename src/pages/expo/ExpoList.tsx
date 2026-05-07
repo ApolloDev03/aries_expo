@@ -769,9 +769,9 @@ export default function ExpoMaster() {
 
       {/* EDIT POPUP */}
       {isEditOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+        <div className="fixed inset-0 overflow-y-scroll bg-black bg-opacity-40 flex items-center justify-center">
           <div
-            className="bg-white p-6 rounded-lg shadow-lg w-96 relative"
+            className="bg-white p-6 rounded-lg shadow-lg max-w-xl relative"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -813,88 +813,111 @@ export default function ExpoMaster() {
               ))}
             </select>
 
-            <label className="font-medium">State</label>
-            <select
-              value={String(editData.stateid)}
-              disabled={isUpdating}
-              onChange={async (e) => {
-                const sid = e.target.value;
-                setEditData({ ...editData, stateid: sid, cityid: "" });
-                await fetchCitiesByState(sid);
-              }}
-              className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
-            >
-              <option value="">Select State</option>
-              {states.map((s) => (
-                <option key={s.stateId} value={String(s.stateId)}>
-                  {s.stateName}
-                </option>
-              ))}
-            </select>
+            {/* State + City in one row */}
+            <div className="flex gap-4 mb-4">
+              <div className="w-1/2">
+                <label className="font-medium">State</label>
+                <select
+                  value={String(editData.stateid)}
+                  disabled={isUpdating}
+                  onChange={async (e) => {
+                    const sid = e.target.value;
+                    setEditData({ ...editData, stateid: sid, cityid: "" });
+                    await fetchCitiesByState(sid);
+                  }}
+                  className="w-full border px-3 py-2 rounded mt-1 disabled:bg-gray-100"
+                >
+                  <option value="">Select State</option>
+                  {states.map((s) => (
+                    <option key={s.stateId} value={String(s.stateId)}>
+                      {s.stateName}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <label className="font-medium">City</label>
-            <select
-              value={String(editData.cityid)}
-              disabled={isUpdating || !editData.stateid}
-              onChange={(e) =>
-                setEditData({ ...editData, cityid: e.target.value })
-              }
-              className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
-            >
-              <option value="">
-                {editData.stateid ? "Select City" : "Select State first"}
-              </option>
-              {cities.map((c) => (
-                <option key={c.id} value={String(c.id)}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+              <div className="w-1/2">
+                <label className="font-medium">City</label>
+                <select
+                  value={String(editData.cityid)}
+                  disabled={isUpdating || !editData.stateid}
+                  onChange={(e) =>
+                    setEditData({ ...editData, cityid: e.target.value })
+                  }
+                  className="w-full border px-3 py-2 rounded mt-1 disabled:bg-gray-100"
+                >
+                  <option value="">
+                    {editData.stateid ? "Select City" : "Select State first"}
+                  </option>
+                  {cities.map((c) => (
+                    <option key={c.id} value={String(c.id)}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-            <label className="font-medium">Expo Date (dd-mm-yyyy)</label>
-            <input
-              type="text"
-              inputMode="numeric"
-              disabled={isUpdating}
-              placeholder="dd-mm-yyyy"
-              value={editData.date ?? ""}
-              onChange={(e) =>
-                setEditData({ ...editData, date: e.target.value })
-              }
-              className="w-full border px-3 py-2 rounded mt-1 mb-2 disabled:bg-gray-100"
-            />
-            <label className="font-medium">Venue</label>
-            <input
-              type="text"
-              value={editData.venue ?? ""}
-              disabled={isUpdating}
-              onChange={(e) =>
-                setEditData({ ...editData, venue: e.target.value })
-              }
-              className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
-            />
+            {/* Date + Venue in one row */}
+            <div className="flex gap-4 mb-4">
+              <div className="w-1/2">
+                <label className="font-medium">Expo Date (dd-mm-yyyy)</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  disabled={isUpdating}
+                  placeholder="dd-mm-yyyy"
+                  value={editData.date ?? ""}
+                  onChange={(e) =>
+                    setEditData({ ...editData, date: e.target.value })
+                  }
+                  className="w-full border px-3 py-2 rounded mt-1 disabled:bg-gray-100"
+                />
+              </div>
 
-            <label className="font-medium">No of Stall</label>
-            <input
-              type="number"
-              value={String(editData.no_of_stall ?? "")}
-              disabled={isUpdating}
-              onChange={(e) =>
-                setEditData({ ...editData, no_of_stall: e.target.value })
-              }
-              className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
-            />
+              <div className="w-1/2">
+                <label className="font-medium">Venue</label>
+                <input
+                  type="text"
+                  value={editData.venue ?? ""}
+                  disabled={isUpdating}
+                  onChange={(e) =>
+                    setEditData({ ...editData, venue: e.target.value })
+                  }
+                  className="w-full border px-3 py-2 rounded mt-1 disabled:bg-gray-100"
+                />
+              </div>
+            </div>
 
-            <label className="font-medium">Total Sq. Meter</label>
-            <input
-              type="number"
-              value={String(editData.total_sq_meters ?? "")}
-              disabled={isUpdating}
-              onChange={(e) =>
-                setEditData({ ...editData, total_sq_meters: e.target.value })
-              }
-              className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
-            />
+            {/* Stall + Sq Meter in one row */}
+            <div className="flex gap-4 mb-4">
+              <div className="w-1/2">
+                <label className="font-medium">No of Stall</label>
+                <input
+                  type="number"
+                  value={String(editData.no_of_stall ?? "")}
+                  disabled={isUpdating}
+                  onChange={(e) =>
+                    setEditData({ ...editData, no_of_stall: e.target.value })
+                  }
+                  className="w-full border px-3 py-2 rounded mt-1 disabled:bg-gray-100"
+                />
+              </div>
+
+              <div className="w-1/2">
+                <label className="font-medium">Total Sq. Meter</label>
+                <input
+                  type="number"
+                  value={String(editData.total_sq_meters ?? "")}
+                  disabled={isUpdating}
+                  onChange={(e) =>
+                    setEditData({ ...editData, total_sq_meters: e.target.value })
+                  }
+                  className="w-full border px-3 py-2 rounded mt-1 disabled:bg-gray-100"
+                />
+              </div>
+            </div>
+
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setIsEditOpen(false)}
@@ -937,7 +960,7 @@ export default function ExpoMaster() {
             </h2>
 
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this expo?
+              Are You Sure You Want To Delete This expo?
             </p>
 
             <div className="flex justify-center gap-4">

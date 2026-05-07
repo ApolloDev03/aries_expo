@@ -182,9 +182,8 @@ export default function DummyAdminPage() {
                             {items.map((item, index) => (
                                 <tr
                                     key={item.id}
-                                    className={`hover:bg-gray-200 transition ${
-                                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                                    }`}
+                                    className={`hover:bg-gray-200 transition ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                                        }`}
                                 >
                                     <td className="p-3 border-b">{item.id}</td>
                                     <td className="p-3 border-b">{item.name}</td>
@@ -237,7 +236,7 @@ export default function DummyAdminPage() {
                         <h2 className="text-xl font-semibold text-red-600 mb-3">Delete Record</h2>
 
                         <p className="text-gray-700 mb-6">
-                            Are you sure you want to delete this record?
+                            Are You Sure You Want To Delete This record?
                         </p>
 
                         <div className="flex justify-end gap-4">
