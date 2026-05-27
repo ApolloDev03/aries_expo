@@ -26,7 +26,7 @@ import UserLogout from "./pages/UserLogout";
 import VisitorList from "./pages/add-visitor/VisitorList";
 import UserProtectedRoute from "./components/UserProtectedRoute";
 import { Suspense } from "react";
-import UploadVisitor from "./pages/upload-visitor/UploadVisitor";
+import UploadVisitor from "./pages/upload/UploadVisitor";
 import VisitorReportPage from "./pages/report/ReportVisitor";
 import AddExhivitor from "./pages/add-exhibitor/AddExhibitor";
 import ExhibitorListDesign from "./pages/add-exhibitor/ExhibitorList";
@@ -42,7 +42,7 @@ import BusinessTypeMaster from "./pages/buissness-type/page";
 import AdminUserVisits from "./pages/adminuserlist/AdminUserVisits";
 import AdminExhibitorReports from "./pages/report/ReportExhibitor";
 import StateMaster from "./pages/state/Statelist";
-import UploadExhibitor from "./pages/upload-exhibitor/uploadExhibitor";
+import UploadExhibitor from "./pages/upload/uploadExhibitor";
 import VisitorListingPage from "./pages/adminuserlist/VisitorListingPage";
 import UserWiseCountPage from "./pages/adminuserlist/UserWiseCountPage";
 import LeadDashboard from "./pages/mycall/LeadDashboard";
@@ -56,6 +56,8 @@ import CallingReportPage from "./pages/allcall/CallReport";
 import AttendanceDashboard from "./pages/AttendanceDashboard";
 import MonthlyReportTable from "./pages/MonthlyReportTable";
 import AttendanceReport from "./pages/report/AttendenceReport";
+import UploadExpectedExhibitor from "./pages/upload/uploadExpectedExhibitor";
+import ExhibitorReportPage from "./pages/report/ReportExpectedExhibitor";
 
 
 export default function App() {
@@ -91,6 +93,7 @@ export default function App() {
             <Route path="edit-profile" element={<EditUserProfile />} />
             <Route path="upload-visitor" element={<UploadVisitor />} />
             <Route path="upload-Exhibitors" element={<UploadExhibitor />} />
+            <Route path="upload-ExhibitorExhibitors" element={<UploadExpectedExhibitor />} />
             <Route path="add-exhivitor/:slug" element={<AddExhivitor />} />
             <Route path="expectedexhibitor" element={<ExpectedExhivitor />} />
 
@@ -140,6 +143,7 @@ export default function App() {
             <Route path="users" element={<UserList />} />
             <Route path="report/visitor" element={<VisitorReportPage />} />;
             <Route path="report/exhibitor" element={<AdminExhibitorReports />} />;
+            <Route path="report/expectedexhibitor" element={<ExhibitorReportPage />} />;
             <Route path="report/attendance" element={<AttendanceReport />} />;
             <Route path="visitor-category" element={<VisitorCategoryMaster />} />
             <Route path="form2" element={<DummyAdminPage />} />

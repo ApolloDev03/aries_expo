@@ -2,14 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-
+body {
+  text-transform: lowercase;
+}
 
 body {
   text-transform: capitalize;
 }
-::placeholder {
-  text-transform: capitalize;
-}
+
 input,
 textarea,
 select,
@@ -17,5 +17,9 @@ option,
 .email,
 [type="email"],
 a[href^="mailto:"] {
-  text-transform: none !important;
+  text-transform: lowercase !important;
+}
+
+::placeholder {
+  text-transform: capitalize;
 }

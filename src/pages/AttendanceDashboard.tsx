@@ -26,10 +26,12 @@ export default function AttendanceDashboard() {
         )} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
     };
 
-  
+
+    
     const getLocation = () => {
         return new Promise<{ lat: number; lng: number }>((resolve, reject) => {
             if (!navigator.geolocation) {
+                localStorage.setItem("location_permission", "unsupported");
                 reject("Geolocation not supported");
                 return;
             }
@@ -45,9 +47,14 @@ export default function AttendanceDashboard() {
 
                     resolve({ lat, lng });
                 },
-                () => {
+                (error) => {
+                    console.error("Location error:", error);
+
+                    localStorage.removeItem("user_lat");
+                    localStorage.removeItem("user_lng");
                     localStorage.setItem("location_permission", "denied");
-                    reject("denied");
+
+                    reject(error);
                 },
                 {
                     enableHighAccuracy: true,
@@ -56,25 +63,41 @@ export default function AttendanceDashboard() {
                 }
             );
         });
-    };
-
-    const initiateAction = async (type: "start" | "end" | "leave") => {
+    }; const initiateAction = async (type: "start" | "end" | "leave") => {
         if (type === "leave") {
             setShowPopup("leave");
             return;
         }
 
+        const savedLat = localStorage.getItem("user_lat");
+        const savedLng = localStorage.getItem("user_lng");
+        const permission = localStorage.getItem("location_permission");
+
+        // Dashboard પર already Allow કરેલું હોય તો Start/End માં location popup ફરી નહીં આવે
+        if (permission === "granted" && savedLat && savedLng) {
+            setShowPopup(type);
+            return;
+        }
+
+        // Dashboard પર Allow ન કરેલું હોય તો Start/End click પર location popup આવશે
         try {
             setLoading(true);
+
             await getLocation();
+
             setShowPopup(type);
-        } catch (err) {
+        } catch (err: any) {
             setShowPopup(null);
+
+            if (err?.code === 1) {
+                toast.error("Please allow location permission from browser settings.");
+            } else {
+                toast.error("Location not found. Please try again.");
+            }
         } finally {
             setLoading(false);
         }
     };
-
     const handleConfirm = async () => {
         if (showPopup === "leave") {
             toast.success("Leave Applied Successfully");

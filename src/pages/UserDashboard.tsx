@@ -86,8 +86,15 @@ export default function UserDashboard() {
             setLoadingCounts(false);
         }
     };
+    const clearLocationCache = () => {
+        localStorage.removeItem("user_lat");
+        localStorage.removeItem("user_lng");
+        localStorage.removeItem("location_permission");
+    };
+
 
     const requestAndStoreLocation = () => {
+        clearLocationCache();   
         if (!navigator.geolocation) {
             localStorage.setItem("location_permission", "unsupported");
             return;

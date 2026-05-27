@@ -132,6 +132,7 @@ export default function ExhibitorEdit() {
   const [gst, setGst] = useState("");
   const [address, setAddress] = useState("");
   const [storeSize, setStoreSize] = useState(""); // UI only
+  const [amount, setAmount] = useState("");
 
   const [companyInfoId, setCompanyInfoId] = useState<number>(Number(routeId || 0));
 
@@ -247,6 +248,7 @@ export default function ExhibitorEdit() {
       setCompanyName(String(data.company_name || ""));
       setGst(String(data.gst || ""));
       setStoreSize(String(data.store_size_sq_meter || ""))
+      setAmount(String(data.amount || ""));
       setAddress(String(data.address || ""));
 
       // ✅ STATE -> CITY (ID wise)
@@ -567,6 +569,7 @@ export default function ExhibitorEdit() {
         category_id: Number(categoryId),
         subcategory_id: Number(subcategoryId),
         store_size_sq_meter: storeSize,
+        amount: amount ? Number(amount) : null,
         gst: gst.trim(),
         state_id: Number(stateId),
         city_id: Number(cityId),
@@ -699,7 +702,7 @@ export default function ExhibitorEdit() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Store Size (Sq. Meter)</label>
+            <label className="block text-sm font-medium mb-1">Stole Size  (Sq. Meter)</label>
             <input
               value={storeSize}
               onChange={(e) => {
@@ -708,6 +711,18 @@ export default function ExhibitorEdit() {
               }}
               className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
               placeholder="e.g. 10 or 10.5"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Amount</label>
+            <input
+              value={amount}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (/^\d*\.?\d{0,2}$/.test(v)) setAmount(v);
+              }}
+              className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+              placeholder="Enter amount"
             />
           </div>
 

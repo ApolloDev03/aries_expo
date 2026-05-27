@@ -15,7 +15,11 @@ type User = {
 
 export default function UserHeader() {
   const [openProfile, setOpenProfile] = useState(false);
+  const [openUpload, setOpenUpload] = useState(false);
+
   const profileRef = useRef<HTMLDivElement>(null);
+  const uploadRef = useRef<HTMLDivElement>(null);
+
   const navigate = useNavigate();
 
   const userDetail = JSON.parse(localStorage.getItem("user") || "{}") as User;
@@ -30,22 +34,21 @@ export default function UserHeader() {
         localStorage.getItem("user_id") ||
         "";
 
-      await axios.post(`${apiUrl}/user/logout`, { user_id: userId }).catch(() => { });
+      await axios
+        .post(`${apiUrl}/user/logout`, { user_id: userId })
+        .catch(() => { });
 
       localStorage.removeItem("usertoken");
       localStorage.removeItem("user");
       localStorage.removeItem("User_Id");
       localStorage.removeItem("user_id");
+      localStorage.removeItem("user_lat");
+      localStorage.removeItem("user_lng");
 
       toast.success("Logged out successfully");
       navigate("/logout");
     } catch (error) {
       console.error("Logout error:", error);
-
-      localStorage.removeItem("usertoken");
-      localStorage.removeItem("user");
-      localStorage.removeItem("User_Id");
-      localStorage.removeItem("user_id");
 
       toast.error("Logout failed, but local session cleared");
       navigate("/logout");
@@ -54,8 +57,15 @@ export default function UserHeader() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(e.target as Node)
+      ) {
         setOpenProfile(false);
+      }
+
+      if (uploadRef.current && !uploadRef.current.contains(e.target as Node)) {
+        setOpenUpload(false);
       }
     };
 
@@ -66,7 +76,6 @@ export default function UserHeader() {
   return (
     <header className="flex justify-between items-center px-6 py-4 bg-white shadow">
       {/* LEFT SIDE LOGO */}
-
       <Link to="/users">
         <img src={ariesLogo} className="h-12 cursor-pointer" alt="Aries Logo" />
       </Link>
@@ -76,9 +85,13 @@ export default function UserHeader() {
         <nav className="flex gap-6 text-sm font-semibold items-center">
           {isCallingDepartment ? (
             <>
+              <Link className="hover:text-orange-600" to="/users">
+                Dashboard
+              </Link>
               <Link className="hover:text-orange-600" to="/users/new-clients">
                 My Call
               </Link>
+
             </>
           ) : (
             <>
@@ -90,27 +103,67 @@ export default function UserHeader() {
                 My Expo
               </Link>
 
-              <Link className="hover:text-orange-600" to="/users/expectedvisitor">
+              <Link
+                className="hover:text-orange-600"
+                to="/users/expectedvisitor"
+              >
                 Expected Visitor
               </Link>
 
-              <Link className="hover:text-orange-600" to="/users/expectedexhibitor">
+              <Link
+                className="hover:text-orange-600"
+                to="/users/expectedexhibitor"
+              >
                 Expected Exhibitors
               </Link>
 
-              <Link className="hover:text-orange-600" to="/users/upload-visitor">
-                Upload Visitor
-              </Link>
+              {/* Upload Dropdown */}
+              <div className="relative" ref={uploadRef}>
+                <button
+                  type="button"
+                  onClick={() => setOpenUpload(!openUpload)}
+                  className="hover:text-orange-600 flex items-center gap-1"
+                >
+                  Upload
+                  <span className="text-xs">{openUpload ? "▲" : "▼"}</span>
+                </button>
 
-              <Link className="hover:text-orange-600" to="/users/upload-Exhibitors">
-                Upload Exhibitors
-              </Link>
+                {openUpload && (
+                  <div className="absolute left-0 mt-2 bg-white border shadow-lg rounded-md w-56 py-2 z-50">
+                    <Link
+                      to="/users/upload-visitor"
+                      className="block px-4 py-2 hover:bg-gray-100 hover:text-orange-600"
+                      onClick={() => setOpenUpload(false)}
+                    >
+                      Visitor
+                    </Link>
+
+                    <Link
+                      to="/users/upload-Exhibitors"
+                      className="block px-4 py-2 hover:bg-gray-100 hover:text-orange-600"
+                      onClick={() => setOpenUpload(false)}
+                    >
+                      Exhibitor
+                    </Link>
+
+                    <Link
+                      to="/users/upload-ExhibitorExhibitors"
+                      className="block px-4 py-2 hover:bg-gray-100 hover:text-orange-600"
+                      onClick={() => setOpenUpload(false)}
+                    >
+                      Expected Exhibitor
+                    </Link>
+                  </div>
+                )}
+              </div>
             </>
           )}
 
           <p>
             Welcome ,{" "}
-            <span className="capitalize text-[#2e56a6]">{userDetail.name}</span>
+            <span className="capitalize text-[#2e56a6]">
+              {userDetail.name}
+            </span>
           </p>
         </nav>
 
