@@ -593,6 +593,7 @@ type VisitorInfo = {
   industry_id: number | null;
   visitor_category_id: number | null;
   pincode: string | null;
+  city_name: string | null;
 };
 
 const getApiErrorMessage = (data: any, fallback: string) => {
@@ -640,6 +641,7 @@ const normalizeVisitor = (data: any): VisitorInfo | null => {
       ? Number(data.visitor_category_id)
       : null,
     pincode: data.pincode ?? null,
+    city_name: data.city_name ?? null,
   };
 };
 
@@ -1110,6 +1112,10 @@ const LeadManagement = () => {
             <div className="sm:col-span-2">
               <p className="text-xs text-gray-500 uppercase tracking-wider">Address</p>
               <p className="text-base font-medium">{currentVisitor?.address || "-"}</p>
+            </div>
+            <div className="sm:col-span-2">
+              <p className="text-xs text-gray-500 uppercase tracking-wider">City</p>
+              <p className="text-base font-medium">{currentVisitor?.city_name || "-"}</p>
             </div>
           </div>
 

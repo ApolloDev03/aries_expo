@@ -447,7 +447,11 @@ const RegisterListing = () => {
                       </td>
 
                       <td className="px-6 py-4 text-sm font-semibold text-slate-900">
-                        {item.name || "-"}
+                        {item.name
+                          ? item.name
+                            .toLowerCase()
+                            .replace(/\b\w/g, (char) => char.toUpperCase())
+                          : "-"}
                       </td>
 
                       <td className="px-6 py-4 text-sm text-slate-700">
@@ -494,8 +498,8 @@ const RegisterListing = () => {
                 disabled={pagination.current_page === 1 || loading}
                 onClick={() => handlePageChange(pagination.current_page - 1)}
                 className={`px-4 py-2 rounded-lg border text-sm ${pagination.current_page === 1 || loading
-                    ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                    : "bg-white text-slate-700 hover:bg-slate-100"
+                  ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                  : "bg-white text-slate-700 hover:bg-slate-100"
                   }`}
               >
                 Prev
@@ -515,8 +519,8 @@ const RegisterListing = () => {
                     disabled={loading}
                     onClick={() => handlePageChange(Number(page))}
                     className={`w-10 h-10 rounded-lg border text-sm font-semibold ${pagination.current_page === page
-                        ? "bg-[#2e56a6] text-white border-[#2e56a6]"
-                        : "bg-white text-slate-700 hover:bg-slate-100"
+                      ? "bg-[#2e56a6] text-white border-[#2e56a6]"
+                      : "bg-white text-slate-700 hover:bg-slate-100"
                       }`}
                   >
                     {page}
@@ -530,8 +534,8 @@ const RegisterListing = () => {
                 }
                 onClick={() => handlePageChange(pagination.current_page + 1)}
                 className={`px-4 py-2 rounded-lg border text-sm ${pagination.current_page === pagination.last_page || loading
-                    ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                    : "bg-white text-slate-700 hover:bg-slate-100"
+                  ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                  : "bg-white text-slate-700 hover:bg-slate-100"
                   }`}
               >
                 Next

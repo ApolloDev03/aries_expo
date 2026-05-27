@@ -105,6 +105,7 @@ export default function AddExhivitor() {
     const [gst, setGst] = useState("");
     const [address, setAddress] = useState("");
     const [storeSize, setStoreSize] = useState(""); // UI only (not in store payload)
+    const [amount, setAmount] = useState("");
 
     const [stateId, setStateId] = useState("");
     const [cityId, setCityId] = useState("");
@@ -385,6 +386,7 @@ export default function AddExhivitor() {
             setCompanyName(String(company.company_name || ""));
             setGst(String(company.gst || ""));
             setAddress(String(company.address || ""));
+            setAmount(String(company.amount || ""));
 
             const st = String(company.state_id || "");
             const ct = String(company.city_id || "");
@@ -495,6 +497,8 @@ export default function AddExhivitor() {
 
         // ✅ other contacts
         setContacts([{ id: newId(), db_id: null, mobile: "", name: "", designation: "", email: "" }]);
+        setStoreSize("");
+        setAmount("");
     };
 
     const searchExhibitorByMobile = async (mobile: string) => {
@@ -659,6 +663,7 @@ export default function AddExhivitor() {
                 city_id: cityId ? Number(cityId) : null,
                 address: address.trim(),
                 store_size_sq_meter: storeSize,
+                amount: amount ? Number(amount) : null,
                 other_contacts: otherContacts,
             };
 
@@ -687,6 +692,8 @@ export default function AddExhivitor() {
                 setIndustryId("");
                 setCategoryId("");
                 setSubcategoryId("");
+                setStoreSize("");
+                setAmount("");
 
                 setContacts([{ id: newId(), db_id: null, mobile: "", name: "", designation: "", email: "" }]);
 
@@ -787,7 +794,7 @@ export default function AddExhivitor() {
             <div className="bg-white p-6 rounded-xl shadow-md border">
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">Company Information</h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-4">
                     <div>
                         <label className="block text-sm font-medium mb-1">
                             Company Name <span className="text-red-600">*</span>
@@ -811,7 +818,7 @@ export default function AddExhivitor() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Store Size (Sq. Meter)</label>
+                        <label className="block text-sm font-medium mb-1">Stole Size  (Sq. Meter)</label>
                         <input
                             value={storeSize}
                             onChange={(e) => {
@@ -822,7 +829,18 @@ export default function AddExhivitor() {
                             placeholder="e.g. 10 or 10.5"
                         />
                     </div>
-
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Amount</label>
+                        <input
+                            value={amount}
+                            onChange={(e) => {
+                                const v = e.target.value;
+                                if (/^\d*\.?\d{0,2}$/.test(v)) setAmount(v);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300"
+                            placeholder="Enter amount"
+                        />
+                    </div>
                     {/* State */}
                     <div>
                         <label className="block text-sm font-medium mb-1">State</label>

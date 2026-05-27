@@ -155,10 +155,11 @@ export default function Header() {
             </button>
 
             {openReport && (
-              <div className="absolute top-7 left-0 bg-white shadow-lg border rounded-md w-52 py-2 z-50">
+              <div className="absolute top-7 left-0 bg-white shadow-lg border rounded-md w-56 py-2 z-50">
                 {[
                   { to: "/admin/report/visitor", label: "Visitor Report" },
                   { to: "/admin/report/exhibitor", label: "Exhibitor Report" },
+                   { to: "/admin/report/expectedexhibitor", label: "Expected Exhibitor Report" },
                    { to: "/admin/report/attendance", label: "Attendance Report" },
                 ].map((r) => (
                   <Link

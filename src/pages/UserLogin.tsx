@@ -47,7 +47,7 @@ export default function UserLogin() {
         const department = userData?.Department?.trim()?.toLowerCase();
 
         if (department === "calling") {
-          nav("/users/mycall");
+          nav("/users");
         } else {
           nav("/users");
         }
