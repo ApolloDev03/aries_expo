@@ -69,7 +69,7 @@ function pickName(obj: any) {
     );
 }
 
-export default function ExhibitorReportPage() {
+export default function ExpectedExhibitorReportPage() {
     // -------------------- Filters --------------------
     const [industryId, setIndustryId] = useState("");
     const [businessTypeId, setBusinessTypeId] = useState("");

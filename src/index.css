@@ -10,10 +10,6 @@ body {
   text-transform: capitalize;
 }
 
-input,
-textarea,
-select,
-option,
 .email,
 [type="email"],
 a[href^="mailto:"] {

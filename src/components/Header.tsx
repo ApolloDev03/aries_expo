@@ -159,8 +159,9 @@ export default function Header() {
                 {[
                   { to: "/admin/report/visitor", label: "Visitor Report" },
                   { to: "/admin/report/exhibitor", label: "Exhibitor Report" },
-                   { to: "/admin/report/expectedexhibitor", label: "Expected Exhibitor Report" },
-                   { to: "/admin/report/attendance", label: "Attendance Report" },
+                  { to: "/admin/report/expectedexhibitor", label: "Expected Exhibitor Report" },
+                  { to: "/admin/report/attendance", label: "Attendance Report" },
+                  { to: "/admin/report/tellycall", label: "TellyCall Report" },
                 ].map((r) => (
                   <Link
                     key={r.to}

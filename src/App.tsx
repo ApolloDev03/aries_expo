@@ -40,7 +40,6 @@ import ExpectedExhibitorListDesign from "./pages/add-exhibitor/ExpectedExhibitor
 import ExpectedExhibitorEdit from "./pages/add-exhibitor/EditExpectedExhibitor";
 import BusinessTypeMaster from "./pages/buissness-type/page";
 import AdminUserVisits from "./pages/adminuserlist/AdminUserVisits";
-import AdminExhibitorReports from "./pages/report/ReportExhibitor";
 import StateMaster from "./pages/state/Statelist";
 import UploadExhibitor from "./pages/upload/uploadExhibitor";
 import VisitorListingPage from "./pages/adminuserlist/VisitorListingPage";
@@ -57,7 +56,9 @@ import AttendanceDashboard from "./pages/AttendanceDashboard";
 import MonthlyReportTable from "./pages/MonthlyReportTable";
 import AttendanceReport from "./pages/report/AttendenceReport";
 import UploadExpectedExhibitor from "./pages/upload/uploadExpectedExhibitor";
-import ExhibitorReportPage from "./pages/report/ReportExpectedExhibitor";
+import ExhibitorReportPage from "./pages/report/ReportExhibitor";
+import ExpectedExhibitorReportPage from "./pages/report/ReportExpectedExhibitor";
+import TimeLogReportPage from "./pages/report/TellyReport";
 
 
 export default function App() {
@@ -142,9 +143,10 @@ export default function App() {
             <Route path="subcategory" element={<SubCategoryMaster />} />
             <Route path="users" element={<UserList />} />
             <Route path="report/visitor" element={<VisitorReportPage />} />;
-            <Route path="report/exhibitor" element={<AdminExhibitorReports />} />;
-            <Route path="report/expectedexhibitor" element={<ExhibitorReportPage />} />;
+            <Route path="report/exhibitor" element={<ExhibitorReportPage />} />;
+            <Route path="report/expectedexhibitor" element={<ExpectedExhibitorReportPage />} />;
             <Route path="report/attendance" element={<AttendanceReport />} />;
+            <Route path="report/tellycall" element={<TimeLogReportPage />} />;
             <Route path="visitor-category" element={<VisitorCategoryMaster />} />
             <Route path="form2" element={<DummyAdminPage />} />
             <Route path="buissness-type" element={<BusinessTypeMaster />} />

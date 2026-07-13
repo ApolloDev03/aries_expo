@@ -1109,10 +1109,10 @@ const LeadManagement = () => {
               <p className="text-lg font-semibold email">{currentVisitor?.email || "-"}</p>
             </div>
 
-            <div className="sm:col-span-2">
+            {/* <div className="sm:col-span-2">
               <p className="text-xs text-gray-500 uppercase tracking-wider">Address</p>
               <p className="text-base font-medium">{currentVisitor?.address || "-"}</p>
-            </div>
+            </div> */}
             <div className="sm:col-span-2">
               <p className="text-xs text-gray-500 uppercase tracking-wider">City</p>
               <p className="text-base font-medium">{currentVisitor?.city_name || "-"}</p>
