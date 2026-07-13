@@ -43,14 +43,7 @@ export default function UserLogin() {
         }
 
         toast.success(res.data?.message || "Login successful");
-
-        const department = userData?.Department?.trim()?.toLowerCase();
-
-        if (department === "calling") {
           nav("/users");
-        } else {
-          nav("/users");
-        }
       } else {
         toast.error(res.data?.message || "Login failed");
       }

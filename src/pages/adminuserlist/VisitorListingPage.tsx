@@ -1260,15 +1260,22 @@ export default function VisitorListingPage() {
                                 </tr>
                             ) : displayRows.length > 0 ? (
                                 displayRows.map((row: any, rowIndex) => (
-                                    <tr key={rowIndex} className="border-t">
-                                        {tableColumns.map((column) => (
-                                            <td
-                                                key={column.key}
-                                                className="px-4 email py-3 align-top text-sm text-gray-700"
-                                            >
-                                                {formatCellValue(column.key, row[column.key])}
-                                            </td>
-                                        ))}
+                                    <tr key={rowIndex} className="border-t ">
+                                        {tableColumns.map((column) => {
+    const isEmailColumn = column.key.toLowerCase().includes("email");
+
+    return (
+        <td
+            key={column.key}
+            className={`px-4 py-3 align-top text-sm text-gray-700 ${
+                isEmailColumn ? "email !lowercase" : "!capitalize"
+            }`}
+        >
+            {formatCellValue(column.key, row[column.key])}
+        </td>
+    );
+})}
+                                   
                                     </tr>
                                 ))
                             ) : (

@@ -1,9 +1,1004 @@
+// import { useEffect, useMemo, useState } from "react";
+// import axios from "axios";
+// import EditIcon from "@mui/icons-material/Edit";
+// import DeleteIcon from "@mui/icons-material/Delete";
+// import { toast } from "react-toastify";
+// import { apiUrl } from "../../config";
+
+// // ---------------- TYPES ----------------
+// interface ApiState {
+//   stateId: number;
+//   stateName: string;
+// }
+
+// interface ApiIndustry {
+//   id: number;
+//   name: string;
+// }
+
+// interface ApiCity {
+//   id: number;
+//   name: string;
+//   stateid: number;
+// }
+
+// interface ExpoListRow {
+//   Expoid: number;
+//   name: string;
+//   statename: string;
+//   cityname: string;
+//   industryname: string;
+//   date?: string;
+//   venue?: string;
+//   no_of_stall?: string | number;
+//   total_sq_meters?: string | number;
+// }
+
+// interface ExpoEditRow {
+//   Expoid: number;
+//   name: string;
+//   stateid: number | string;
+//   cityid: number | string;
+//   industryid: number | string;
+//   date?: string;
+//   venue?: string;
+//   no_of_stall?: string | number;
+//   total_sq_meters?: string | number;
+// }
+
+// export default function ExpoMaster() {
+//   // ----------- FORM STATE -----------
+//   const [expoName, setExpoName] = useState("");
+//   const [industryId, setIndustryId] = useState<string>("");
+//   const [stateId, setStateId] = useState<string>("");
+//   const [cityId, setCityId] = useState<string>("");
+//   const [expoDate, setExpoDate] = useState<string>("");
+
+//   // ----------- SEARCH -----------
+//   const [searchExpo, setSearchExpo] = useState("");
+
+//   // ----------- DROPDOWNS (API) -----------
+//   const [states, setStates] = useState<ApiState[]>([]);
+//   const [industries, setIndustries] = useState<ApiIndustry[]>([]);
+//   const [cities, setCities] = useState<ApiCity[]>([]);
+
+//   // ----------- LIST -----------
+//   const [expoList, setExpoList] = useState<ExpoListRow[]>([]);
+
+//   // ----------- LOADERS -----------
+//   const [isListing, setIsListing] = useState(false);
+//   const [isSaving, setIsSaving] = useState(false);
+//   const [isUpdating, setIsUpdating] = useState(false);
+//   const [isDeleting, setIsDeleting] = useState(false);
+
+//   // ----------- EDIT/DELETE MODALS -----------
+//   const [isEditOpen, setIsEditOpen] = useState(false);
+//   const [editData, setEditData] = useState<ExpoEditRow>({
+//     Expoid: 0,
+//     name: "",
+//     stateid: "",
+//     cityid: "",
+//     industryid: "",
+//     date: "",
+//     venue: "",
+//     no_of_stall: "",
+//     total_sq_meters: "",
+//   });
+
+//   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+//   const [deleteId, setDeleteId] = useState<number | null>(null);
+
+//   // ----------- PAGINATION -----------
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const recordsPerPage = 10;
+//   const [venue, setVenue] = useState<string>("");
+//   const [noOfStall, setNoOfStall] = useState<string>("");
+//   const [totalSqMeter, setTotalSqMeter] = useState<string>("");
+
+//   const ymdToDmy = (v: string) => {
+//     const [yyyy, mm, dd] = v.split("-");
+//     return `${dd}-${mm}-${yyyy}`;
+//   };
+
+//   const isYmd = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v);
+
+//   const normalizeDateForUI = (raw: any) => {
+//     const v = String(raw ?? "").trim();
+//     if (!v) return "";
+
+//     return v
+//       .split(",")
+//       .map((p) => p.trim())
+//       .filter(Boolean)
+//       .map((p) => (isYmd(p) ? ymdToDmy(p) : p))
+//       .join(", ");
+//   };
+
+//   const pickDateFromRow = (row: any) =>
+//     row?.date ?? row?.expo_date ?? row?.expodate ?? "";
+
+//   const toastApiError = (e: any, fallback = "Something went wrong") => {
+//     const msg =
+//       e?.response?.data?.message ||
+//       e?.response?.data?.error ||
+//       e?.message ||
+//       fallback;
+//     toast.error(msg);
+//   };
+
+//   const postJson = async <T,>(url: string, body: any) => {
+//     const res = await axios.post(url, body, {
+//       headers: { "Content-Type": "application/json" },
+//     });
+//     return res.data as T;
+//   };
+
+//   const getPageNumbers = (current: number, total: number) => {
+//     const pageNumbers: (number | string)[] = [];
+
+//     if (total <= 7) {
+//       for (let i = 1; i <= total; i++) {
+//         pageNumbers.push(i);
+//       }
+//       return pageNumbers;
+//     }
+
+//     pageNumbers.push(1);
+
+//     if (current > 3) {
+//       pageNumbers.push("...");
+//     }
+
+//     const start = Math.max(2, current - 1);
+//     const end = Math.min(total - 1, current + 1);
+
+//     for (let i = start; i <= end; i++) {
+//       pageNumbers.push(i);
+//     }
+
+//     if (current < total - 2) {
+//       pageNumbers.push("...");
+//     }
+
+//     pageNumbers.push(total);
+
+//     return pageNumbers;
+//   };
+
+//   const fetchIndustryList = async () => {
+//     try {
+//       const res = await postJson<{
+//         success: boolean;
+//         data: ApiIndustry[];
+//         message: string;
+//       }>(`${apiUrl}/IndustryList`, {});
+
+//       setIndustries(res?.data ?? []);
+//     } catch (e: any) {
+//       console.error(e);
+//       toastApiError(e, "Industry fetch failed");
+//     }
+//   };
+
+//   const fetchAllStates = async () => {
+//     try {
+//       const first = await postJson<{
+//         success: boolean;
+//         last_page: number;
+//         data: ApiState[];
+//       }>(`${apiUrl}/statelist`, { page: "1" });
+
+//       const all: ApiState[] = [...(first?.data ?? [])];
+//       const lastPage = Number(first?.last_page ?? 1);
+
+//       if (lastPage > 1) {
+//         const rest = await Promise.all(
+//           Array.from({ length: lastPage - 1 }, (_, i) => i + 2).map((p) =>
+//             postJson<{ success: boolean; data: ApiState[] }>(
+//               `${apiUrl}/statelist`,
+//               { page: String(p) }
+//             )
+//           )
+//         );
+
+//         rest.forEach((r) => all.push(...(r?.data ?? [])));
+//       }
+
+//       all.sort((a, b) => a.stateName.localeCompare(b.stateName));
+//       setStates(all);
+//     } catch (e: any) {
+//       console.error(e);
+//       toastApiError(e, "State fetch failed");
+//     }
+//   };
+
+//   const fetchCitiesByState = async (sid: string, keepSelectedCityId?: string) => {
+//     if (!sid) {
+//       setCities([]);
+//       setCityId("");
+//       return;
+//     }
+
+//     try {
+//       const res = await postJson<{
+//         success: boolean;
+//         data: ApiCity[];
+//         message: string;
+//       }>(`${apiUrl}/CityByState`, { stateid: sid });
+
+//       const list = res?.data ?? [];
+//       setCities(list);
+
+//       if (keepSelectedCityId) setCityId(keepSelectedCityId);
+//       else setCityId("");
+//     } catch (e: any) {
+//       console.error(e);
+//       setCities([]);
+//       setCityId("");
+//       toastApiError(e, "City fetch failed");
+//     }
+//   };
+
+//   const enrichExpoDates = async (rows: ExpoListRow[]) => {
+//     const results = await Promise.allSettled(
+//       rows.map(async (r) => {
+//         const res = await postJson<{ success: boolean; data: any[] }>(
+//           `${apiUrl}/Exposhow`,
+//           { expo_id: String(r.Expoid) }
+//         );
+
+//         const row = res?.data?.[0];
+//         const rawDate = pickDateFromRow(row);
+
+//         return {
+//           ...r,
+//           date: normalizeDateForUI(rawDate),
+//         } as ExpoListRow;
+//       })
+//     );
+
+//     return results.map((x, i) =>
+//       x.status === "fulfilled"
+//         ? x.value
+//         : { ...rows[i], date: rows[i].date ?? "" }
+//     );
+//   };
+
+//   const fetchExpoList = async () => {
+//     try {
+//       setIsListing(true);
+
+//       const res = await postJson<{
+//         success: boolean;
+//         data: ExpoListRow[];
+//         message: string;
+//       }>(`${apiUrl}/ExpoList`, {});
+
+//       const base = (res?.data ?? []).map((r) => ({
+//         ...r,
+//         date: normalizeDateForUI((r as any).date),
+//       }));
+
+//       const filled = await enrichExpoDates(base);
+//       setExpoList(filled);
+//     } catch (e: any) {
+//       console.error(e);
+//       toastApiError(e, "Expo list fetch failed");
+//     } finally {
+//       setIsListing(false);
+//     }
+//   };
+
+//   const handleSave = async () => {
+//     if (!expoName || !industryId || !stateId || !cityId || !expoDate) {
+//       return toast.error("Please fill all fields (including date)");
+//     }
+
+//     const apiDateList = expoDate;
+
+//     try {
+//       setIsSaving(true);
+
+//       const res = await postJson<{ success: boolean; message: string }>(
+//         `${apiUrl}/ExpoAdd`,
+//         {
+//           name: expoName,
+//           industry_id: industryId,
+//           state_id: stateId,
+//           city_id: cityId,
+//           date: apiDateList,
+//           expo_date: apiDateList,
+//           venue: venue,
+//           no_of_stall: noOfStall,
+//           total_sq_meters: totalSqMeter,
+//         }
+//       );
+
+//       setExpoName("");
+//       setIndustryId("");
+//       setStateId("");
+//       setCityId("");
+//       setExpoDate("");
+//       setVenue("");
+//       setNoOfStall("");
+//       setTotalSqMeter("");
+//       setCities([]);
+
+//       await fetchExpoList();
+//       toast.success(res?.message || "Expo Added Successfully");
+//     } catch (e: any) {
+//       toastApiError(e, "Expo add failed");
+//     } finally {
+//       setIsSaving(false);
+//     }
+//   };
+
+//   const openEdit = async (expoId: number) => {
+//     try {
+//       setIsUpdating(true);
+
+//       const res = await postJson<{
+//         success: boolean;
+//         data: any[];
+//         message: string;
+//       }>(`${apiUrl}/Exposhow`, { expo_id: String(expoId) });
+
+//       const row = res?.data?.[0];
+//       if (!row) {
+//         toast.error("Expo not found");
+//         return;
+//       }
+
+//       const rawDate = pickDateFromRow(row);
+
+//       await fetchCitiesByState(String(row.stateid), String(row.cityid));
+
+//       setEditData({
+//         Expoid: row.Expoid,
+//         name: row.name,
+//         stateid: String(row.stateid),
+//         cityid: String(row.cityid),
+//         industryid: String(row.industryid),
+//         date: normalizeDateForUI(rawDate),
+//         venue: row.venue ?? "",
+//         no_of_stall: row.no_of_stall ?? "",
+//         total_sq_meters: row.total_sq_meters ?? "",
+//       });
+
+//       setIsEditOpen(true);
+//     } catch (e: any) {
+//       console.error(e);
+//       toastApiError(e, "Expo show failed");
+//     } finally {
+//       setIsUpdating(false);
+//     }
+//   };
+
+//   const handleUpdate = async () => {
+//     if (
+//       !editData.name ||
+//       !editData.industryid ||
+//       !editData.stateid ||
+//       !editData.cityid ||
+//       !editData.date ||
+//       !editData.venue ||
+//       !editData.no_of_stall ||
+//       !editData.total_sq_meters
+//     ) {
+//       return toast.error("Please fill all fields");
+//     }
+//     const apiDateList = editData.date;
+
+//     try {
+//       setIsUpdating(true);
+
+//       const res = await postJson<{ success: boolean; message: string }>(
+//         `${apiUrl}/ExpoUpdate`,
+//         {
+//           expo_id: String(editData.Expoid),
+//           name: editData.name,
+//           industry_id: String(editData.industryid),
+//           state_id: String(editData.stateid),
+//           city_id: String(editData.cityid),
+//           date: apiDateList,
+//           expo_date: apiDateList,
+//           venue: editData.venue,
+//           no_of_stall: String(editData.no_of_stall),
+//           total_sq_meters: String(editData.total_sq_meters),
+//         }
+//       );
+
+//       setIsEditOpen(false);
+//       await fetchExpoList();
+//       toast.success(res?.message || "Expo Updated Successfully");
+//     } catch (e: any) {
+//       toastApiError(e, "Expo update failed");
+//     } finally {
+//       setIsUpdating(false);
+//     }
+//   };
+
+//   const handleDelete = async (expoId: number) => {
+//     try {
+//       setIsDeleting(true);
+
+//       const res = await postJson<{ success: boolean; message: string }>(
+//         `${apiUrl}/ExpoDelete`,
+//         { expo_id: String(expoId) }
+//       );
+
+//       setIsDeleteOpen(false);
+//       setDeleteId(null);
+
+//       await fetchExpoList();
+//       toast.success(res?.message || "Expo Deleted Successfully");
+//     } catch (e: any) {
+//       console.error(e);
+//       toastApiError(e, "Expo delete failed");
+//     } finally {
+//       setIsDeleting(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     const init = async () => {
+//       setIsListing(true);
+//       try {
+//         await Promise.all([fetchIndustryList(), fetchAllStates()]);
+//         await fetchExpoList();
+//       } finally {
+//         setIsListing(false);
+//       }
+//     };
+//     init();
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, []);
+
+//   useEffect(() => {
+//     fetchCitiesByState(stateId);
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, [stateId]);
+
+//   const filteredExpo = useMemo(() => {
+//     const search = searchExpo.toLowerCase().trim();
+
+//     return expoList.filter((item) => {
+//       return (
+//         item.name.toLowerCase().includes(search) ||
+//         item.industryname.toLowerCase().includes(search) ||
+//         item.statename.toLowerCase().includes(search) ||
+//         item.cityname.toLowerCase().includes(search) ||
+//         (item.date || "").toLowerCase().includes(search) ||
+//         (item.venue || "").toLowerCase().includes(search) ||
+//         String(item.no_of_stall || "").toLowerCase().includes(search) ||
+//         String(item.total_sq_meters || "").toLowerCase().includes(search)
+//       );
+//     });
+//   }, [expoList, searchExpo]);
+
+//   const totalPages = Math.ceil(filteredExpo.length / recordsPerPage);
+//   const safeCurrentPage = totalPages === 0 ? 1 : Math.min(currentPage, totalPages);
+
+//   const indexOfLast = safeCurrentPage * recordsPerPage;
+//   const indexOfFirst = indexOfLast - recordsPerPage;
+//   const currentRecords = filteredExpo.slice(indexOfFirst, indexOfLast);
+
+//   const handlePageChange = (page: number) => {
+//     if (page >= 1 && page <= totalPages) {
+//       setCurrentPage(page);
+//     }
+//   };
+
+//   const pageNumbers = getPageNumbers(safeCurrentPage, totalPages);
+
+//   useEffect(() => {
+//     setCurrentPage(1);
+//   }, [searchExpo]);
+
+//   useEffect(() => {
+//     if (currentPage > totalPages && totalPages > 0) {
+//       setCurrentPage(totalPages);
+//     }
+//     if (totalPages === 0 && currentPage !== 1) {
+//       setCurrentPage(1);
+//     }
+//   }, [currentPage, totalPages]);
+
+//   return (
+//     <div className="flex gap-8 p-6">
+//       {/* LEFT FORM */}
+//       <div className="w-1/3 bg-white p-6 shadow rounded-xl">
+//         <h2 className="text-xl font-semibold mb-4">Add Expo</h2>
+
+//         <label className="font-medium">Expo Name</label>
+//         <input
+//           type="text"
+//           value={expoName}
+//           disabled={isSaving || isListing}
+//           onChange={(e) => setExpoName(e.target.value)}
+//           placeholder="Enter Expo Name"
+//           className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
+//         />
+
+//         <label className="font-medium">Industry</label>
+//         <select
+//           value={industryId}
+//           disabled={isSaving || isListing}
+//           onChange={(e) => setIndustryId(e.target.value)}
+//           className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
+//         >
+//           <option value="">Select Industry</option>
+//           {industries.map((i) => (
+//             <option key={i.id} value={String(i.id)}>
+//               {i.name}
+//             </option>
+//           ))}
+//         </select>
+
+//         <label className="font-medium">State</label>
+//         <select
+//           value={stateId}
+//           disabled={isSaving || isListing}
+//           onChange={(e) => setStateId(e.target.value)}
+//           className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
+//         >
+//           <option value="">Select State</option>
+//           {states.map((s) => (
+//             <option key={s.stateId} value={String(s.stateId)}>
+//               {s.stateName}
+//             </option>
+//           ))}
+//         </select>
+
+//         <label className="font-medium">City</label>
+//         <select
+//           value={cityId}
+//           disabled={!stateId || isSaving || isListing}
+//           onChange={(e) => setCityId(e.target.value)}
+//           className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
+//         >
+//           <option value="">
+//             {stateId ? "Select City" : "Select State first"}
+//           </option>
+//           {cities.map((c) => (
+//             <option key={c.id} value={String(c.id)}>
+//               {c.name}
+//             </option>
+//           ))}
+//         </select>
+
+//         <label className="font-medium">Expo Date</label>
+//         <input
+//           type="text"
+//           inputMode="numeric"
+//           autoComplete="off"
+//           placeholder="dd-mm-yyyy"
+//           value={expoDate}
+//           onChange={(e) => setExpoDate(e.target.value)}
+//           className="w-full border px-3 py-2 rounded"
+//         />
+//         <label className="font-medium mt-4 block">Venue</label>
+//         <input
+//           type="text"
+//           value={venue}
+//           disabled={isSaving || isListing}
+//           onChange={(e) => setVenue(e.target.value)}
+//           placeholder="Enter Venue"
+//           className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
+//         />
+
+//         <label className="font-medium">No of Stall</label>
+//         <input
+//           type="number"
+//           value={noOfStall}
+//           disabled={isSaving || isListing}
+//           onChange={(e) => setNoOfStall(e.target.value)}
+//           placeholder="Enter No of Stall"
+//           className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
+//         />
+
+//         <label className="font-medium">Total Sq. Meter</label>
+//         <input
+//           type="number"
+//           value={totalSqMeter}
+//           disabled={isSaving || isListing}
+//           onChange={(e) => setTotalSqMeter(e.target.value)}
+//           placeholder="Enter Total Sq. Meter"
+//           className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
+//         />
+
+//         <button
+//           onClick={handleSave}
+//           disabled={isSaving || isListing}
+//           className="bg-[#2e56a6] text-white my-2 px-5 py-2 rounded hover:bg-[#bf7e4e] disabled:bg-gray-400 disabled:cursor-not-allowed"
+//         >
+//           {isSaving ? "Saving..." : "Save"}
+//         </button>
+//       </div>
+
+//       {/* RIGHT TABLE */}
+//       <div className="w-2/3 bg-white p-6 shadow rounded-xl">
+//         <h2 className="text-xl font-semibold mb-4">Expo List</h2>
+
+//         <div className="bg-white border rounded-xl p-4 mb-5 shadow-sm flex items-center gap-3">
+//           <input
+//             type="text"
+//             placeholder="Search Expo Name"
+//             value={searchExpo}
+//             disabled={isListing}
+//             onChange={(e) => setSearchExpo(e.target.value)}
+//             className="border px-3 py-2 rounded w-1/3 disabled:bg-gray-100"
+//           />
+//           <button
+//             className="bg-[#2e56a6] text-white px-5 py-2 rounded disabled:bg-gray-400"
+//             disabled={isListing}
+//           >
+//             Search
+//           </button>
+//         </div>
+
+//         {/* TABLE AREA LOADER */}
+//         <div className="relative min-h-[260px]">
+//           {isListing && (
+//             <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10">
+//               <div className="h-10 w-10 border-4 border-gray-300 border-t-[#2e56a6] rounded-full animate-spin" />
+//             </div>
+//           )}
+
+//           <div className="overflow-x-auto">
+//             <table className="w-full min-w-[1100px] border-collapse">
+//               <thead>
+//                 <tr className="bg-gray-100 text-left">
+//                   <th className="p-3">ID</th>
+//                   <th className="p-1">Expo</th>
+//                   <th className="p-1">Industry</th>
+//                   <th className="p-1">State</th>
+//                   <th className="p-1">City</th>
+//                   <th className="p-1">Date</th>
+//                   <th className="p-1">Venue</th>
+//                   <th className="p-1">No of Stall</th>
+//                   <th className="p-1">Total Sq. Meter</th>
+//                   <th className="p-1">Actions</th>
+//                 </tr>
+//               </thead>
+
+//               <tbody className={isListing ? "opacity-40" : ""}>
+//                 {currentRecords.map((item, index) => (
+//                   <tr key={item.Expoid} className="border-b hover:bg-gray-50">
+//                     <td className="p-3">{indexOfFirst + index + 1}</td>
+//                     <td className="p-1">{item.name}</td>
+//                     <td className="p-1">{item.industryname}</td>
+//                     <td className="p-1">{item.statename}</td>
+//                     <td className="p-1">{item.cityname}</td>
+//                     <td className="p-1">{item.date ? item.date : "-"}</td>
+//                     <td className="p-1">{item.venue || "-"}</td>
+//                     <td className="p-1">{item.no_of_stall || "-"}</td>
+//                     <td className="p-1">{item.total_sq_meters || "-"}</td>
+
+//                     <td className="p-1 flex gap-3">
+//                       <button
+//                         className="text-blue-600 hover:text-blue-800 disabled:text-gray-400"
+//                         disabled={isListing || isUpdating}
+//                         onClick={() => openEdit(item.Expoid)}
+//                         title="Edit"
+//                       >
+//                         <EditIcon fontSize="small" />
+//                       </button>
+
+//                       <button
+//                         className="text-red-600 hover:text-red-800 disabled:text-gray-400"
+//                         disabled={isListing || isDeleting}
+//                         onClick={() => {
+//                           setDeleteId(item.Expoid);
+//                           setIsDeleteOpen(true);
+//                         }}
+//                         title="Delete"
+//                       >
+//                         <DeleteIcon fontSize="small" />
+//                       </button>
+//                     </td>
+//                   </tr>
+//                 ))}
+
+//                 {!isListing && currentRecords.length === 0 && (
+//                   <tr>
+//                     <td colSpan={10} className="p-4 text-center text-gray-500">
+//                       No records found
+//                     </td>
+//                   </tr>
+//                 )}
+//               </tbody>
+//             </table>
+//           </div>
+//         </div>
+
+//         {/* PAGINATION */}
+//         {filteredExpo.length > 0 && (
+//           <>
+//             <div className="flex flex-wrap justify-center items-center mt-4 gap-2">
+//               <button
+//                 disabled={safeCurrentPage === 1 || isListing}
+//                 onClick={() => handlePageChange(safeCurrentPage - 1)}
+//                 className={`px-3 py-1 rounded border ${safeCurrentPage === 1 || isListing
+//                   ? "bg-gray-200 cursor-not-allowed"
+//                   : "bg-white hover:bg-gray-100"
+//                   }`}
+//               >
+//                 Prev
+//               </button>
+
+//               {pageNumbers.map((page, index) =>
+//                 page === "..." ? (
+//                   <span
+//                     key={`dots-${index}`}
+//                     className="px-3 py-1 text-gray-500 select-none"
+//                   >
+//                     ...
+//                   </span>
+//                 ) : (
+//                   <button
+//                     key={page}
+//                     disabled={isListing}
+//                     onClick={() => handlePageChange(Number(page))}
+//                     className={`px-3 py-1 rounded border min-w-[40px] ${safeCurrentPage === page
+//                       ? "bg-[#2e56a6] text-white"
+//                       : "bg-white hover:bg-gray-100"
+//                       }`}
+//                   >
+//                     {page}
+//                   </button>
+//                 )
+//               )}
+
+//               <button
+//                 disabled={safeCurrentPage === totalPages || totalPages === 0 || isListing}
+//                 onClick={() => handlePageChange(safeCurrentPage + 1)}
+//                 className={`px-3 py-1 rounded border ${safeCurrentPage === totalPages || totalPages === 0 || isListing
+//                   ? "bg-gray-200 cursor-not-allowed"
+//                   : "bg-white hover:bg-gray-100"
+//                   }`}
+//               >
+//                 Next
+//               </button>
+//             </div>
+
+
+//           </>
+//         )}
+//       </div>
+
+//       {/* EDIT POPUP */}
+//       {isEditOpen && (
+//         <div className="fixed inset-0 overflow-y-scroll bg-black bg-opacity-40 flex items-center justify-center">
+//           <div
+//             className="bg-white p-6 rounded-lg shadow-lg max-w-xl relative"
+//             onClick={(e) => e.stopPropagation()}
+//           >
+//             <button
+//               onClick={() => setIsEditOpen(false)}
+//               disabled={isUpdating}
+//               className="absolute top-4 right-5 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+//               aria-label="Close"
+//             >
+//               ×
+//             </button>
+
+//             <h2 className="text-xl font-semibold mb-4">Edit Expo</h2>
+
+//             <label className="font-medium">Expo Name</label>
+//             <input
+//               type="text"
+//               value={editData.name}
+//               disabled={isUpdating}
+//               onChange={(e) =>
+//                 setEditData({ ...editData, name: e.target.value })
+//               }
+//               className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
+//             />
+
+//             <label className="font-medium">Industry</label>
+//             <select
+//               value={String(editData.industryid)}
+//               disabled={isUpdating}
+//               onChange={(e) =>
+//                 setEditData({ ...editData, industryid: e.target.value })
+//               }
+//               className="w-full border px-3 py-2 rounded mt-1 mb-4 disabled:bg-gray-100"
+//             >
+//               <option value="">Select Industry</option>
+//               {industries.map((i) => (
+//                 <option key={i.id} value={String(i.id)}>
+//                   {i.name}
+//                 </option>
+//               ))}
+//             </select>
+
+//             {/* State + City in one row */}
+//             <div className="flex gap-4 mb-4">
+//               <div className="w-1/2">
+//                 <label className="font-medium">State</label>
+//                 <select
+//                   value={String(editData.stateid)}
+//                   disabled={isUpdating}
+//                   onChange={async (e) => {
+//                     const sid = e.target.value;
+//                     setEditData({ ...editData, stateid: sid, cityid: "" });
+//                     await fetchCitiesByState(sid);
+//                   }}
+//                   className="w-full border px-3 py-2 rounded mt-1 disabled:bg-gray-100"
+//                 >
+//                   <option value="">Select State</option>
+//                   {states.map((s) => (
+//                     <option key={s.stateId} value={String(s.stateId)}>
+//                       {s.stateName}
+//                     </option>
+//                   ))}
+//                 </select>
+//               </div>
+
+//               <div className="w-1/2">
+//                 <label className="font-medium">City</label>
+//                 <select
+//                   value={String(editData.cityid)}
+//                   disabled={isUpdating || !editData.stateid}
+//                   onChange={(e) =>
+//                     setEditData({ ...editData, cityid: e.target.value })
+//                   }
+//                   className="w-full border px-3 py-2 rounded mt-1 disabled:bg-gray-100"
+//                 >
+//                   <option value="">
+//                     {editData.stateid ? "Select City" : "Select State first"}
+//                   </option>
+//                   {cities.map((c) => (
+//                     <option key={c.id} value={String(c.id)}>
+//                       {c.name}
+//                     </option>
+//                   ))}
+//                 </select>
+//               </div>
+//             </div>
+
+//             {/* Date + Venue in one row */}
+//             <div className="flex gap-4 mb-4">
+//               <div className="w-1/2">
+//                 <label className="font-medium">Expo Date (dd-mm-yyyy)</label>
+//                 <input
+//                   type="text"
+//                   inputMode="numeric"
+//                   disabled={isUpdating}
+//                   placeholder="dd-mm-yyyy"
+//                   value={editData.date ?? ""}
+//                   onChange={(e) =>
+//                     setEditData({ ...editData, date: e.target.value })
+//                   }
+//                   className="w-full border px-3 py-2 rounded mt-1 disabled:bg-gray-100"
+//                 />
+//               </div>
+
+//               <div className="w-1/2">
+//                 <label className="font-medium">Venue</label>
+//                 <input
+//                   type="text"
+//                   value={editData.venue ?? ""}
+//                   disabled={isUpdating}
+//                   onChange={(e) =>
+//                     setEditData({ ...editData, venue: e.target.value })
+//                   }
+//                   className="w-full border px-3 py-2 rounded mt-1 disabled:bg-gray-100"
+//                 />
+//               </div>
+//             </div>
+
+//             {/* Stall + Sq Meter in one row */}
+//             <div className="flex gap-4 mb-4">
+//               <div className="w-1/2">
+//                 <label className="font-medium">No of Stall</label>
+//                 <input
+//                   type="number"
+//                   value={String(editData.no_of_stall ?? "")}
+//                   disabled={isUpdating}
+//                   onChange={(e) =>
+//                     setEditData({ ...editData, no_of_stall: e.target.value })
+//                   }
+//                   className="w-full border px-3 py-2 rounded mt-1 disabled:bg-gray-100"
+//                 />
+//               </div>
+
+//               <div className="w-1/2">
+//                 <label className="font-medium">Total Sq. Meter</label>
+//                 <input
+//                   type="number"
+//                   value={String(editData.total_sq_meters ?? "")}
+//                   disabled={isUpdating}
+//                   onChange={(e) =>
+//                     setEditData({ ...editData, total_sq_meters: e.target.value })
+//                   }
+//                   className="w-full border px-3 py-2 rounded mt-1 disabled:bg-gray-100"
+//                 />
+//               </div>
+//             </div>
+
+//             <div className="flex justify-end gap-3">
+//               <button
+//                 onClick={() => setIsEditOpen(false)}
+//                 disabled={isUpdating}
+//                 className="px-4 py-2 bg-gray-300 rounded disabled:opacity-60"
+//               >
+//                 Cancel
+//               </button>
+
+//               <button
+//                 onClick={handleUpdate}
+//                 disabled={isUpdating}
+//                 className="px-4 py-2 bg-[#2e56a6] text-white rounded disabled:bg-gray-400 disabled:cursor-not-allowed"
+//               >
+//                 {isUpdating ? "Updating..." : "Update"}
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* DELETE POPUP */}
+//       {isDeleteOpen && (
+//         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+//           <div
+//             className="bg-white p-6 rounded-2xl shadow-xl w-[380px] relative"
+//             onClick={(e) => e.stopPropagation()}
+//           >
+//             <button
+//               onClick={() => setIsDeleteOpen(false)}
+//               disabled={isDeleting}
+//               className="absolute top-4 right-5 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+//               aria-label="Close"
+//             >
+//               ×
+//             </button>
+
+//             <h2 className="text-xl font-semibold text-red-600 mb-2">
+//               Delete Record
+//             </h2>
+
+//             <p className="text-gray-600 mb-6">
+//               Are You Sure You Want To Delete This expo?
+//             </p>
+
+//             <div className="flex justify-center gap-4">
+//               <button
+//                 className="px-5 py-2 border rounded-full"
+//                 onClick={() => setIsDeleteOpen(false)}
+//                 disabled={isDeleting}
+//               >
+//                 Cancel
+//               </button>
+
+//               <button
+//                 className="px-5 py-2 bg-red-600 text-white rounded-full disabled:bg-gray-400 disabled:cursor-not-allowed"
+//                 onClick={() => {
+//                   if (deleteId !== null) handleDelete(deleteId);
+//                 }}
+//                 disabled={isDeleting}
+//               >
+//                 {isDeleting ? "Deleting..." : "Delete"}
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
 import { toast } from "react-toastify";
 import { apiUrl } from "../../config";
+
+// Replace only this route if your backend uses a different API name.
+const CLEAR_CALLING_HISTORY_ENDPOINT = `${apiUrl}/ClearCallingHistory`;
 
 // ---------------- TYPES ----------------
 interface ApiState {
@@ -70,6 +1065,7 @@ export default function ExpoMaster() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isClearingHistory, setIsClearingHistory] = useState(false);
 
   // ----------- EDIT/DELETE MODALS -----------
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -87,6 +1083,10 @@ export default function ExpoMaster() {
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+
+  // 0 = closed, 1 = first confirmation, 2 = final confirmation
+  const [clearHistoryStep, setClearHistoryStep] = useState<0 | 1 | 2>(0);
+  const [clearHistoryExpo, setClearHistoryExpo] = useState<ExpoListRow | null>(null);
 
   // ----------- PAGINATION -----------
   const [currentPage, setCurrentPage] = useState(1);
@@ -440,6 +1440,47 @@ export default function ExpoMaster() {
     }
   };
 
+  const openClearHistoryPopup = (expo: ExpoListRow) => {
+    setClearHistoryExpo(expo);
+    setClearHistoryStep(1);
+  };
+
+  const closeClearHistoryPopup = () => {
+    if (isClearingHistory) return;
+    setClearHistoryStep(0);
+    setClearHistoryExpo(null);
+  };
+
+  const handleClearCallingHistory = async () => {
+    if (!clearHistoryExpo) {
+      toast.error("Expo not selected");
+      return;
+    }
+
+    try {
+      setIsClearingHistory(true);
+
+      const res = await postJson<{ success: boolean; message: string }>(
+        CLEAR_CALLING_HISTORY_ENDPOINT,
+        {
+          expo_id: String(clearHistoryExpo.Expoid),
+        }
+      );
+
+      setClearHistoryStep(0);
+      setClearHistoryExpo(null);
+      toast.success(
+        res?.message ||
+          `Calling history cleared successfully for ${clearHistoryExpo.name}`
+      );
+    } catch (e: any) {
+      console.error(e);
+      toastApiError(e, "Calling history clear failed");
+    } finally {
+      setIsClearingHistory(false);
+    }
+  };
+
   useEffect(() => {
     const init = async () => {
       setIsListing(true);
@@ -686,13 +1727,22 @@ export default function ExpoMaster() {
                       </button>
 
                       <button
+                        className="text-orange-600 hover:text-orange-800 disabled:text-gray-400"
+                        disabled={isListing || isClearingHistory}
+                        onClick={() => openClearHistoryPopup(item)}
+                        title="Clear Calling History"
+                      >
+                        <DeleteSweepIcon fontSize="small" />
+                      </button>
+
+                      <button
                         className="text-red-600 hover:text-red-800 disabled:text-gray-400"
                         disabled={isListing || isDeleting}
                         onClick={() => {
                           setDeleteId(item.Expoid);
                           setIsDeleteOpen(true);
                         }}
-                        title="Delete"
+                        title="Delete Expo"
                       >
                         <DeleteIcon fontSize="small" />
                       </button>
@@ -982,6 +2032,109 @@ export default function ExpoMaster() {
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* CLEAR CALLING HISTORY - TWO STEP CONFIRMATION */}
+      {clearHistoryStep !== 0 && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          onClick={closeClearHistoryPopup}
+        >
+          <div
+            className="relative w-full max-w-[430px] rounded-2xl bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={closeClearHistoryPopup}
+              disabled={isClearingHistory}
+              className="absolute right-5 top-4 text-2xl font-bold text-gray-400 hover:text-gray-700 disabled:cursor-not-allowed"
+              aria-label="Close clear history confirmation"
+            >
+              ×
+            </button>
+
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600">
+              <DeleteSweepIcon />
+            </div>
+
+            {clearHistoryStep === 1 ? (
+              <>
+                <h2 className="mb-2 text-xl font-semibold text-gray-900">
+                  Clear Calling History?
+                </h2>
+                <p className="mb-3 text-sm leading-6 text-gray-600">
+                  Are you sure you want to clear calling history only for this
+                  expo?
+                </p>
+                <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {clearHistoryExpo?.name}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Expo ID: {clearHistoryExpo?.Expoid}
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={closeClearHistoryPopup}
+                    className="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setClearHistoryStep(2)}
+                    className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-700"
+                  >
+                    Yes, Continue
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="mb-2 text-xl font-semibold text-red-600">
+                  Final Confirmation
+                </h2>
+                <p className="mb-3 text-sm leading-6 text-gray-700">
+                  Are you absolutely sure?
+                </p>
+                <p className="mb-6 rounded-lg border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-700">
+                  All calling-history records linked with
+                  <strong> {clearHistoryExpo?.name}</strong> will be permanently
+                  deleted. Calling history of other expos will remain unchanged.
+                  This action cannot be undone.
+                </p>
+
+                <div className="flex flex-wrap justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={closeClearHistoryPopup}
+                    disabled={isClearingHistory}
+                    className="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    No, Keep History
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleClearCallingHistory}
+                    disabled={isClearingHistory}
+                    className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                  >
+                    {isClearingHistory
+                      ? "Deleting History..."
+                      : "Yes, Delete Expo History"}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

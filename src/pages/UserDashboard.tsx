@@ -22,10 +22,46 @@ type User = {
     address?: string;
     Department?: string;
 };
+type StoredDepartment = {
+    id: number;
+    name: string;
+};
 
+const getUserDepartments = (): StoredDepartment[] => {
+    try {
+         const userData = JSON.parse(
+            localStorage.getItem("user") || "[]"
+        );
+        const storedDepartments = userData.departments || "[]";        
+
+        if (Array.isArray(storedDepartments)) {
+            return storedDepartments
+                .map((department: any) => ({
+                    id: Number(department?.id || 0),
+                    name: String(department?.name || "").trim(),
+                }))
+                .filter(
+                    (department: StoredDepartment) =>
+                        department.id > 0 && department.name !== ""
+                );
+        }
+
+        return [];
+    } catch (error) {
+        console.error("Department localStorage parse error:", error);
+        return [];
+    }
+};
 export default function UserDashboard() {
     const userId = localStorage.getItem("User_Id") || "";
     const navigate = useNavigate();
+const userDepartments = getUserDepartments();
+
+const isCallingDepartment = userDepartments.some(
+    (department) =>
+        department.name.trim().toLowerCase() === "calling"
+);
+console.log(isCallingDepartment,"bcbg");
 
     const [loadingCounts, setLoadingCounts] = useState(false);
     const [totalVisitors, setTotalVisitors] = useState(0);
@@ -34,9 +70,7 @@ export default function UserDashboard() {
     const [todayExhibitors, setTodayExhibitors] = useState(0);
     const [expectedTotalExhibitors, setExpectedTotalExhibitors] = useState(0);
     const [todayExpectedExhibitors, setTodayExpectedExhibitors] = useState(0);
-    const userDetail = JSON.parse(localStorage.getItem("user") || "{}") as User;
-    const department = userDetail?.Department?.toLowerCase()?.trim() || "";
-    const isCallingDepartment = department === "calling";
+
     const fetchVisitorCounts = async () => {
         if (!userId) {
             toast.error("User_Id not found in localStorage");
