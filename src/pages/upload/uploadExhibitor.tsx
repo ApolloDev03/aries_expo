@@ -168,6 +168,7 @@ export default function UploadExhibitor() {
             "Contact Two Designation",
             "Expo Name",
             "Size SQ Meter",
+            "Amount"
         ];
 
         const csv = `${header.join(",")}\n`;

@@ -8,29 +8,31 @@ type IndustryItem = { id: number; name: string };
 type OptionItem = { id: string; name: string };
 type SubcategoryItem = { id: string; industry_subcategory_name: string };
 
-type ExpectedExhibitorRow = {
+type ExhibitorRow = {
     id: number;
-    gst?: string | null;
+    exhibitor_company_information_id?: number | null;
     company_name?: string | null;
+    gst?: string | null;
     primary_contact_name?: string | null;
     primary_contact_mobile?: string | null;
-    primary_contact_designation?: string | null;
     primary_contact_email?: string | null;
-    state_id?: number | null;
-    city_id?: number | null;
+    primary_contact_designation?: string | null;
+    address?: string | null;
     state_name?: string | null;
     city_name?: string | null;
-    address?: string | null;
+    expo_id?: number | null;
+    expo_name?: string | null;
+    expo_slug?: string | null;
     industry_id?: number | null;
-    industry?: string | null;
+    industry_name?: string | null;
     category_id?: number | null;
-    industry_category?: string | null;
+    category_name?: string | null;
     subcategory_id?: number | null;
-    industry_subcategory?: string | null;
-    iBusinessType?: number | null;
-    businessType?: string | null;
+    subcategory_name?: string | null;
+    business_type?: string | null;
+    store_size_sq_meter?: number | string | null;
     created_at?: string | null;
-    enter_by?: number | string | null;
+    entered_by?: string | number | null;
 };
 
 function getToken() {
@@ -69,7 +71,7 @@ function pickName(obj: any) {
     );
 }
 
-export default function ExpectedExhibitorReportPage() {
+export default function ExhibitorReportPage() {
     // -------------------- Filters --------------------
     const [industryId, setIndustryId] = useState("");
     const [businessTypeId, setBusinessTypeId] = useState("");
@@ -84,7 +86,7 @@ export default function ExpectedExhibitorReportPage() {
     const [subcategoryOptions, setSubcategoryOptions] = useState<SubcategoryItem[]>([]);
 
     // -------------------- Table data --------------------
-    const [rows, setRows] = useState<ExpectedExhibitorRow[]>([]);
+    const [rows, setRows] = useState<ExhibitorRow[]>([]);
     const [count, setCount] = useState(0);
 
     // -------------------- Loading --------------------
@@ -96,8 +98,8 @@ export default function ExpectedExhibitorReportPage() {
     const [isExporting, setIsExporting] = useState(false);
 
     // -------------------- API --------------------
-    const LIST_API = `${apiUrl}/exhibitors/admin_expected_exhibitor_list`;
-    const EXPORT_API = `${apiUrl}/exhibitors/admin_expected_exhibitor_export`;
+    const LIST_API = `${apiUrl}/getExhibitorReport`;
+    const EXPORT_API = `${apiUrl}/exportExhibitorReport`;
 
     // -------------------- Helpers --------------------
     const resetResults = () => {
@@ -110,11 +112,16 @@ export default function ExpectedExhibitorReportPage() {
     };
 
     const buildPayload = () => ({
-        iBusinessType: businessTypeId || "",
-        subcategory_id: subcategoryId || "",
-        category_id: categoryId || "",
+        inputsearch: textSearch.trim(),
+        business_type_id: businessTypeId || "",
+        expo_slug: "",
         industry_id: industryId || "",
-        search: textSearch.trim(),
+        category_id: categoryId || "",
+        subcategory_id: subcategoryId || "",
+        from_date: "",
+        to_date: "",
+        page: 1,
+        per_page: 10,
     });
 
     // -------------------- Industry --------------------
@@ -282,11 +289,6 @@ export default function ExpectedExhibitorReportPage() {
 
     // -------------------- Search --------------------
     const handleSearch = async () => {
-        if (!industryId) {
-            toast.error("Please select Industry");
-            return;
-        }
-
         try {
             setIsSearching(true);
             resetResults();
@@ -298,12 +300,19 @@ export default function ExpectedExhibitorReportPage() {
             });
 
             if (res.data?.success) {
-                const list: ExpectedExhibitorRow[] = Array.isArray(res.data?.data)
+                const list: ExhibitorRow[] = Array.isArray(res.data?.data)
                     ? res.data.data
                     : [];
 
                 setRows(list);
-                setCount(Number(res.data?.count || list.length || 0));
+
+                const totalCount =
+                    Number(res.data?.meta?.total) ||
+                    Number(res.data?.count) ||
+                    list.length ||
+                    0;
+
+                setCount(totalCount);
 
                 if (list.length === 0) {
                     toast.info("No data found");
@@ -320,23 +329,28 @@ export default function ExpectedExhibitorReportPage() {
             setIsSearching(false);
         }
     };
-
+    // -------------------- Export --------------------
     // -------------------- Export --------------------
     const handleExport = async () => {
-        if (!industryId) {
-            toast.error("Please select Industry");
-            return;
-        }
-
         try {
             setIsExporting(true);
 
-            const payload = buildPayload();
+            const payload = {
+                expo_slug: "",
+                industry_id: industryId || "",
+                category_id: categoryId || "",
+                subcategory_id: subcategoryId || "",
+                business_type_id: businessTypeId || "",
+                inputsearch: textSearch.trim(),
+                from_date: "",
+                to_date: "",
+            };
 
             const res = await axios.post(EXPORT_API, payload, {
                 responseType: "blob",
                 headers: {
                     ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
+                    Accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 },
             });
 
@@ -347,12 +361,14 @@ export default function ExpectedExhibitorReportPage() {
                 contentType.includes("text/json")
             ) {
                 const text = await new Response(res.data).text();
+
                 try {
                     const json = JSON.parse(text);
                     toast.error(json?.message || "Export failed");
                 } catch {
                     toast.error("Export failed");
                 }
+
                 return;
             }
 
@@ -364,20 +380,34 @@ export default function ExpectedExhibitorReportPage() {
 
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement("a");
+
             link.href = url;
 
             const today = new Date().toISOString().slice(0, 10);
-            link.download = `expected_exhibitor_report_${today}.xlsx`;
+            link.download = `exhibitor_report_${today}.xlsx`;
 
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+
             window.URL.revokeObjectURL(url);
 
             toast.success("Excel exported successfully");
         } catch (error: any) {
             console.error(error);
-            toast.error(error?.response?.data?.message || "Error exporting excel");
+
+            if (error?.response?.data instanceof Blob) {
+                const text = await error.response.data.text();
+
+                try {
+                    const json = JSON.parse(text);
+                    toast.error(json?.message || "Error exporting excel");
+                } catch {
+                    toast.error("Error exporting excel");
+                }
+            } else {
+                toast.error(error?.response?.data?.message || "Error exporting excel");
+            }
         } finally {
             setIsExporting(false);
         }
@@ -391,7 +421,7 @@ export default function ExpectedExhibitorReportPage() {
             <div className="w-full bg-white rounded-2xl shadow-xl">
                 <div className="px-6 py-4 border-b">
                     <h2 className="text-2xl font-bold text-gray-800">
-                        Expected Exhibitor Report
+                        Exhibitor Report
                     </h2>
                 </div>
 
@@ -575,18 +605,24 @@ export default function ExpectedExhibitorReportPage() {
                                         <td className="p-3 border-b">{capitalize(r.company_name || "-")}</td>
                                         <td className="p-3 border-b">{capitalize(r.primary_contact_name || "-")}</td>
                                         <td className="p-3 border-b">{r.primary_contact_mobile || "-"}</td>
-                                        <td className="p-3 border-b email">{(r.primary_contact_email || "-").toLowerCase?.() || "-"}</td>
-                                        <td className="p-3 border-b">{capitalize(r.primary_contact_designation || "-")}</td>
+                                        <td className="p-3 border-b email">
+                                            {(r.primary_contact_email || "-").toLowerCase?.() || "-"}
+                                        </td>
+                                        <td className="p-3 border-b">
+                                            {capitalize(r.primary_contact_designation || "-")}
+                                        </td>
                                         <td className="p-3 border-b">{r.gst || "-"}</td>
                                         <td className="p-3 border-b">{capitalize(r.address || "-")}</td>
                                         <td className="p-3 border-b">{capitalize(r.state_name || "-")}</td>
                                         <td className="p-3 border-b">{capitalize(r.city_name || "-")}</td>
-                                        <td className="p-3 border-b">{capitalize(r.industry || "-")}</td>
-                                        <td className="p-3 border-b">{capitalize(r.businessType || "-")}</td>
-                                        <td className="p-3 border-b">{capitalize(r.industry_category || "-")}</td>
-                                        <td className="p-3 border-b">{capitalize(r.industry_subcategory || "-")}</td>
+
+                                        <td className="p-3 border-b">{capitalize(r.industry_name || "-")}</td>
+                                        <td className="p-3 border-b">{capitalize(r.business_type || "-")}</td>
+                                        <td className="p-3 border-b">{capitalize(r.category_name || "-")}</td>
+                                        <td className="p-3 border-b">{capitalize(r.subcategory_name || "-")}</td>
+
                                         <td className="p-3 border-b">{r.created_at || "-"}</td>
-                                        <td className="p-3 border-b">{capitalize(r.enter_by || "-")}</td>
+                                        <td className="p-3 border-b">{capitalize(r.entered_by || "-")}</td>
                                     </tr>
                                 ))
                             )}

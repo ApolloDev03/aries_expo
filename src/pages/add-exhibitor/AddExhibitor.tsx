@@ -600,7 +600,7 @@ export default function AddExhivitor() {
         if (!businessTypeId) return toast.error("Business Type is required"), false;
 
         if (!categoryId) return toast.error("Category is required"), false;
-        if (!subcategoryId) return toast.error("Subcategory is required"), false;
+        // if (!subcategoryId) return toast.error("Subcategory is required"), false;
 
         const nonEmptyCards = contacts.filter((c) => {
             const any = c.mobile.trim() || c.name.trim() || c.designation.trim() || c.email.trim();
@@ -818,7 +818,7 @@ export default function AddExhivitor() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Stole Size  (Sq. Meter)</label>
+                        <label className="block text-sm font-medium mb-1">stall Size  (Sq. Meter)</label>
                         <input
                             value={storeSize}
                             onChange={(e) => {
