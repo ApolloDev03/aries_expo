@@ -8,7 +8,6 @@
 // import { toast } from "react-toastify";
 // import { apiUrl } from "../../config";
 
-
 // type StatusType = "active" | "inactive";
 
 // interface UserData {
@@ -16,8 +15,8 @@
 //   name: string;
 //   mobile: string;
 //   address: string;
-//   email: string; // ✅ ensure always exists
-//   department_id?: number | null;
+//   email: string;
+//  department_id?: number[];
 //   department?: string;
 //   expo_count?: number;
 //   status: StatusType;
@@ -39,13 +38,11 @@
 //   };
 
 //   const getApiMessage = (err: any, fallback = "Something went wrong") => {
-//     // supports: message, error, errors(object), validation arrays, etc.
 //     const d = err?.response?.data;
 
 //     if (typeof d?.message === "string" && d.message) return d.message;
 //     if (typeof d?.error === "string" && d.error) return d.error;
 
-//     // Laravel style: errors: {field: ["msg1", "msg2"]}
 //     if (d?.errors && typeof d.errors === "object") {
 //       const firstKey = Object.keys(d.errors)[0];
 //       const firstVal = d.errors[firstKey];
@@ -57,12 +54,44 @@
 //     return fallback;
 //   };
 
+//   const getPageNumbers = (current: number, total: number) => {
+//     const pageNumbers: (number | string)[] = [];
+
+//     if (total <= 7) {
+//       for (let i = 1; i <= total; i++) {
+//         pageNumbers.push(i);
+//       }
+//       return pageNumbers;
+//     }
+
+//     pageNumbers.push(1);
+
+//     if (current > 3) {
+//       pageNumbers.push("...");
+//     }
+
+//     const start = Math.max(2, current - 1);
+//     const end = Math.min(total - 1, current + 1);
+
+//     for (let i = start; i <= end; i++) {
+//       pageNumbers.push(i);
+//     }
+
+//     if (current < total - 2) {
+//       pageNumbers.push("...");
+//     }
+
+//     pageNumbers.push(total);
+
+//     return pageNumbers;
+//   };
+
 //   // ---------------- Form States ----------------
 //   const [name, setName] = useState("");
 //   const [mobile, setMobile] = useState("");
 //   const [address, setAddress] = useState("");
-//   const [email, setEmail] = useState(""); // ✅ add user email
-//   const [departmentId, setDepartmentId] = useState<string>("");
+//   const [email, setEmail] = useState("");
+// const [departmentIds, setDepartmentIds] = useState<string[]>([]);
 //   const [password, setPassword] = useState("");
 
 //   // ---------------- Search + Pagination ----------------
@@ -132,7 +161,6 @@
 //       const list: UserData[] = (res.data?.data || []).map((u: any) => {
 //         const rawStatus = Number(u.iStatus ?? u.status ?? 1);
 
-//         // ✅ email mapping (fallback keys)
 //         const mappedEmail =
 //           u.email ?? u.user_email ?? u.Email ?? u.mail ?? u.userEmail ?? "";
 
@@ -141,9 +169,17 @@
 //           name: String(u.name ?? ""),
 //           mobile: String(u.mobile ?? ""),
 //           address: String(u.address ?? ""),
-//           email: String(mappedEmail ?? ""), // ✅ always set
-//           department: String(u.departname ?? u.department ?? ""),
-//           department_id: u.depart_id ? Number(u.depart_id) : null,
+//           email: String(mappedEmail ?? ""),
+//         department: normalizeDepartmentNames(
+//   u.departname ?? u.departments ?? u.department ?? ""
+// ).join(", "),
+
+// department_ids: normalizeDepartmentIds(
+//   u.depart_ids ??
+//   u.department_ids ??
+//   u.depart_id ??
+//   u.department_id
+// ),
 //           expo_count: u.expo_count ? Number(u.expo_count) : 0,
 //           iStatus: rawStatus,
 //           status: rawStatus === 1 ? "active" : "inactive",
@@ -164,18 +200,53 @@
 //     fetchUsers();
 //     // eslint-disable-next-line react-hooks/exhaustive-deps
 //   }, []);
+// const normalizeDepartmentIds = (value: any): number[] => {
+//   if (Array.isArray(value)) {
+//     return value
+//       .map((id) => Number(id))
+//       .filter((id) => !Number.isNaN(id) && id > 0);
+//   }
 
+//   if (value === null || value === undefined || value === "") {
+//     return [];
+//   }
+
+//   return String(value)
+//     .split(",")
+//     .map((id) => Number(id.trim()))
+//     .filter((id) => !Number.isNaN(id) && id > 0);
+// };
+
+// const normalizeDepartmentNames = (value: any): string[] => {
+//   if (Array.isArray(value)) {
+//     return value
+//       .map((name) => String(name).trim())
+//       .filter(Boolean);
+//   }
+
+//   return String(value ?? "")
+//     .split(",")
+//     .map((name) => name.trim())
+//     .filter(Boolean);
+// };
 //   // ---------------- Add User ----------------
 //   const handleSave = async () => {
-//     if (!name || !mobile || !address || !departmentId || !password) {
+//     if (
+//   !name ||
+//   !mobile ||
+//   !address ||
+//   departmentIds.length === 0 ||
+//   !password
+// ) {
 //       toast.error("Please fill all required fields");
 //       return;
 //     }
+
 //     if (!/^\d{10}$/.test(mobile)) {
 //       toast.error("Mobile must be 10 digits");
 //       return;
 //     }
-//     // ✅ optional email validation (only if filled)
+
 //     if (email && !/^\S+@\S+\.\S+$/.test(email)) {
 //       toast.error("Enter valid email");
 //       return;
@@ -184,15 +255,14 @@
 //     try {
 //       setSaving(true);
 
-//       const payload = {
-//         name,
-//         mobile,
-//         address,
-//         email, // ✅ send email
-//         department_id: departmentId,
-//         password,
-//       };
-
+//  const payload = {
+//   name,
+//   mobile,
+//   address,
+//   email,
+//   department_ids: departmentIds.map(Number),
+//   password,
+// };
 //       const res = await axios.post(`${apiUrl}/UserAdd`, payload, {
 //         headers: { ...getAuthHeaders() },
 //       });
@@ -202,8 +272,8 @@
 //         setName("");
 //         setMobile("");
 //         setAddress("");
-//         setEmail(""); // ✅ reset
-//         setDepartmentId("");
+//         setEmail("");
+//        setDepartmentIds([]);
 //         setPassword("");
 //         await fetchUsers();
 //       } else {
@@ -239,13 +309,30 @@
 //         return;
 //       }
 
-//       const deptName = String(row.department ?? row.departname ?? "").trim();
+//      const departmentNames = normalizeDepartmentNames(
+//   row.departments ?? row.department ?? row.departname ?? ""
+// );
 
-//       const matchedDept = deptList.find(
-//         (d) => d.name.trim().toLowerCase() === deptName.toLowerCase()
-//       );
+// let selectedDepartmentIds = normalizeDepartmentIds(
+//   row.department_ids ??
+//   row.depart_ids ??
+//   row.department_id ??
+//   row.depart_id
+// );
 
-//       // ✅ email mapping from Usershow response
+// // When API only returns department names
+// if (selectedDepartmentIds.length === 0 && departmentNames.length > 0) {
+//   selectedDepartmentIds = departmentNames
+//     .map((departmentName) => {
+//       return deptList.find(
+//         (department) =>
+//           department.name.trim().toLowerCase() ===
+//           departmentName.trim().toLowerCase()
+//       )?.id;
+//     })
+//     .filter((id): id is number => Boolean(id));
+// }
+
 //       const mappedEmail =
 //         row.email ?? row.user_email ?? row.Email ?? row.mail ?? "";
 
@@ -254,9 +341,9 @@
 //         name: String(row.name ?? ""),
 //         mobile: String(row.mobile ?? ""),
 //         address: String(row.address ?? ""),
-//         email: String(mappedEmail ?? ""), // ✅ set in edit modal
-//         department: deptName,
-//         department_id: matchedDept ? matchedDept.id : null,
+//         email: String(mappedEmail ?? ""),
+// department: departmentNames.join(", "),
+// department_id: selectedDepartmentIds,
 //         status: "active",
 //         iStatus: 1,
 //       });
@@ -284,38 +371,35 @@
 //       toast.error("Please fill all fields");
 //       return;
 //     }
+
 //     if (!/^\d{10}$/.test(editData.mobile)) {
 //       toast.error("Mobile must be 10 digits");
 //       return;
 //     }
-//     // ✅ optional email validation (only if filled)
+
 //     if (editData.email && !/^\S+@\S+\.\S+$/.test(editData.email)) {
 //       toast.error("Enter valid email");
 //       return;
 //     }
 
-//     const deptId =
-//       editData.department_id ??
-//       (editData.department
-//         ? departments.find(
-//           (d) => d.name.toLowerCase() === editData.department!.toLowerCase()
-//         )?.id
-//         : null);
-
-//     if (!deptId) {
-//       toast.error("Please select department");
-//       return;
-//     }
+//   if (
+//   !editData.department_id ||
+//   editData.department_id.length === 0
+// ) {
+//   toast.error("Please select at least one department");
+//   return;
+// }
 
 //     try {
 //       setUpdating(true);
+
 //       const payload: any = {
 //         user_id: String(editData.id),
 //         name: editData.name,
 //         mobile: editData.mobile,
 //         address: editData.address,
-//         email: editData?.email, // ✅ send email in update
-//         department_id: String(deptId),
+//         email: editData?.email,
+//         department_id: editData.department_id,
 //       };
 
 //       const res = await axios.post(`${apiUrl}/UserUpdate`, payload, {
@@ -430,22 +514,50 @@
 
 //   // ---------------- Filter + Pagination ----------------
 //   const filteredUsers = useMemo(() => {
-//     return users.filter((item) => item.mobile.includes(searchMobile));
+//     const search = searchMobile.trim();
+
+//     return users.filter((item) => {
+//       return (
+//         item.mobile.includes(search) ||
+//         item.name.toLowerCase().includes(search.toLowerCase()) ||
+//         item.email.toLowerCase().includes(search.toLowerCase()) ||
+//         item.address.toLowerCase().includes(search.toLowerCase()) ||
+//         (item.department || "").toLowerCase().includes(search.toLowerCase())
+//       );
+//     });
 //   }, [users, searchMobile]);
 
 //   const totalPages = Math.ceil(filteredUsers.length / recordsPerPage);
-//   const indexOfLastRecord = currentPage * recordsPerPage;
+//   const safeCurrentPage = totalPages === 0 ? 1 : Math.min(currentPage, totalPages);
+
+//   const indexOfLastRecord = safeCurrentPage * recordsPerPage;
 //   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+
 //   const currentRecords = filteredUsers.slice(
 //     indexOfFirstRecord,
 //     indexOfLastRecord
 //   );
 
-//   const handlePageChange = (page: number) => setCurrentPage(page);
+//   const handlePageChange = (page: number) => {
+//     if (page >= 1 && page <= totalPages) {
+//       setCurrentPage(page);
+//     }
+//   };
+
+//   const pageNumbers = getPageNumbers(safeCurrentPage, totalPages);
 
 //   useEffect(() => {
 //     setCurrentPage(1);
 //   }, [searchMobile]);
+
+//   useEffect(() => {
+//     if (currentPage > totalPages && totalPages > 0) {
+//       setCurrentPage(totalPages);
+//     }
+//     if (totalPages === 0 && currentPage !== 1) {
+//       setCurrentPage(1);
+//     }
+//   }, [currentPage, totalPages]);
 
 //   return (
 //     <div className="flex gap-8 p-6">
@@ -474,7 +586,6 @@
 //           className="w-full border px-3 py-2 rounded mt-1 mb-4"
 //         />
 
-//         {/* ✅ EMAIL FIELD (Add) */}
 //         <label className="font-medium">Email Address</label>
 //         <input
 //           type="text"
@@ -493,21 +604,31 @@
 //           className="w-full border px-3 py-2 rounded mt-1 mb-4"
 //         />
 
+//       <label className="font-medium">Department</label>
 
+// <select
+//   multiple
+//   value={departmentIds}
+//   onChange={(e) => {
+//     const selectedIds = Array.from(
+//       e.target.selectedOptions,
+//       (option) => option.value
+//     );
 
-//         <label className="font-medium">Department</label>
-//         <select
-//           value={departmentId}
-//           onChange={(e) => setDepartmentId(e.target.value)}
-//           className="w-full border px-3 py-2 rounded mt-1 mb-6"
-//         >
-//           <option value="">Select Department</option>
-//           {departments.map((d) => (
-//             <option key={d.id} value={String(d.id)}>
-//               {d.name}
-//             </option>
-//           ))}
-//         </select>
+//     setDepartmentIds(selectedIds);
+//   }}
+//   className="w-full min-h-[130px] border px-3 py-2 rounded mt-1 mb-2"
+// >
+//   {departments.map((department) => (
+//     <option key={department.id} value={String(department.id)}>
+//       {department.name}
+//     </option>
+//   ))}
+// </select>
+
+// <p className="text-xs text-gray-500 mb-6">
+//   Hold Ctrl on Windows or Command on Mac to select multiple departments.
+// </p>
 
 //         <label className="font-medium">Password</label>
 //         <input
@@ -537,11 +658,11 @@
 //         <div className="bg-white border rounded-xl p-4 mb-5 shadow-sm flex items-center gap-3">
 //           <input
 //             type="text"
-//             placeholder="Search by Mobile Number"
+//             placeholder="Search by Mobile / Name / Email"
 //             value={searchMobile}
 //             onChange={(e) => {
 //               const value = e.target.value;
-//               if (/^\d{0,10}$/.test(value)) setSearchMobile(value);
+//               if (/^[a-zA-Z0-9@._\-\s]{0,100}$/.test(value)) setSearchMobile(value);
 //             }}
 //             className="border px-3 py-2 rounded w-1/3"
 //           />
@@ -569,9 +690,9 @@
 //             <tbody>
 //               {currentRecords.map((item, index) => (
 //                 <tr key={item.id} className="border-b hover:bg-gray-50">
-//                   <td className="p-3">{index + 1}</td>
+//                   <td className="p-3">{indexOfFirstRecord + index + 1}</td>
 //                   <td className="p-2">{item.name}</td>
-//                   <td className="p-2">{item.email || "-"}</td>
+//                   <td className="p-2 email">{item.email || "-"}</td>
 //                   <td className="p-2">{item.mobile}</td>
 //                   <td className="p-2">{item.address}</td>
 //                   <td className="p-2">{item.department || "-"}</td>
@@ -656,60 +777,63 @@
 //         </div>
 
 //         {/* PAGINATION */}
-//         <div className="flex justify-center items-center mt-4 gap-2">
-//           <button
-//             disabled={currentPage === 1}
-//             onClick={() => handlePageChange(currentPage - 1)}
-//             className={`px-3 py-1 rounded border ${currentPage === 1
-//               ? "bg-gray-200 cursor-not-allowed"
-//               : "bg-white hover:bg-gray-100"
-//               }`}
-//           >
-//             Prev
-//           </button>
-
-//           {[...Array(totalPages || 1)].map((_, index) => {
-//             const page = index + 1;
-//             return (
+//         {filteredUsers.length > 0 && (
+//           <>
+//             <div className="flex flex-wrap justify-center items-center mt-4 gap-2">
 //               <button
-//                 key={page}
-//                 onClick={() => handlePageChange(page)}
-//                 className={`px-3 py-1 rounded border ${currentPage === page
-//                   ? "bg-[#2e56a6] text-white"
+//                 disabled={safeCurrentPage === 1}
+//                 onClick={() => handlePageChange(safeCurrentPage - 1)}
+//                 className={`px-3 py-1 rounded border ${safeCurrentPage === 1
+//                   ? "bg-gray-200 cursor-not-allowed"
 //                   : "bg-white hover:bg-gray-100"
 //                   }`}
 //               >
-//                 {page}
+//                 Prev
 //               </button>
-//             );
-//           })}
 
-//           <button
-//             disabled={currentPage === totalPages || totalPages === 0}
-//             onClick={() => handlePageChange(currentPage + 1)}
-//             className={`px-3 py-1 rounded border ${currentPage === totalPages || totalPages === 0
-//               ? "bg-gray-200 cursor-not-allowed"
-//               : "bg-white hover:bg-gray-100"
-//               }`}
-//           >
-//             Next
-//           </button>
-//         </div>
+//               {pageNumbers.map((page, index) =>
+//                 page === "..." ? (
+//                   <span
+//                     key={`dots-${index}`}
+//                     className="px-3 py-1 text-gray-500 select-none"
+//                   >
+//                     ...
+//                   </span>
+//                 ) : (
+//                   <button
+//                     key={page}
+//                     onClick={() => handlePageChange(Number(page))}
+//                     className={`px-3 py-1 rounded border min-w-[40px] ${safeCurrentPage === page
+//                       ? "bg-[#2e56a6] text-white"
+//                       : "bg-white hover:bg-gray-100"
+//                       }`}
+//                   >
+//                     {page}
+//                   </button>
+//                 )
+//               )}
+
+//               <button
+//                 disabled={safeCurrentPage === totalPages || totalPages === 0}
+//                 onClick={() => handlePageChange(safeCurrentPage + 1)}
+//                 className={`px-3 py-1 rounded border ${safeCurrentPage === totalPages || totalPages === 0
+//                   ? "bg-gray-200 cursor-not-allowed"
+//                   : "bg-white hover:bg-gray-100"
+//                   }`}
+//               >
+//                 Next
+//               </button>
+//             </div>
+//           </>
+//         )}
 
 //         {/* EDIT MODAL */}
 //         {isEditOpen && editData && (
-//           <div
-//             className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
-//           // onClick={() => {
-//           //   setIsEditOpen(false);
-//           //   setEditData(null);
-//           // }} 
-//           >
+//           <div className="fixed inset-0  bg-black bg-opacity-40 flex items-center justify-center">
 //             <div
 //               className="bg-white p-6 rounded-lg shadow-lg w-96 relative"
-//               onClick={(e) => e.stopPropagation()} // ❌ prevent inside close
+//               onClick={(e) => e.stopPropagation()}
 //             >
-//               {/* ❌ Close (X) icon */}
 //               <button
 //                 onClick={() => {
 //                   setIsEditOpen(false);
@@ -746,7 +870,6 @@
 //                 className="w-full border px-3 py-2 rounded mt-1 mb-4"
 //               />
 
-//               {/* ✅ EMAIL FIELD (Edit) */}
 //               <label className="font-medium">Email Address</label>
 //               <input
 //                 type="text"
@@ -756,8 +879,6 @@
 //                 }
 //                 className="w-full border px-3 py-2 rounded mt-1 mb-4"
 //               />
-
-
 
 //               <label className="font-medium">Address</label>
 //               <input
@@ -769,28 +890,39 @@
 //                 className="w-full border px-3 py-2 rounded mt-1 mb-4"
 //               />
 
-//               <label className="font-medium">Department</label>
-//               <select
-//                 value={String(editData.department_id ?? "")}
-//                 onChange={(e) =>
-//                   setEditData({
-//                     ...editData,
-//                     department_id: e.target.value ? Number(e.target.value) : null,
-//                     department:
-//                       departments.find((d) => String(d.id) === e.target.value)
-//                         ?.name || "",
-//                   })
-//                 }
-//                 className="w-full border px-3 py-2 rounded mt-1 mb-4"
-//               >
-//                 <option value="">Select Department</option>
-//                 {departments.map((d) => (
-//                   <option key={d.id} value={String(d.id)}>
-//                     {d.name}
-//                   </option>
-//                 ))}
-//               </select>
+//             <label className="font-medium">Department</label>
 
+// <select
+//   multiple
+//   value={(editData.department_id ?? []).map(String)}
+//   onChange={(e) => {
+//     const selectedIds = Array.from(
+//       e.target.selectedOptions,
+//       (option) => Number(option.value)
+//     );
+
+//     const selectedNames = departments
+//       .filter((department) => selectedIds.includes(department.id))
+//       .map((department) => department.name);
+
+//     setEditData({
+//       ...editData,
+//       department_id: selectedIds,
+//       department: selectedNames.join(", "),
+//     });
+//   }}
+//   className="w-full min-h-[130px] border px-3 py-2 rounded mt-1 mb-2"
+// >
+//   {departments.map((department) => (
+//     <option key={department.id} value={String(department.id)}>
+//       {department.name}
+//     </option>
+//   ))}
+// </select>
+
+// <p className="text-xs text-gray-500 mb-4">
+//   Hold Ctrl on Windows or Command on Mac to select multiple departments.
+// </p>
 //               <div className="flex justify-end gap-3">
 //                 <button
 //                   className="px-4 py-2 bg-gray-300 rounded"
@@ -814,18 +946,13 @@
 //           </div>
 //         )}
 
-
 //         {/* DELETE POPUP */}
 //         {isDeleteOpen && (
-//           <div
-//             className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
-//           // onClick={() => setIsDeleteOpen(false)}   
-//           >
+//           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
 //             <div
 //               className="bg-white p-6 rounded-2xl shadow-xl w-[380px] relative"
-//               onClick={(e) => e.stopPropagation()}   // ❌ prevent close on inner click
+//               onClick={(e) => e.stopPropagation()}
 //             >
-//               {/* ❌ Cross (X) icon */}
 //               <button
 //                 onClick={() => setIsDeleteOpen(false)}
 //                 className="absolute top-4 right-5 text-gray-500 hover:text-gray-700 text-2xl font-bold"
@@ -865,18 +992,13 @@
 //           </div>
 //         )}
 
-
 //         {/* PASSWORD POPUP */}
 //         {isPasswordOpen && (
-//           <div
-//             className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
-//           // onClick={() => setIsPasswordOpen(false)}  
-//           >
+//           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
 //             <div
 //               className="bg-white p-6 rounded-2xl shadow-xl w-[380px] relative"
-//               onClick={(e) => e.stopPropagation()}     // ❌ prevent inside close
+//               onClick={(e) => e.stopPropagation()}
 //             >
-//               {/* ❌ Cross (X) icon */}
 //               <button
 //                 onClick={() => setIsPasswordOpen(false)}
 //                 className="absolute top-4 right-5 text-gray-500 hover:text-gray-700 text-2xl font-bold"
@@ -934,12 +1056,10 @@
 //             </div>
 //           </div>
 //         )}
-
 //       </div>
 //     </div>
 //   );
 // }
-
 
 
 import { useEffect, useMemo, useState } from "react";
@@ -960,8 +1080,10 @@ interface UserData {
   mobile: string;
   address: string;
   email: string;
-  department_id?: number | null;
+  department_id?: number[];
   department?: string;
+  primary_department_id?: number;
+  primary_department?: string;
   expo_count?: number;
   status: StatusType;
   iStatus?: number;
@@ -1035,7 +1157,7 @@ export default function UserMaster() {
   const [mobile, setMobile] = useState("");
   const [address, setAddress] = useState("");
   const [email, setEmail] = useState("");
-  const [departmentId, setDepartmentId] = useState<string>("");
+  const [departmentIds, setDepartmentIds] = useState<string[]>([]);
   const [password, setPassword] = useState("");
 
   // ---------------- Search + Pagination ----------------
@@ -1091,6 +1213,85 @@ export default function UserMaster() {
     }
   };
 
+  // ---------------- Department Normalizers ----------------
+  const normalizeDepartmentIds = (value: any): number[] => {
+    const toId = (item: any) => {
+      if (item && typeof item === "object") {
+        return Number(
+          item.id ??
+            item.department_id ??
+            item.depart_id ??
+            item.Departmentid ??
+            0
+        );
+      }
+
+      return Number(item);
+    };
+
+    if (Array.isArray(value)) {
+      return Array.from(
+        new Set(
+          value
+            .map(toId)
+            .filter((id) => Number.isFinite(id) && id > 0)
+        )
+      );
+    }
+
+    if (value && typeof value === "object") {
+      const id = toId(value);
+      return Number.isFinite(id) && id > 0 ? [id] : [];
+    }
+
+    if (value === null || value === undefined || value === "") {
+      return [];
+    }
+
+    return Array.from(
+      new Set(
+        String(value)
+          .split(",")
+          .map((id) => Number(id.trim()))
+          .filter((id) => Number.isFinite(id) && id > 0)
+      )
+    );
+  };
+
+  const normalizeDepartmentNames = (value: any): string[] => {
+    const toName = (item: any) => {
+      if (item && typeof item === "object") {
+        return String(
+          item.name ??
+            item.department_name ??
+            item.departname ??
+            item.title ??
+            ""
+        ).trim();
+      }
+
+      return String(item ?? "").trim();
+    };
+
+    if (Array.isArray(value)) {
+      return Array.from(new Set(value.map(toName).filter(Boolean)));
+    }
+
+    if (value && typeof value === "object") {
+      const name = toName(value);
+      return name ? [name] : [];
+    }
+
+    return Array.from(
+      new Set(
+        String(value ?? "")
+          .split(",")
+          .map((name) => name.trim())
+          .filter(Boolean)
+      )
+    );
+  };
+
   // ---------------- Fetch Users ----------------
   const fetchUsers = async () => {
     try {
@@ -1104,9 +1305,26 @@ export default function UserMaster() {
 
       const list: UserData[] = (res.data?.data || []).map((u: any) => {
         const rawStatus = Number(u.iStatus ?? u.status ?? 1);
-
         const mappedEmail =
           u.email ?? u.user_email ?? u.Email ?? u.mail ?? u.userEmail ?? "";
+
+        // UserList returns departments as objects:
+        // [{ id: 12, name: "Calling" }, { id: 4, name: "Data Entry" }]
+        const departmentSource =
+          u.departments ?? u.departname ?? u.department ?? "";
+
+        const departmentNames = normalizeDepartmentNames(departmentSource);
+        const selectedDepartmentIds = normalizeDepartmentIds(
+          u.departments ??
+            u.department_ids ??
+            u.depart_ids ??
+            u.department_id ??
+            u.depart_id
+        );
+
+        const primaryDepartmentId = Number(
+          u.primary_department_id ?? u.primaryDepartmentId ?? 0
+        );
 
         return {
           id: Number(u.Userid ?? u.Usersid ?? u.id),
@@ -1114,9 +1332,14 @@ export default function UserMaster() {
           mobile: String(u.mobile ?? ""),
           address: String(u.address ?? ""),
           email: String(mappedEmail ?? ""),
-          department: String(u.departname ?? u.department ?? ""),
-          department_id: u.depart_id ? Number(u.depart_id) : null,
-          expo_count: u.expo_count ? Number(u.expo_count) : 0,
+          department: departmentNames.join(", "),
+          department_id: selectedDepartmentIds,
+          primary_department_id:
+            Number.isFinite(primaryDepartmentId) && primaryDepartmentId > 0
+              ? primaryDepartmentId
+              : selectedDepartmentIds[0],
+          primary_department: String(u.primary_department ?? ""),
+          expo_count: Number(u.expo_count ?? 0),
           iStatus: rawStatus,
           status: rawStatus === 1 ? "active" : "inactive",
         };
@@ -1136,10 +1359,15 @@ export default function UserMaster() {
     fetchUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   // ---------------- Add User ----------------
   const handleSave = async () => {
-    if (!name || !mobile || !address || !departmentId || !password) {
+    if (
+  !name ||
+  !mobile ||
+  !address ||
+  departmentIds.length === 0 ||
+  !password
+) {
       toast.error("Please fill all required fields");
       return;
     }
@@ -1161,11 +1389,10 @@ export default function UserMaster() {
         name,
         mobile,
         address,
-        email,
-        department_id: departmentId,
+        email: email.toLowerCase(),
+        department_ids: departmentIds.map(Number),
         password,
       };
-
       const res = await axios.post(`${apiUrl}/UserAdd`, payload, {
         headers: { ...getAuthHeaders() },
       });
@@ -1176,7 +1403,7 @@ export default function UserMaster() {
         setMobile("");
         setAddress("");
         setEmail("");
-        setDepartmentId("");
+       setDepartmentIds([]);
         setPassword("");
         await fetchUsers();
       } else {
@@ -1204,22 +1431,61 @@ export default function UserMaster() {
         { headers: { ...getAuthHeaders() } }
       );
 
-      const row = res.data?.data?.[0];
+      const responseData = res.data?.data;
+      const row = Array.isArray(responseData) ? responseData[0] : responseData;
+
       if (!row) {
         const fallback = users.find((u) => u.id === userId);
-        if (fallback) setEditData(fallback);
-        setIsEditOpen(true);
+        if (fallback) {
+          setEditData(fallback);
+          setIsEditOpen(true);
+        } else {
+          toast.error("User not found");
+        }
         return;
       }
 
-      const deptName = String(row.department ?? row.departname ?? "").trim();
+      const departmentSource =
+        row.departments ?? row.department ?? row.departname ?? "";
 
-      const matchedDept = deptList.find(
-        (d) => d.name.trim().toLowerCase() === deptName.toLowerCase()
+      const departmentNames = normalizeDepartmentNames(departmentSource);
+
+      let selectedDepartmentIds = normalizeDepartmentIds(
+        row.departments ??
+          row.department_ids ??
+          row.depart_ids ??
+          row.department_id ??
+          row.depart_id
       );
+
+      // Fallback when the show API returns names but no department IDs.
+      if (selectedDepartmentIds.length === 0 && departmentNames.length > 0) {
+        selectedDepartmentIds = departmentNames
+          .map((departmentName) =>
+            deptList.find(
+              (department) =>
+                department.name.trim().toLowerCase() ===
+                departmentName.trim().toLowerCase()
+            )?.id
+          )
+          .filter((id): id is number => Boolean(id));
+      }
+
+      const apiPrimaryDepartmentId = Number(
+        row.primary_department_id ?? row.primaryDepartmentId ?? 0
+      );
+
+      const primaryDepartmentId =
+        Number.isFinite(apiPrimaryDepartmentId) &&
+        apiPrimaryDepartmentId > 0 &&
+        selectedDepartmentIds.includes(apiPrimaryDepartmentId)
+          ? apiPrimaryDepartmentId
+          : selectedDepartmentIds[0];
 
       const mappedEmail =
         row.email ?? row.user_email ?? row.Email ?? row.mail ?? "";
+
+      const rawStatus = Number(row.iStatus ?? row.status ?? 1);
 
       setEditData({
         id: Number(row.Usersid ?? row.Userid ?? row.id ?? userId),
@@ -1227,10 +1493,13 @@ export default function UserMaster() {
         mobile: String(row.mobile ?? ""),
         address: String(row.address ?? ""),
         email: String(mappedEmail ?? ""),
-        department: deptName,
-        department_id: matchedDept ? matchedDept.id : null,
-        status: "active",
-        iStatus: 1,
+        department: departmentNames.join(", "),
+        department_id: selectedDepartmentIds,
+        primary_department_id: primaryDepartmentId,
+        primary_department: String(row.primary_department ?? ""),
+        expo_count: Number(row.expo_count ?? 0),
+        status: rawStatus === 1 ? "active" : "inactive",
+        iStatus: rawStatus,
       });
 
       setIsEditOpen(true);
@@ -1267,16 +1536,16 @@ export default function UserMaster() {
       return;
     }
 
-    const deptId =
-      editData.department_id ??
-      (editData.department
-        ? departments.find(
-          (d) => d.name.toLowerCase() === editData.department!.toLowerCase()
-        )?.id
-        : null);
+    if (!editData.department_id || editData.department_id.length === 0) {
+      toast.error("Please select at least one department");
+      return;
+    }
 
-    if (!deptId) {
-      toast.error("Please select department");
+    if (
+      !editData.primary_department_id ||
+      !editData.department_id.includes(editData.primary_department_id)
+    ) {
+      toast.error("Please select a valid primary department");
       return;
     }
 
@@ -1288,8 +1557,13 @@ export default function UserMaster() {
         name: editData.name,
         mobile: editData.mobile,
         address: editData.address,
-        email: editData?.email,
-        department_id: String(deptId),
+        email: editData.email.toLowerCase(),
+
+        // Keep department_id for backward compatibility and also send the
+        // plural key used by UserAdd and the current API response structure.
+        department_id: editData.department_id,
+        department_ids: editData.department_id,
+        primary_department_id: editData.primary_department_id,
       };
 
       const res = await axios.post(`${apiUrl}/UserUpdate`, payload, {
@@ -1478,9 +1752,9 @@ export default function UserMaster() {
 
         <label className="font-medium">Email Address</label>
         <input
-          type="text"
+          type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value.toLowerCase())}
           placeholder="Enter email address"
           className="w-full border px-3 py-2 rounded mt-1 mb-4"
         />
@@ -1495,18 +1769,30 @@ export default function UserMaster() {
         />
 
         <label className="font-medium">Department</label>
+
         <select
-          value={departmentId}
-          onChange={(e) => setDepartmentId(e.target.value)}
-          className="w-full border px-3 py-2 rounded mt-1 mb-6"
+          multiple
+          value={departmentIds}
+          onChange={(e) => {
+            const selectedIds = Array.from(
+              e.currentTarget.selectedOptions,
+              (option) => option.value
+            );
+
+            setDepartmentIds(selectedIds);
+          }}
+          className="w-full min-h-[130px] border px-3 py-2 rounded mt-1 mb-2"
         >
-          <option value="">Select Department</option>
-          {departments.map((d) => (
-            <option key={d.id} value={String(d.id)}>
-              {d.name}
+          {departments.map((department) => (
+            <option key={department.id} value={String(department.id)}>
+              {department.name}
             </option>
           ))}
         </select>
+
+        <p className="text-xs text-gray-500 mb-6">
+          Hold Ctrl on Windows or Command on Mac to select multiple departments.
+        </p>
 
         <label className="font-medium">Password</label>
         <input
@@ -1750,10 +2036,13 @@ export default function UserMaster() {
 
               <label className="font-medium">Email Address</label>
               <input
-                type="text"
+                type="email"
                 value={editData.email}
                 onChange={(e) =>
-                  setEditData({ ...editData, email: e.target.value })
+                  setEditData({
+                    ...editData,
+                    email: e.target.value.toLowerCase(),
+                  })
                 }
                 className="w-full border px-3 py-2 rounded mt-1 mb-4"
               />
@@ -1768,28 +2057,52 @@ export default function UserMaster() {
                 className="w-full border px-3 py-2 rounded mt-1 mb-4"
               />
 
-              <label className="font-medium">Department</label>
+            <label className="font-medium">Department</label>
+
               <select
-                value={String(editData.department_id ?? "")}
-                onChange={(e) =>
+                multiple
+                value={(editData.department_id ?? []).map(String)}
+                onChange={(e) => {
+                  const selectedIds = Array.from(
+                    e.currentTarget.selectedOptions,
+                    (option) => Number(option.value)
+                  );
+
+                  const selectedNames = departments
+                    .filter((department) => selectedIds.includes(department.id))
+                    .map((department) => department.name);
+
+                  const currentPrimaryId = editData.primary_department_id;
+                  const nextPrimaryId =
+                    currentPrimaryId && selectedIds.includes(currentPrimaryId)
+                      ? currentPrimaryId
+                      : selectedIds[0];
+
                   setEditData({
                     ...editData,
-                    department_id: e.target.value ? Number(e.target.value) : null,
-                    department:
-                      departments.find((d) => String(d.id) === e.target.value)
-                        ?.name || "",
-                  })
-                }
-                className="w-full border px-3 py-2 rounded mt-1 mb-4"
+                    department_id: selectedIds,
+                    department: selectedNames.join(", "),
+                    primary_department_id: nextPrimaryId,
+                    primary_department:
+                      departments.find(
+                        (department) => department.id === nextPrimaryId
+                      )?.name ?? "",
+                  });
+                }}
+                className="w-full min-h-[130px] border px-3 py-2 rounded mt-1 mb-2"
               >
-                <option value="">Select Department</option>
-                {departments.map((d) => (
-                  <option key={d.id} value={String(d.id)}>
-                    {d.name}
+                {departments.map((department) => (
+                  <option key={department.id} value={String(department.id)}>
+                    {department.name}
                   </option>
                 ))}
               </select>
 
+              <p className="text-xs text-gray-500 mb-4">
+                Hold Ctrl on Windows or Command on Mac to select multiple departments.
+              </p>
+
+          
               <div className="flex justify-end gap-3">
                 <button
                   className="px-4 py-2 bg-gray-300 rounded"
