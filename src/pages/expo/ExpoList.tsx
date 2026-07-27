@@ -998,7 +998,7 @@ import { toast } from "react-toastify";
 import { apiUrl } from "../../config";
 
 // Replace only this route if your backend uses a different API name.
-const CLEAR_CALLING_HISTORY_ENDPOINT = `${apiUrl}/ClearCallingHistory`;
+const CLEAR_CALLING_HISTORY_ENDPOINT = `${apiUrl}/visitor_followup_delete_by_expo`;
 
 // ---------------- TYPES ----------------
 interface ApiState {
@@ -1099,7 +1099,35 @@ export default function ExpoMaster() {
     const [yyyy, mm, dd] = v.split("-");
     return `${dd}-${mm}-${yyyy}`;
   };
+function getAdminId() {
+    const directAdminId = localStorage.getItem("admin_id");
 
+    if (directAdminId) {
+        return directAdminId;
+    }
+
+    try {
+        const storedUser =
+            localStorage.getItem("admin_user") ||
+            localStorage.getItem("user") ||
+            localStorage.getItem("userData");
+
+        if (storedUser) {
+            const user = JSON.parse(storedUser);
+
+            return String(
+                user?.admin_id ||
+                    user?.id ||
+                    user?.user_id ||
+                    "3"
+            );
+        }
+    } catch (error) {
+        console.error("Unable to read admin ID:", error);
+    }
+
+    return "3";
+}
   const isYmd = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v);
 
   const normalizeDateForUI = (raw: any) => {
@@ -1463,6 +1491,7 @@ export default function ExpoMaster() {
       const res = await postJson<{ success: boolean; message: string }>(
         CLEAR_CALLING_HISTORY_ENDPOINT,
         {
+          admin_id: getAdminId(),
           expo_id: String(clearHistoryExpo.Expoid),
         }
       );
