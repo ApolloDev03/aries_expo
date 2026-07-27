@@ -15,53 +15,50 @@ type CountRes = {
     total_Expected_Exhibitors: number;
     today_Expected_Exhibitors: number;
 };
-type User = {
-    id: number;
-    name: string;
-    mobile: string;
-    address?: string;
+type StoredUser = {
+    id?: number;
+    name?: string;
     Department?: string;
-};
-type StoredDepartment = {
-    id: number;
-    name: string;
+    primary_department?: string;
 };
 
-const getUserDepartments = (): StoredDepartment[] => {
+const normalizeDepartment = (value?: string) => {
+    return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[\s_-]+/g, "");
+};
+
+const getActiveDepartmentFromStorage = (): string => {
     try {
-         const userData = JSON.parse(
-            localStorage.getItem("user") || "[]"
+        const user: StoredUser = JSON.parse(
+            localStorage.getItem("user") || "{}"
         );
-        const storedDepartments = userData.departments || "[]";        
 
-        if (Array.isArray(storedDepartments)) {
-            return storedDepartments
-                .map((department: any) => ({
-                    id: Number(department?.id || 0),
-                    name: String(department?.name || "").trim(),
-                }))
-                .filter(
-                    (department: StoredDepartment) =>
-                        department.id > 0 && department.name !== ""
-                );
-        }
-
-        return [];
+        return (
+            localStorage.getItem("active_department") ||
+            localStorage.getItem("primary_department") ||
+            user?.primary_department ||
+            user?.Department ||
+            ""
+        ).trim();
     } catch (error) {
-        console.error("Department localStorage parse error:", error);
-        return [];
+        console.error(
+            "Active department localStorage error:",
+            error
+        );
+
+        return (
+            localStorage.getItem("active_department") ||
+            localStorage.getItem("primary_department") ||
+            ""
+        ).trim();
     }
 };
 export default function UserDashboard() {
     const userId = localStorage.getItem("User_Id") || "";
     const navigate = useNavigate();
-const userDepartments = getUserDepartments();
 
-const isCallingDepartment = userDepartments.some(
-    (department) =>
-        department.name.trim().toLowerCase() === "calling"
-);
-console.log(isCallingDepartment,"bcbg");
 
     const [loadingCounts, setLoadingCounts] = useState(false);
     const [totalVisitors, setTotalVisitors] = useState(0);
@@ -71,6 +68,62 @@ console.log(isCallingDepartment,"bcbg");
     const [expectedTotalExhibitors, setExpectedTotalExhibitors] = useState(0);
     const [todayExpectedExhibitors, setTodayExpectedExhibitors] = useState(0);
 
+  
+    const [activeDepartment, setActiveDepartment] =
+        useState<string>(() =>
+            getActiveDepartmentFromStorage()
+        );
+
+    const normalizedActiveDepartment =
+        normalizeDepartment(activeDepartment);
+          const showLeadDashboard =
+        normalizedActiveDepartment === "calling" ||
+        normalizedActiveDepartment === "leadmanagement";
+        useEffect(() => {
+    const handleDepartmentChange = (event: Event) => {
+        const customEvent =
+            event as CustomEvent<string>;
+
+        const departmentName =
+            customEvent.detail ||
+            getActiveDepartmentFromStorage();
+
+        setActiveDepartment(departmentName);
+    };
+
+    const handleStorageChange = (
+        event: StorageEvent
+    ) => {
+        if (event.key === "active_department") {
+            setActiveDepartment(
+                event.newValue ||
+                getActiveDepartmentFromStorage()
+            );
+        }
+    };
+
+    window.addEventListener(
+        "active-department-change",
+        handleDepartmentChange
+    );
+
+    window.addEventListener(
+        "storage",
+        handleStorageChange
+    );
+
+    return () => {
+        window.removeEventListener(
+            "active-department-change",
+            handleDepartmentChange
+        );
+
+        window.removeEventListener(
+            "storage",
+            handleStorageChange
+        );
+    };
+}, []);
     const fetchVisitorCounts = async () => {
         if (!userId) {
             toast.error("User_Id not found in localStorage");
@@ -163,14 +216,21 @@ console.log(isCallingDepartment,"bcbg");
         );
     };
 
-    useEffect(() => {
+// Location permission only once
+useEffect(() => {
+    requestAndStoreLocation();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
+// Visitor/exhibitor counts only for other departments
+useEffect(() => {
+    if (!showLeadDashboard) {
         fetchVisitorCounts();
+    }
 
-        // dashboard open ke baad location popup khulega
-        requestAndStoreLocation();
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [activeDepartment]);
 
     return (
         <div className="space-y-6">
@@ -184,7 +244,7 @@ console.log(isCallingDepartment,"bcbg");
             </div>
             <AttendanceDashboard />
             {
-                isCallingDepartment ? <LeadDashboard /> :
+                showLeadDashboard ? <LeadDashboard /> :
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
                         <div
                             onClick={() => navigate("/users/visitors-list/TotalVisitors")}

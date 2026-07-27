@@ -48,9 +48,17 @@ type CardItem = {
     totalPath: string;
 };
 
+type ExpoListRow = {
+  Expoid: number | string;
+  name: string;
+  date?: string;
+};
 const CallingPage = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+const [expoList, setExpoList] = useState<ExpoListRow[]>([]);
+const [selectedExpoId, setSelectedExpoId] = useState("");
+const [isExpoLoading, setIsExpoLoading] = useState(false);
 
     // 2) UPDATE useState counts
     const [counts, setCounts] = useState<CallingData>({
@@ -75,70 +83,166 @@ const CallingPage = () => {
         total_not_interested: 0,
         today_not_interested: 0,
     });
+const fetchExpoList = async () => {
+    try {
+        setIsExpoLoading(true);
 
-    const fetchCallingCounts = async () => {
-        const adminId = localStorage.getItem("admin_id");
-        const token = localStorage.getItem("artoken");
-
-        if (!adminId || !token) {
-            toast.error("Session expired. Please login again.");
-            navigate("/");
-            return;
-        }
-
-        try {
-            setLoading(true);
-
-            const res = await axios.post(
-                `${apiUrl}/admin_mycall`,
-                { admin_id: adminId },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        Accept: "application/json",
-                    },
-                }
-            );
-
-            if (res.data?.success) {
-                const d = res.data.data || {};
-
-                // 3) UPDATE setCounts inside API response
-                setCounts({
-                    total_call: Number(d?.total_call ?? 0),
-                    today_call: Number(d?.today_call ?? 0),
-
-                    total_register: Number(d?.total_register ?? 0),
-                    today_register: Number(d?.today_register ?? 0),
-
-                    total_wrong_number: Number(d?.total_wrong_number ?? 0),
-                    today_wrong_number: Number(d?.today_wrong_number ?? 0),
-
-                    total_busy_now_callback: Number(d?.total_busy_now_callback ?? 0),
-                    today_busy_now_callback: Number(d?.today_busy_now_callback ?? 0),
-
-                    total_business_changed: Number(d?.total_business_changed ?? 0),
-                    today_business_changed: Number(d?.today_business_changed ?? 0),
-
-                    total_information_passed: Number(d?.total_information_passed ?? 0),
-                    today_information_passed: Number(d?.today_information_passed ?? 0),
-
-                    total_not_interested: Number(d?.total_not_interested ?? 0),
-                    today_not_interested: Number(d?.today_not_interested ?? 0),
-                });
-            } else {
-                toast.error(res.data?.message || "Failed to fetch calling data");
+        const res = await axios.post(
+            `${apiUrl}/ExpoList`,
+            {},
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
             }
-        } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Failed to fetch calling data");
-        } finally {
-            setLoading(false);
-        }
-    };
+        );
 
-    useEffect(() => {
+        console.log("Expo List Response:", res.data);
+
+        if (res.data?.success) {
+            const expoData: ExpoListRow[] = Array.isArray(
+                res.data?.data
+            )
+                ? res.data.data
+                : [];
+
+            setExpoList(expoData);
+        } else {
+            setExpoList([]);
+
+            toast.error(
+                res.data?.message || "Expo list fetch failed"
+            );
+        }
+    } catch (error: any) {
+        setExpoList([]);
+
+        toast.error(
+            error?.response?.data?.message ||
+                "Expo list fetch failed"
+        );
+    } finally {
+        setIsExpoLoading(false);
+    }
+};
+const fetchCallingCounts = async (expoId?: number) => {
+    const adminId = localStorage.getItem("admin_id");
+    const token = localStorage.getItem("artoken");
+
+    if (!adminId || !token) {
+        toast.error("Session expired. Please login again.");
+        navigate("/");
+        return;
+    }
+
+    try {
+        setLoading(true);
+
+        const requestData: {
+            admin_id: string;
+            expo_id?: number;
+        } = {
+            admin_id: adminId,
+        };
+
+        if (expoId !== undefined) {
+            requestData.expo_id = expoId;
+        }
+
+        console.log("Calling count request:", requestData);
+
+        const res = await axios.post(
+            `${apiUrl}/admin_mycall`,
+            requestData,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        if (res.data?.success) {
+            const d = res.data?.data || {};
+
+            setCounts({
+                total_call: Number(d?.total_call ?? 0),
+                today_call: Number(d?.today_call ?? 0),
+
+                total_register: Number(d?.total_register ?? 0),
+                today_register: Number(d?.today_register ?? 0),
+
+                total_wrong_number: Number(
+                    d?.total_wrong_number ?? 0
+                ),
+                today_wrong_number: Number(
+                    d?.today_wrong_number ?? 0
+                ),
+
+                total_busy_now_callback: Number(
+                    d?.total_busy_now_callback ?? 0
+                ),
+                today_busy_now_callback: Number(
+                    d?.today_busy_now_callback ?? 0
+                ),
+
+                total_business_changed: Number(
+                    d?.total_business_changed ?? 0
+                ),
+                today_business_changed: Number(
+                    d?.today_business_changed ?? 0
+                ),
+
+                total_information_passed: Number(
+                    d?.total_information_passed ?? 0
+                ),
+                today_information_passed: Number(
+                    d?.today_information_passed ?? 0
+                ),
+
+                total_not_interested: Number(
+                    d?.total_not_interested ?? 0
+                ),
+                today_not_interested: Number(
+                    d?.today_not_interested ?? 0
+                ),
+            });
+        } else {
+            toast.error(
+                res.data?.message ||
+                    "Failed to fetch calling data"
+            );
+        }
+    } catch (error: any) {
+        toast.error(
+            error?.response?.data?.message ||
+                "Failed to fetch calling data"
+        );
+    } finally {
+        setLoading(false);
+    }
+};
+const handleExpoChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+) => {
+    const value = event.target.value;
+
+    setSelectedExpoId(value);
+
+    if (value) {
+        fetchCallingCounts(Number(value));
+    } else {
+        // All Expo: no expo_id
         fetchCallingCounts();
-    }, []);
+    }
+};
+useEffect(() => {
+    fetchExpoList();
+
+    // Default All Expo counts without expo_id
+    fetchCallingCounts();
+}, []);
 
     const cardData: CardItem[] = [
         {
@@ -247,16 +351,52 @@ const CallingPage = () => {
     return (
         <div className="min-h-screen bg-[#f8fafc] px-4 py-8 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-7xl">
-                <div className="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-                        Calling Dashboard
-                    </h1>
-                    <p className="mt-2 text-sm text-gray-500">
-                        Overview of today and total calling performance
-                    </p>
-                </div>
+               <div className="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+        <div>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                Calling Dashboard
+            </h1>
 
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <p className="mt-2 text-sm text-gray-500">
+                Overview of today and total calling performance
+            </p>
+        </div>
+
+        <div className="w-full md:w-72">
+            <label
+                htmlFor="expo_id"
+                className="mb-2 block text-sm font-semibold text-gray-700"
+            >
+                Select Expo
+            </label>
+
+<select
+    id="expo_id"
+    name="expo_id"
+    value={selectedExpoId}
+    onChange={handleExpoChange}
+    disabled={isExpoLoading}
+    className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-gray-100"
+>
+    <option value="">
+        {isExpoLoading ? "Loading expos..." : "All Expo"}
+    </option>
+
+    {expoList.map((expo) => (
+        <option
+            key={expo.Expoid}
+            value={String(expo.Expoid)}
+        >
+            {expo.name}
+        </option>
+    ))}
+</select>
+        </div>
+    </div>
+</div>
+
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {loading
                         ? [...Array(6)].map((_, i) => (
                             <div
