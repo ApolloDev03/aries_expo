@@ -1347,7 +1347,7 @@ export default function AttendanceReport() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
-  const [page, setPage] = useState(1);
+  // const [page, setPage] = useState(1);
 
   const [pagination, setPagination] = useState<Pagination>({
     current_page: 1,
@@ -1399,10 +1399,10 @@ export default function AttendanceReport() {
         setPagination(apiPagination);
 
         // Keep local page synchronized with API current page
-        setPage(Number(apiPagination.current_page || pageNo || 1));
+        // setPage(Number(apiPagination.current_page || pageNo || 1));
       } else {
         setAttendanceList([]);
-        setPage(1);
+        // setPage(1);
         setPagination({
           current_page: 1,
           last_page: 1,
@@ -1414,7 +1414,7 @@ export default function AttendanceReport() {
       }
     } catch (error: any) {
       setAttendanceList([]);
-      setPage(1);
+      // setPage(1);
       setPagination({
         current_page: 1,
         last_page: 1,
@@ -1436,7 +1436,7 @@ export default function AttendanceReport() {
       return;
     }
 
-    setPage(1);
+    // setPage(1);
     fetchAttendanceReport(1);
   };
 
@@ -1450,7 +1450,7 @@ export default function AttendanceReport() {
       return;
     }
 
-    setPage(newPage);
+    // setPage(newPage);
     fetchAttendanceReport(newPage);
   };
 

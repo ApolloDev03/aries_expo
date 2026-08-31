@@ -1968,57 +1968,57 @@ export default function AttendanceDashboard() {
    * even when Location permission is allowed.
    * watchPosition() gives the browser more time to resolve a network/Wi-Fi fix.
    */
-  const requestPositionWithWatch = (
-    timeoutMs = 35000
-  ): Promise<GeolocationPosition> => {
-    return new Promise<GeolocationPosition>(
-      (resolve, reject) => {
-        let settled = false;
+  // const requestPositionWithWatch = (
+  //   timeoutMs = 35000
+  // ): Promise<GeolocationPosition> => {
+  //   return new Promise<GeolocationPosition>(
+  //     (resolve, reject) => {
+  //       let settled = false;
 
-        const timer = window.setTimeout(() => {
-          if (settled) return;
+  //       const timer = window.setTimeout(() => {
+  //         if (settled) return;
 
-          settled = true;
-          navigator.geolocation.clearWatch(watchId);
+  //         settled = true;
+  //         navigator.geolocation.clearWatch(watchId);
 
-          reject({
-            code: 3,
-            message: "Location request timed out",
-          } as GeolocationPositionError);
-        }, timeoutMs);
+  //         reject({
+  //           code: 3,
+  //           message: "Location request timed out",
+  //         } as GeolocationPositionError);
+  //       }, timeoutMs);
 
-        const watchId =
-          navigator.geolocation.watchPosition(
-            (position: GeolocationPosition) => {
-              if (settled) return;
+  //       const watchId =
+  //         navigator.geolocation.watchPosition(
+  //           (position: GeolocationPosition) => {
+  //             if (settled) return;
 
-              settled = true;
-              window.clearTimeout(timer);
-              navigator.geolocation.clearWatch(watchId);
-              resolve(position);
-            },
-            (error: GeolocationPositionError) => {
-              /*
-               * Permission denied should fail immediately.
-               * For POSITION_UNAVAILABLE/TIMEOUT, keep watching until
-               * the manual timeout because Chrome may recover.
-               */
-              if (error.code === 1 && !settled) {
-                settled = true;
-                window.clearTimeout(timer);
-                navigator.geolocation.clearWatch(watchId);
-                reject(error);
-              }
-            },
-            {
-              enableHighAccuracy: false,
-              timeout: timeoutMs,
-              maximumAge: 30 * 60 * 1000,
-            }
-          );
-      }
-    );
-  };
+  //             settled = true;
+  //             window.clearTimeout(timer);
+  //             navigator.geolocation.clearWatch(watchId);
+  //             resolve(position);
+  //           },
+  //           (error: GeolocationPositionError) => {
+  //             /*
+  //              * Permission denied should fail immediately.
+  //              * For POSITION_UNAVAILABLE/TIMEOUT, keep watching until
+  //              * the manual timeout because Chrome may recover.
+  //              */
+  //             if (error.code === 1 && !settled) {
+  //               settled = true;
+  //               window.clearTimeout(timer);
+  //               navigator.geolocation.clearWatch(watchId);
+  //               reject(error);
+  //             }
+  //           },
+  //           {
+  //             enableHighAccuracy: false,
+  //             timeout: timeoutMs,
+  //             maximumAge: 30 * 60 * 1000,
+  //           }
+  //         );
+  //     }
+  //   );
+  // };
 
   /*
    * Store successful location.
@@ -2112,62 +2112,62 @@ export default function AttendanceDashboard() {
    * This helps desktop/laptop browsers where geolocation can temporarily
    * return POSITION_UNAVAILABLE even though location permission is enabled.
    */
-  const getFreshStoredLocation =
-    (): LocationData | null => {
-      const storedLocation = getStoredLocation();
+  // const getFreshStoredLocation =
+  //   (): LocationData | null => {
+  //     const storedLocation = getStoredLocation();
 
-      if (!storedLocation) {
-        return null;
-      }
+  //     if (!storedLocation) {
+  //       return null;
+  //     }
 
-      const maxAgeMs = 30 * 60 * 1000; // 30 minutes
-      const age = Date.now() - storedLocation.timestamp;
+  //     const maxAgeMs = 30 * 60 * 1000; // 30 minutes
+  //     const age = Date.now() - storedLocation.timestamp;
 
-      if (age < 0 || age > maxAgeMs) {
-        return null;
-      }
+  //     if (age < 0 || age > maxAgeMs) {
+  //       return null;
+  //     }
 
-      return storedLocation;
-    };
+  //     return storedLocation;
+  //   };
 
   /*
    * Clear invalid or denied stored location.
    */
-  const clearStoredLocation = (): void => {
-    localStorage.removeItem("user_lat");
-    localStorage.removeItem("user_lng");
-    localStorage.removeItem(
-      "location_accuracy"
-    );
-    localStorage.removeItem(
-      "location_timestamp"
-    );
+  // const clearStoredLocation = (): void => {
+  //   localStorage.removeItem("user_lat");
+  //   localStorage.removeItem("user_lng");
+  //   localStorage.removeItem(
+  //     "location_accuracy"
+  //   );
+  //   localStorage.removeItem(
+  //     "location_timestamp"
+  //   );
 
-    setCurrentLocation(null);
-  };
+  //   setCurrentLocation(null);
+  // };
 
   /*
    * Check current Chrome permission status.
    */
-  const checkLocationPermission =
-    async (): Promise<
-      PermissionState | "unsupported"
-    > => {
-      if (!navigator.permissions?.query) {
-        return "unsupported";
-      }
+  // const checkLocationPermission =
+  //   async (): Promise<
+  //     PermissionState | "unsupported"
+  //   > => {
+  //     if (!navigator.permissions?.query) {
+  //       return "unsupported";
+  //     }
 
-      try {
-        const permissionStatus =
-          await navigator.permissions.query({
-            name: "geolocation" as PermissionName,
-          });
+  //     try {
+  //       const permissionStatus =
+  //         await navigator.permissions.query({
+  //           name: "geolocation" as PermissionName,
+  //         });
 
-        return permissionStatus.state;
-      } catch {
-        return "unsupported";
-      }
-    };
+  //       return permissionStatus.state;
+  //     } catch {
+  //       return "unsupported";
+  //     }
+  //   };
 
   /*
    * Get location, store latitude and longitude,
